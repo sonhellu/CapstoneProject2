@@ -1,0 +1,9 @@
+{
+  "@@locale": "zh",
+  "appTitle": "Capstone",
+  "homeTitle": "首页",
+  "counterLabel": "您已按下按钮的次数：",
+  "incrementTooltip": "增加",
+  "languagePickerTooltip": "语言",
+  "languageSheetTitle": "选择语言"
+}

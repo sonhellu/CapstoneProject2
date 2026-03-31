@@ -1,0 +1,9 @@
+{
+  "@@locale": "ja",
+  "appTitle": "Capstone",
+  "homeTitle": "ホーム",
+  "counterLabel": "ボタンを押した回数:",
+  "incrementTooltip": "増やす",
+  "languagePickerTooltip": "言語",
+  "languageSheetTitle": "言語を選択"
+}
