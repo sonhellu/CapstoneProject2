@@ -1,0 +1,88 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
+import '../utils/auth_validators.dart';
+import 'widgets/auth_primary_button.dart';
+import 'widgets/auth_text_field.dart';
+import 'widgets/social_auth_buttons.dart';
+
+class LoginForm extends HookWidget {
+  const LoginForm({super.key});
+
+  void _snack(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final formKey = useMemoized(GlobalKey<FormState>.new);
+    final email = useTextEditingController();
+    final password = useTextEditingController();
+    final obscure = useState(true);
+    final loading = useState(false);
+
+    Future<void> submit() async {
+      if (!(formKey.currentState?.validate() ?? false)) return;
+      loading.value = true;
+      try {
+        await context.read<AuthProvider>().signInWithEmail(
+              email: email.text.trim(),
+              password: password.text,
+            );
+      } finally {
+        if (context.mounted) loading.value = false;
+      }
+    }
+
+    return Form(
+      key: formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AuthTextField(
+            key: const Key('login_email'),
+            controller: email,
+            label: 'Email',
+            hint: 'ten.email@duhoc.vn',
+            prefixIcon: Icons.mail_outline_rounded,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.email],
+            validator: AuthValidators.email,
+          ),
+          const SizedBox(height: 18),
+          AuthTextField(
+            key: const Key('login_password'),
+            controller: password,
+            label: 'Mật khẩu',
+            hint: '••••••••',
+            prefixIcon: Icons.lock_outline_rounded,
+            obscureText: obscure.value,
+            showObscureToggle: true,
+            onToggleObscure: () => obscure.value = !obscure.value,
+            textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.password],
+            validator: AuthValidators.password,
+            onSubmitted: (_) => submit(),
+          ),
+          const SizedBox(height: 24),
+          AuthPrimaryButton(
+            key: const Key('login_submit'),
+            label: 'Đăng nhập',
+            isLoading: loading.value,
+            onPressed: submit,
+          ),
+          const SizedBox(height: 24),
+          SocialAuthButtons(
+            onGoogle: () => _snack(context, 'Đăng nhập Google (demo)'),
+            onKakao: () => _snack(context, 'Đăng nhập KakaoTalk (demo)'),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -1,0 +1,5 @@
+# Chạy `flutter gen-l10n` (hoặc `make gen-l10n`) sau khi sửa file .arb.
+# File Dart sinh ra nằm trong lib/l10n — nên commit cùng repo.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart

@@ -1,0 +1,9 @@
+{
+  "@@locale": "ko",
+  "appTitle": "Capstone",
+  "homeTitle": "홈",
+  "counterLabel": "버튼을 누른 횟수:",
+  "incrementTooltip": "증가",
+  "languagePickerTooltip": "언어",
+  "languageSheetTitle": "언어 선택"
+}

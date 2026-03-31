@@ -1,0 +1,12 @@
+{
+  "@@locale": "en",
+  "appTitle": "Capstone",
+  "@appTitle": {
+    "description": "Application title in task switcher"
+  },
+  "homeTitle": "Home",
+  "counterLabel": "You have pushed the button this many times:",
+  "incrementTooltip": "Increment",
+  "languagePickerTooltip": "Language",
+  "languageSheetTitle": "Choose language"
+}

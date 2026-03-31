@@ -1,0 +1,9 @@
+{
+  "@@locale": "vi",
+  "appTitle": "Capstone",
+  "homeTitle": "Trang chủ",
+  "counterLabel": "Bạn đã bấm nút số lần:",
+  "incrementTooltip": "Tăng",
+  "languagePickerTooltip": "Ngôn ngữ",
+  "languageSheetTitle": "Chọn ngôn ngữ"
+}
