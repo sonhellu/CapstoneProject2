@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:capstone_frontend/app/capstone_app.dart';
 import 'package:capstone_frontend/core/locale/locale_controller.dart';
+import 'package:capstone_frontend/core/naver_map/naver_map_sdk_controller.dart';
 import 'package:capstone_frontend/features/auth/providers/auth_provider.dart';
 
 void main() {
@@ -13,6 +14,7 @@ void main() {
         providers: [
           ChangeNotifierProvider(create: (_) => AuthProvider()),
           ChangeNotifierProvider(create: (_) => LocaleController()),
+          ChangeNotifierProvider(create: (_) => NaverMapSdkController()),
         ],
         child: const CapstoneApp(),
       ),
