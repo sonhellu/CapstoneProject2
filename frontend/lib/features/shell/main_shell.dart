@@ -27,6 +27,8 @@ class _MainShellState extends State<MainShell> {
   /// Trạng thái tải giả lập khi chọn tab Maps (theo yêu cầu).
   bool _isLoadingMap = false;
 
+  bool _isTabFading = false;
+
   final math.Random _random = math.Random();
 
   static const List<NavItemData> _navItems = [
@@ -52,12 +54,12 @@ class _MainShellState extends State<MainShell> {
     ),
   ];
 
-  List<Widget> get _pages => const [
-        HomeTabScreen(),
-        ChatTabScreen(),
-        ProfileTabScreen(),
-        MapsTabScreen(),
-      ];
+  late final List<Widget> _pages = const [
+    HomeTabScreen(),
+    ChatTabScreen(),
+    ProfileTabScreen(),
+    MapsTabScreen(),
+  ];
 
   Future<void> _onNavTap(int index) async {
     if (index == _mapsIndex) {
@@ -76,7 +78,13 @@ class _MainShellState extends State<MainShell> {
       return;
     }
 
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _selectedIndex = index;
+      _isTabFading = true;
+    });
+    await Future<void>.delayed(const Duration(milliseconds: 180));
+    if (!mounted) return;
+    setState(() => _isTabFading = false);
   }
 
   @override
@@ -87,19 +95,18 @@ class _MainShellState extends State<MainShell> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 320),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            transitionBuilder: (child, animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-            child: KeyedSubtree(
-              key: ValueKey<int>(_selectedIndex),
-              child: _pages[_selectedIndex],
+          IndexedStack(
+            index: _selectedIndex,
+            children: _pages,
+          ),
+          IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _isTabFading ? 1 : 0,
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.06),
+              ),
             ),
           ),
           Positioned(
