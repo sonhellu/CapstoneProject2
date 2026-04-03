@@ -42,7 +42,9 @@ dependencies:
   flutter_svg: ^2.0.17
   shared_preferences: ^2.5.3
   shimmer: ^3.0.0
+  http: ^1.2.2
   google_fonts: ^6.2.1
+  carousel_slider: ^5.0.0
   flutter_naver_map: ^1.4.4
   geolocator: ^14.0.2
   permission_handler: ^12.0.1

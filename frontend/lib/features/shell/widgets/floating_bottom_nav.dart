@@ -15,7 +15,7 @@ class NavItemData {
   final String label;
 }
 
-/// Bottom bar nổi — bo góc, shadow mềm, nhãn Noto Sans KR.
+/// Bottom bar phẳng kiểu Instagram/Facebook — edge-to-edge, không bo góc.
 class FloatingBottomNav extends StatelessWidget {
   const FloatingBottomNav({
     super.key,
@@ -41,29 +41,9 @@ class FloatingBottomNav extends StatelessWidget {
     );
 
     return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-        decoration: BoxDecoration(
-          color: ShellColors.surface,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: ShellColors.primaryBlue.withValues(alpha: 0.12),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          border: Border.all(
-            color: ShellColors.background,
-            width: 1,
-          ),
-        ),
+      color: ShellColors.surface,
+      child: SizedBox(
+        height: 55,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: List.generate(items.length, (i) {
@@ -73,33 +53,22 @@ class FloatingBottomNav extends StatelessWidget {
 
             return Expanded(
               child: InkWell(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(8),
                 onTap: () => onTap(i),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Stack(
                         clipBehavior: Clip.none,
                         children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOutCubic,
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? ShellColors.primaryBlue.withValues(alpha: 0.12)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Icon(
-                              selected ? item.activeIcon : item.icon,
-                              size: 24,
-                              color: selected
-                                  ? ShellColors.primaryBlue
-                                  : ShellColors.navInactive,
-                            ),
+                          Icon(
+                            selected ? item.activeIcon : item.icon,
+                            size: 26,
+                            color: selected
+                                ? ShellColors.primaryBlue
+                                : ShellColors.navInactive,
                           ),
                           if (isChat && (chatBadgeCount ?? 0) > 0)
                             Positioned(
@@ -145,8 +114,9 @@ class FloatingBottomNav extends StatelessWidget {
                           color: selected
                               ? ShellColors.primaryBlue
                               : ShellColors.navInactive,
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: selected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                         ),
                         child: Text(
                           item.label,

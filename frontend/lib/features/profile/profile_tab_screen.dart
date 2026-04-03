@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/widgets/language_picker_button.dart';
+
 // ─────────────────────────── Constants ───────────────────────────
 abstract final class _C {
   static const primary = Color(0xFF003478);
@@ -147,6 +149,40 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
   void _cancelEdit() => setState(() => _isEditMode = false);
 
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Sign Out',
+          style: GoogleFonts.notoSansKr(
+              fontWeight: FontWeight.w700, color: _C.textDark),
+        ),
+        content: Text(
+          'Are you sure you want to sign out?',
+          style: GoogleFonts.notoSansKr(fontSize: 14, color: _C.textGrey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel',
+                style: GoogleFonts.notoSansKr(color: _C.textGrey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Sign Out',
+                style: GoogleFonts.notoSansKr(
+                    color: Colors.red, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      // TODO: replace with real auth sign-out
+    }
+  }
+
   Future<void> _saveChanges() async {
     setState(() => _isSaving = true);
     await Future.delayed(const Duration(milliseconds: 900));
@@ -187,8 +223,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     return Scaffold(
       backgroundColor: _C.background,
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+          padding: EdgeInsets.fromLTRB(
+            20, 24, 20,
+            kBottomNavigationBarHeight +
+                MediaQuery.of(context).padding.bottom +
+                20,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -261,6 +303,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                         isVerified: _isVerified,
                       ),
               ),
+              if (!_isEditMode) ...[
+                const SizedBox(height: 20),
+                _LogoutButton(onTap: _confirmLogout),
+              ],
             ],
           ),
         ),
@@ -272,6 +318,34 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   Widget _buildHeader() {
     return Column(
       children: [
+        // ── Language button row ──
+        Align(
+          alignment: Alignment.centerRight,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => LanguageBottomSheet.show(context),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.language_rounded,
+                      size: 18, color: _C.primary),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Language',
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _C.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
         Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.center,
@@ -779,6 +853,35 @@ class _SaveButton extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────── Logout Button ───────────────────────────
+class _LogoutButton extends StatelessWidget {
+  const _LogoutButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      child: OutlinedButton.icon(
+        onPressed: onTap,
+        icon: const Icon(Icons.logout_rounded, size: 18, color: Colors.red),
+        label: Text(
+          'Sign Out',
+          style: GoogleFonts.notoSansKr(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: Colors.red,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          shape: const StadiumBorder(),
+          side: const BorderSide(color: Colors.red, width: 1.5),
+        ),
       ),
     );
   }
