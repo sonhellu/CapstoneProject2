@@ -6,8 +6,17 @@ import 'package:capstone_frontend/app/capstone_app.dart';
 import 'package:capstone_frontend/core/locale/locale_controller.dart';
 import 'package:capstone_frontend/core/naver_map/naver_map_sdk_controller.dart';
 import 'package:capstone_frontend/features/auth/providers/auth_provider.dart';
+import 'package:capstone_frontend/features/chat/services/chat_service.dart';
 
 void main() {
+  setUp(() {
+    chatServiceMockNetworkDelayEnabled = false;
+  });
+
+  tearDown(() {
+    chatServiceMockNetworkDelayEnabled = true;
+  });
+
   testWidgets('Đăng nhập vào màn shell chính', (WidgetTester tester) async {
     await tester.pumpWidget(
       MultiProvider(
@@ -34,6 +43,6 @@ void main() {
     await tester.tap(find.byKey(const Key('login_submit')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Trang chủ'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
   });
 }

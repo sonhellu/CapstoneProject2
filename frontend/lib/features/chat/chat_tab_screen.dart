@@ -131,7 +131,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                             padding:
                                 EdgeInsets.only(bottom: navBarHeight + 16),
                             itemCount: _filtered.length,
-                            separatorBuilder: (_, __) => const Divider(
+                            separatorBuilder: (_, _) => const Divider(
                               height: 1,
                               indent: 80,
                               color: _T.divider,
@@ -279,9 +279,9 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   Widget _buildSkeleton() {
     return ListView.separated(
       itemCount: 5,
-      separatorBuilder: (_, __) =>
+      separatorBuilder: (_, _) =>
           const Divider(height: 1, indent: 80, color: _T.divider),
-      itemBuilder: (_, __) => const _SkeletonTile(),
+      itemBuilder: (_, _) => const _SkeletonTile(),
     );
   }
 }

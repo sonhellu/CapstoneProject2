@@ -10,7 +10,6 @@ import 'services/chat_service.dart';
 // ─────────────────────────── Design Tokens ───────────────────────────
 abstract final class _T {
   static const primary = Color(0xFF003478);
-  static const primaryLight = Color(0xFF1A4F9C);
   static const background = Color(0xFFF0F2F5);
   static const surface = Colors.white;
   static const textDark = Color(0xFF1A1A1A);
