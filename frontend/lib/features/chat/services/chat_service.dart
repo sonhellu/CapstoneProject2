@@ -2,6 +2,14 @@ import 'dart:async';
 
 import '../models/chat_models.dart';
 
+/// Set to `false` in `flutter test` to avoid pending timers from mock delays.
+bool chatServiceMockNetworkDelayEnabled = true;
+
+Future<void> _mockNetworkDelay(Duration duration) async {
+  if (!chatServiceMockNetworkDelayEnabled) return;
+  await Future<void>.delayed(duration);
+}
+
 // ─────────────────────────── Mock Data ───────────────────────────
 
 const _mockPartners = [
@@ -222,14 +230,14 @@ class ChatService {
 
   /// GET /api/chats
   Future<List<ChatModel>> getChatList() async {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
+    await _mockNetworkDelay(const Duration(milliseconds: 600));
     return List.from(_mockChats);
   }
 
   /// GET /api/chats/{id}/messages?page={page}
   Future<List<MessageModel>> getMessages(String chatId,
       {int page = 1}) async {
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    await _mockNetworkDelay(const Duration(milliseconds: 500));
     final messages = _mockMessages[chatId] ?? [];
     // Simulate pagination — older messages on page 2+
     if (page == 2) {
@@ -253,7 +261,7 @@ class ChatService {
 
   /// POST /api/messages
   Future<MessageModel> sendMessage(String chatId, String content) async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
+    await _mockNetworkDelay(const Duration(milliseconds: 200));
     final msg = MessageModel(
       id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
       senderId: 'me',
@@ -276,7 +284,7 @@ class ChatService {
     required Gender gender,
     required String language,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 800));
+    await _mockNetworkDelay(const Duration(milliseconds: 800));
     return _mockPartners.where((p) {
       final genderMatch =
           gender == Gender.any || p.gender == gender;
@@ -288,7 +296,7 @@ class ChatService {
 
   /// POST /api/partners/{id}/request
   Future<void> sendRequest(String partnerId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
+    await _mockNetworkDelay(const Duration(milliseconds: 600));
     // Production: POST to backend, backend sends push notification to partner
   }
 }
