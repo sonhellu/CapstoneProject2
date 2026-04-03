@@ -1,196 +1,350 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import 'package:capstone_frontend/l10n/app_localizations.dart';
-import '../locale/app_language_option.dart';
+import '../locale/language_model.dart';
 import '../locale/locale_controller.dart';
 
-/// Nút góc phải: [Icons.language] mở bottom sheet chọn ngôn ngữ (flutter gen-l10n).
+// ─────────────────────────── Design Tokens ───────────────────────────
+abstract final class _T {
+  static const primary = Color(0xFF003478);
+  static const selectedBg = Color(0xFFE6EBF2);
+  static const textDark = Color(0xFF1A1A1A);
+  static const textGrey = Color(0xFF6B7280);
+  static const divider = Color(0xFFF0F0F0);
+}
+
+// ─────────────────────────── Trigger Button ───────────────────────────
+
+/// Icon button đặt ở AppBar hoặc Profile — mở [LanguageBottomSheet].
 class LanguagePickerButton extends StatelessWidget {
   const LanguagePickerButton({super.key});
 
-  static bool _localeEquals(Locale a, Locale b) =>
-      a.languageCode == b.languageCode &&
-      (a.countryCode ?? '') == (b.countryCode ?? '');
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: 'Select Language',
+      onPressed: () => LanguageBottomSheet.show(context),
+      icon: const Icon(Icons.language_rounded),
+      color: Theme.of(context).colorScheme.onSurface,
+    );
+  }
+}
 
-  Future<void> _openSheet(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final controller = context.read<LocaleController>();
-    final theme = Theme.of(context);
+// ─────────────────────────── Bottom Sheet ───────────────────────────
 
-    await showModalBottomSheet<void>(
+class LanguageBottomSheet extends StatefulWidget {
+  const LanguageBottomSheet._();
+
+  /// Mở bottom sheet chọn ngôn ngữ. Dùng hàm này thay vì tạo widget trực tiếp.
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: theme.colorScheme.surface,
-      shape: const RoundedRectangleBorder(
+      backgroundColor: Colors.transparent,
+      builder: (_) => const LanguageBottomSheet._(),
+    );
+  }
+
+  @override
+  State<LanguageBottomSheet> createState() => _LanguageBottomSheetState();
+}
+
+class _LanguageBottomSheetState extends State<LanguageBottomSheet> {
+  late LanguageModel _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    final currentLocale = context.read<LocaleController>().locale;
+    _selected = _findMatch(currentLocale);
+  }
+
+  /// Tìm LanguageModel khớp với locale hiện tại.
+  LanguageModel _findMatch(Locale locale) {
+    return LanguageModel.all.firstWhere(
+      (m) => m.languageCode == locale.languageCode,
+      orElse: () => LanguageModel.systemDefault,
+    );
+  }
+
+  /// Áp dụng ngôn ngữ đã chọn và đóng sheet.
+  Future<void> _confirm() async {
+    HapticFeedback.mediumImpact();
+    final controller = context.read<LocaleController>();
+
+    if (_selected.isSystemDefault) {
+      // Dùng locale thiết bị — lấy từ WidgetsBinding
+      final deviceLocale =
+          WidgetsBinding.instance.platformDispatcher.locale;
+      await controller.setLocale(deviceLocale);
+    } else {
+      await controller.setLocale(_selected.locale);
+    }
+
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (sheetContext) {
-        final current = controller.locale;
-        final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
-        final maxH = MediaQuery.sizeOf(sheetContext).height * 0.58;
+      padding: EdgeInsets.only(bottom: bottomInset + safeBottom + 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildHandle(),
+          _buildTitle(),
+          const Divider(height: 1, thickness: 1, color: _T.divider),
+          _buildLanguageList(),
+          _buildConfirmButton(),
+        ],
+      ),
+    );
+  }
 
-        return TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: 1),
-          duration: const Duration(milliseconds: 260),
-          curve: Curves.easeOutCubic,
-          builder: (context, t, child) {
-            return Opacity(
-              opacity: t,
-              child: Transform.translate(
-                offset: Offset(0, 10 * (1 - t)),
-                child: child,
-              ),
-            );
-          },
-          child: Padding(
-            padding: EdgeInsets.only(bottom: bottomInset + 8),
+  // ─── Drag Handle ───
+  Widget _buildHandle() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 4),
+      child: Container(
+        width: 36,
+        height: 4,
+        decoration: BoxDecoration(
+          color: const Color(0xFFDDDDDD),
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+
+  // ─── Title Row ───
+  Widget _buildTitle() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 16, 16),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: _T.primary.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.language_rounded,
+              color: _T.primary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 4, 8, 8),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.language_rounded,
-                        color: theme.colorScheme.primary,
-                        size: 26,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          l10n.languageSheetTitle,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(sheetContext),
-                        icon: const Icon(Icons.close_rounded),
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ],
+                Text(
+                  'Select Language',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: _T.textDark,
                   ),
                 ),
-                Divider(
-                  height: 1,
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
-                ),
-                ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: maxH),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: AppLanguageOption.all.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 2),
-                    itemBuilder: (context, i) {
-                      final opt = AppLanguageOption.all[i];
-                      final selected = _localeEquals(opt.locale, current);
-                      return _LanguageTile(
-                        option: opt,
-                        selected: selected,
-                        onTap: () async {
-                          HapticFeedback.selectionClick();
-                          await controller.setLocale(opt.locale);
-                          if (sheetContext.mounted) {
-                            Navigator.pop(sheetContext);
-                          }
-                          HapticFeedback.lightImpact();
-                        },
-                      );
-                    },
+                Text(
+                  'Choose your preferred app language',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 12,
+                    color: _T.textGrey,
                   ),
                 ),
               ],
             ),
           ),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close_rounded, color: _T.textGrey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Language List ───
+  Widget _buildLanguageList() {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: LanguageModel.all.length,
+      separatorBuilder: (context, i) => i == 0
+          ? const Divider(
+              height: 1,
+              thickness: 1,
+              indent: 20,
+              endIndent: 20,
+              color: _T.divider,
+            )
+          : const SizedBox.shrink(),
+      itemBuilder: (context, i) {
+        final lang = LanguageModel.all[i];
+        final isSelected = _selected.languageCode == lang.languageCode;
+        return _LanguageTile(
+          language: lang,
+          isSelected: isSelected,
+          onTap: () {
+            HapticFeedback.selectionClick();
+            setState(() => _selected = lang);
+          },
         );
       },
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return IconButton(
-      tooltip: l10n.languagePickerTooltip,
-      onPressed: () => _openSheet(context),
-      icon: Icon(
-        Icons.language_rounded,
-        color: Theme.of(context).colorScheme.onSurface,
+  // ─── Confirm Button ───
+  Widget _buildConfirmButton() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _confirm,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _T.primary,
+            foregroundColor: Colors.white,
+            shape: const StadiumBorder(),
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            elevation: 0,
+          ),
+          child: Text(
+            'Confirm',
+            style: GoogleFonts.notoSansKr(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
+// ─────────────────────────── Language Tile ───────────────────────────
+
 class _LanguageTile extends StatelessWidget {
   const _LanguageTile({
-    required this.option,
-    required this.selected,
+    required this.language,
+    required this.isSelected,
     required this.onTap,
   });
 
-  final AppLanguageOption option;
-  final bool selected;
+  final LanguageModel language;
+  final bool isSelected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Material(
-      color: Colors.transparent,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      color: isSelected ? _T.selectedBg : Colors.white,
       child: InkWell(
         onTap: onTap,
+        splashColor: _T.primary.withValues(alpha: 0.08),
+        highlightColor: _T.primary.withValues(alpha: 0.04),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
           child: Row(
             children: [
-              Text(
-                option.flagEmoji,
-                style: const TextStyle(fontSize: 28),
+              // ── Flag circle ──
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected
+                      ? _T.primary.withValues(alpha: 0.08)
+                      : const Color(0xFFF5F7FA),
+                  border: isSelected
+                      ? Border.all(
+                          color: _T.primary.withValues(alpha: 0.25),
+                          width: 1.5,
+                        )
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  language.flagEmoji,
+                  style: const TextStyle(fontSize: 22),
+                ),
               ),
               const SizedBox(width: 14),
+              // ── Labels ──
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      option.nativeLabel,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
+                      language.nativeLabel,
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 15,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isSelected ? _T.primary : _T.textDark,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      option.subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                    if (!language.isSystemDefault) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        language.languageName,
+                        style: GoogleFonts.notoSansKr(
+                          fontSize: 12,
+                          color: _T.textGrey,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
+              // ── Check icon ──
               AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
-                child: selected
-                    ? Icon(
-                        Icons.check_circle_rounded,
-                        key: const ValueKey('on'),
-                        color: theme.colorScheme.primary,
-                        size: 24,
-                      )
-                    : SizedBox(
-                        key: const ValueKey('off'),
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, anim) => ScaleTransition(
+                  scale: anim,
+                  child: child,
+                ),
+                child: isSelected
+                    ? Container(
+                        key: const ValueKey('checked'),
                         width: 24,
                         height: 24,
+                        decoration: const BoxDecoration(
+                          color: _T.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 15,
+                        ),
+                      )
+                    : Container(
+                        key: const ValueKey('unchecked'),
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFDDE3EA),
+                            width: 1.5,
+                          ),
+                        ),
                       ),
               ),
             ],

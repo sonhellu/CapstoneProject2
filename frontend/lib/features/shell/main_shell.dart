@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../core/widgets/language_picker_button.dart';
 import '../chat/chat_tab_screen.dart';
 import '../home/home_tab_screen.dart';
 import '../maps/maps_tab_screen.dart';
@@ -20,7 +19,7 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  static const int _mapsIndex = 3;
+  static const int _mapsIndex = 2;
 
   int _selectedIndex = 0;
 
@@ -43,22 +42,22 @@ class _MainShellState extends State<MainShell> {
       label: 'Chat',
     ),
     NavItemData(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Profile',
-    ),
-    NavItemData(
       icon: Icons.map_outlined,
       activeIcon: Icons.map_rounded,
       label: 'Maps',
+    ),
+    NavItemData(
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+      label: 'Profile',
     ),
   ];
 
   late final List<Widget> _pages = const [
     HomeTabScreen(),
     ChatTabScreen(),
-    ProfileTabScreen(),
     MapsTabScreen(),
+    ProfileTabScreen(),
   ];
 
   Future<void> _onNavTap(int index) async {
@@ -109,34 +108,29 @@ class _MainShellState extends State<MainShell> {
               ),
             ),
           ),
-          Positioned(
-            top: 0,
-            right: 4,
-            child: SafeArea(
-              child: Material(
-                color: Colors.transparent,
-                child: const LanguagePickerButton(),
-              ),
-            ),
-          ),
           if (_isLoadingMap)
             const Positioned.fill(
               child: MapLoadingOverlay(),
             ),
         ],
       ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          0,
-          16,
-          12 + MediaQuery.paddingOf(context).bottom,
-        ),
-        child: FloatingBottomNav(
-          currentIndex: _selectedIndex,
-          onTap: _onNavTap,
-          items: _navItems,
-          chatBadgeCount: 3,
+      bottomNavigationBar: Container(
+        color: Colors.white,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Thin divider — separates content from nav bar (Instagram style)
+            const Divider(height: 1, thickness: 0.5, color: Color(0xFFE0E0E0)),
+            SafeArea(
+              top: false,
+              child: FloatingBottomNav(
+                currentIndex: _selectedIndex,
+                onTap: _onNavTap,
+                items: _navItems,
+                chatBadgeCount: 3,
+              ),
+            ),
+          ],
         ),
       ),
     );
