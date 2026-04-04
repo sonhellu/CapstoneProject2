@@ -1,9 +1,116 @@
 {
   "@@locale": "my",
+
   "appTitle": "Capstone",
   "homeTitle": "ပင်မစာမျက်နှာ",
   "counterLabel": "ခလုတ်ကို နှိပ်ထားသည့်အကြိမ် —",
   "incrementTooltip": "တိုးပါ",
   "languagePickerTooltip": "ဘာသာစကား",
-  "languageSheetTitle": "ဘာသာစကားရွေးပါ"
+  "languageSheetTitle": "ဘာသာစကားရွေးပါ",
+
+  "navHome": "ပင်မ",
+  "navMap": "မြေပုံ",
+  "navCommunity": "အသိုင်းအဝိုင်း",
+  "navMyPage": "ကျွန်ုပ်",
+
+  "mapSearchHere": "ဤနေရာ ရှာဖွေပါ",
+  "mapMyLocation": "ကျွန်ုပ်တည်နေရာ",
+  "mapPinSpot": "ဤနေရာ ပင်ထိုးပါ",
+  "mapGetDirections": "လမ်းညွှန် ရယူပါ",
+  "mapDirections": "လမ်းညွှန်",
+
+  "btnConfirm": "အတည်ပြု",
+  "btnCancel": "မလုပ်တော့",
+  "btnSave": "သိမ်းဆည်း",
+  "btnEdit": "တည်းဖြတ်",
+  "btnDelete": "ဖျက်ပါ",
+  "btnClose": "ပိတ်",
+  "btnNext": "နောက်",
+  "btnBack": "နောက်သို့",
+
+  "filterAll": "အားလုံး",
+  "filterRestaurants": "စားသောက်ဆိုင်",
+  "filterRealEstate": "အိမ်ခြံမြေ",
+  "filterConvenience": "အဆင်ပြေဆိုင်",
+  "filterAtm": "ATM",
+
+  "statusLoadingMap": "မြေပုံ ဖွင့်နေသည်…",
+  "statusLocating": "တည်နေရာ ရှာနေသည်…",
+  "statusPermissionDenied": "ခွင့်ပြုချက် ငြင်းဆန်ခံရသည်",
+  "statusEnableGps": "GPS ဖွင့်ပါ",
+
+  "foodMenu": "မီနူး",
+  "foodPrice": "စျေးနှုန်း",
+  "foodHours": "ဖွင့်ချိန်",
+  "foodHalal": "ဟာလာ",
+  "foodVeggie": "သက်သတ်လွတ်",
+  "foodAuthentic": "စစ်မှန်",
+
+  "housingRent": "အငှားခ",
+  "housingDeposit": "အပေါင်",
+  "housingFee": "စီမံခ",
+  "housingNoDeposit": "အပေါင်မလို",
+  "housingStationNearby": "ဘူတာနီး",
+
+  "actionCall": "ဖုန်းဆက်",
+  "actionMessage": "စာပို့",
+  "actionReview": "သုံးသပ်",
+  "actionShare": "မျှဝေ",
+  "actionPhoto": "ဓာတ်ပုံ",
+
+  "distanceAway": "{distance} ကွာ",
+  "@distanceAway": {
+    "placeholders": { "distance": { "type": "String", "example": "500m" } }
+  },
+  "minWalk": "လမ်းလျှောက် {time} မိနစ်",
+  "@minWalk": {
+    "placeholders": { "time": { "type": "String", "example": "5" } }
+  },
+
+  "alertEnterName": "နာမည်ထည့်ပါ",
+  "alertWrongPhone": "ဖုန်းနံပါတ်မှား",
+  "alertNotFound": "မတွေ့ပါ",
+  "alertTryAgain": "ထပ်ကြိုးစားပါ",
+  "alertLoginFirst": "အရင်ဝင်ပါ",
+
+  "profileMyProfile": "ကျွန်ုပ်ပရိုဖိုင်",
+  "profileEdit": "ပရိုဖိုင်တည်းဖြတ်",
+  "profileMyPosts": "ကျွန်ုပ်ပို့စ်များ",
+  "profileSavedPlaces": "သိမ်းဆည်းထားသောနေရာ",
+  "profileLogout": "ထွက်မည်",
+  "profileDeleteAccount": "အကောင့်ဖျက်မည်",
+
+  "chatMessages": "စာတိုများ",
+  "chatTyping": "ရိုက်နေသည်…",
+  "chatSent": "ပို့ပြီး",
+  "chatDelivered": "ရောက်ပြီး",
+  "chatRead": "ဖတ်ပြီး",
+  "chatCall": "ဖုန်းဆက်",
+  "chatStartConversation": "စကားစပ်လိုက်ပါ",
+
+  "communityPostStory": "ပို့စ်တင်ပါ",
+  "communityWhatsOnMind": "ဘာတွေးနေသလဲ?",
+  "communityPublic": "အများသိ",
+  "communityPrivate": "ကိုယ်တိုင်သာ",
+  "communityAnonymous": "အမည်မဖော်",
+  "communityReport": "တိုင်ကြားပါ",
+
+  "settingsLanguage": "ဘာသာစကား",
+  "settingsNotifications": "အကြောင်းကြားချက်",
+  "settingsDarkMode": "မှောင်မိုက်မုဒ်",
+  "settingsTerms": "ဝန်ဆောင်မှုစည်းမျဉ်း",
+  "settingsPrivacy": "ကိုယ်ရေးလုံခြုံမှုမူဝါဒ",
+  "settingsHelp": "အကူအညီဌာန",
+  "settingsVersion": "ဗားရှင်း",
+
+  "timeJustNow": "ယခုလေးတင်",
+  "timeMinAgo": "{count, plural, other{{count} မိနစ်က}}",
+  "@timeMinAgo": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "timeHourAgo": "{count, plural, other{{count} နာရီက}}",
+  "@timeHourAgo": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "timeYesterday": "မနေ့က"
 }

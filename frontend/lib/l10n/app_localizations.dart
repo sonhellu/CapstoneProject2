@@ -141,6 +141,480 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose language'**
   String get languageSheetTitle;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get navMap;
+
+  /// No description provided for @navCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get navCommunity;
+
+  /// No description provided for @navMyPage.
+  ///
+  /// In en, this message translates to:
+  /// **'My Page'**
+  String get navMyPage;
+
+  /// No description provided for @mapSearchHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Search here'**
+  String get mapSearchHere;
+
+  /// No description provided for @mapMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'My Location'**
+  String get mapMyLocation;
+
+  /// No description provided for @mapPinSpot.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin this spot'**
+  String get mapPinSpot;
+
+  /// No description provided for @mapGetDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Get directions'**
+  String get mapGetDirections;
+
+  /// No description provided for @mapDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get mapDirections;
+
+  /// No description provided for @btnConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get btnConfirm;
+
+  /// No description provided for @btnCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get btnCancel;
+
+  /// No description provided for @btnSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get btnSave;
+
+  /// No description provided for @btnEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get btnEdit;
+
+  /// No description provided for @btnDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get btnDelete;
+
+  /// No description provided for @btnClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get btnClose;
+
+  /// No description provided for @btnNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get btnNext;
+
+  /// No description provided for @btnBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get btnBack;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @filterRestaurants.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurants'**
+  String get filterRestaurants;
+
+  /// No description provided for @filterRealEstate.
+  ///
+  /// In en, this message translates to:
+  /// **'Real Estate'**
+  String get filterRealEstate;
+
+  /// No description provided for @filterConvenience.
+  ///
+  /// In en, this message translates to:
+  /// **'Convenience'**
+  String get filterConvenience;
+
+  /// No description provided for @filterAtm.
+  ///
+  /// In en, this message translates to:
+  /// **'ATMs'**
+  String get filterAtm;
+
+  /// No description provided for @statusLoadingMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading map…'**
+  String get statusLoadingMap;
+
+  /// No description provided for @statusLocating.
+  ///
+  /// In en, this message translates to:
+  /// **'Locating…'**
+  String get statusLocating;
+
+  /// No description provided for @statusPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission denied'**
+  String get statusPermissionDenied;
+
+  /// No description provided for @statusEnableGps.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enable GPS'**
+  String get statusEnableGps;
+
+  /// Food detail: menu label
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get foodMenu;
+
+  /// Food detail: price label
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get foodPrice;
+
+  /// Food detail: opening hours
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get foodHours;
+
+  /// Food badge: halal certified
+  ///
+  /// In en, this message translates to:
+  /// **'Halal'**
+  String get foodHalal;
+
+  /// Food badge: vegetarian options
+  ///
+  /// In en, this message translates to:
+  /// **'Veggie'**
+  String get foodVeggie;
+
+  /// Food badge: home-country cuisine
+  ///
+  /// In en, this message translates to:
+  /// **'Authentic'**
+  String get foodAuthentic;
+
+  /// Housing: monthly rent (월세)
+  ///
+  /// In en, this message translates to:
+  /// **'Rent'**
+  String get housingRent;
+
+  /// Housing: security deposit (보증금)
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get housingDeposit;
+
+  /// Housing: management fee (관리비)
+  ///
+  /// In en, this message translates to:
+  /// **'Mgmt Fee'**
+  String get housingFee;
+
+  /// Housing badge: no deposit required
+  ///
+  /// In en, this message translates to:
+  /// **'No Deposit'**
+  String get housingNoDeposit;
+
+  /// Housing badge: close to subway
+  ///
+  /// In en, this message translates to:
+  /// **'Near Station'**
+  String get housingStationNearby;
+
+  /// Action button: phone call
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get actionCall;
+
+  /// Action button: send message
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get actionMessage;
+
+  /// Action button: write review
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get actionReview;
+
+  /// Action button: share place
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get actionShare;
+
+  /// Action button: view photos
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get actionPhoto;
+
+  /// Distance from current location
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} away'**
+  String distanceAway(String distance);
+
+  /// Walking time
+  ///
+  /// In en, this message translates to:
+  /// **'{time} min walk'**
+  String minWalk(String time);
+
+  /// Validation: name field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Enter name'**
+  String get alertEnterName;
+
+  /// Validation: phone number is invalid
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong number'**
+  String get alertWrongPhone;
+
+  /// Search result: nothing found
+  ///
+  /// In en, this message translates to:
+  /// **'Not found'**
+  String get alertNotFound;
+
+  /// Generic retry prompt
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get alertTryAgain;
+
+  /// Auth gate: must be logged in
+  ///
+  /// In en, this message translates to:
+  /// **'Login first'**
+  String get alertLoginFirst;
+
+  /// Profile screen: section title
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get profileMyProfile;
+
+  /// Profile: open edit mode
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get profileEdit;
+
+  /// Profile: user's own posts
+  ///
+  /// In en, this message translates to:
+  /// **'My Posts'**
+  String get profileMyPosts;
+
+  /// Profile: bookmarked map pins
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Places'**
+  String get profileSavedPlaces;
+
+  /// Profile: sign out
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get profileLogout;
+
+  /// Profile: permanently remove account
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get profileDeleteAccount;
+
+  /// Chat tab / inbox title
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get chatMessages;
+
+  /// Chat: other user is composing
+  ///
+  /// In en, this message translates to:
+  /// **'Typing…'**
+  String get chatTyping;
+
+  /// Message status: sent to server
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get chatSent;
+
+  /// Message status: reached recipient device
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get chatDelivered;
+
+  /// Message status: opened by recipient
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get chatRead;
+
+  /// Chat: voice/video call button
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get chatCall;
+
+  /// Empty chat state prompt
+  ///
+  /// In en, this message translates to:
+  /// **'Start a conversation'**
+  String get chatStartConversation;
+
+  /// Community: create a new post CTA
+  ///
+  /// In en, this message translates to:
+  /// **'Post a story'**
+  String get communityPostStory;
+
+  /// Community: post input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s on your mind?'**
+  String get communityWhatsOnMind;
+
+  /// Post visibility: everyone can see
+  ///
+  /// In en, this message translates to:
+  /// **'Public'**
+  String get communityPublic;
+
+  /// Post visibility: only me
+  ///
+  /// In en, this message translates to:
+  /// **'Private'**
+  String get communityPrivate;
+
+  /// Post option: hide identity
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous'**
+  String get communityAnonymous;
+
+  /// Community: flag content
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get communityReport;
+
+  /// Settings: language picker row
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// Settings: push notification toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsNotifications;
+
+  /// Settings: theme toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get settingsDarkMode;
+
+  /// Settings: ToS link
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get settingsTerms;
+
+  /// Settings: privacy policy link
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get settingsPrivacy;
+
+  /// Settings: support / FAQ
+  ///
+  /// In en, this message translates to:
+  /// **'Help Center'**
+  String get settingsHelp;
+
+  /// Settings: app version label
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get settingsVersion;
+
+  /// Timestamp: posted seconds ago
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get timeJustNow;
+
+  /// Timestamp: N minutes ago
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 min ago} other{{count} mins ago}}'**
+  String timeMinAgo(num count);
+
+  /// Timestamp: N hours ago
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hour ago} other{{count} hours ago}}'**
+  String timeHourAgo(num count);
+
+  /// Timestamp: posted yesterday
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get timeYesterday;
 }
 
 class _AppLocalizationsDelegate
