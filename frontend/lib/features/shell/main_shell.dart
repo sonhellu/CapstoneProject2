@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../chat/chat_tab_screen.dart';
 import '../home/home_tab_screen.dart';
 import '../maps/maps_tab_screen.dart';
@@ -12,7 +13,13 @@ import 'widgets/map_loading_overlay.dart';
 
 /// Shell chính: 4 tab + bottom bar nổi + delay khi mở Maps.
 class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+  const MainShell({
+    super.key,
+    this.homeCarouselAutoPlay = true,
+  });
+
+  /// Passed to [HomeTabScreen]; set to `false` in widget tests.
+  final bool homeCarouselAutoPlay;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -30,34 +37,12 @@ class _MainShellState extends State<MainShell> {
 
   final math.Random _random = math.Random();
 
-  static const List<NavItemData> _navItems = [
-    NavItemData(
-      icon: Icons.home_outlined,
-      activeIcon: Icons.home_rounded,
-      label: 'Home',
-    ),
-    NavItemData(
-      icon: Icons.chat_bubble_outline_rounded,
-      activeIcon: Icons.chat_rounded,
-      label: 'Chat',
-    ),
-    NavItemData(
-      icon: Icons.map_outlined,
-      activeIcon: Icons.map_rounded,
-      label: 'Maps',
-    ),
-    NavItemData(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Profile',
-    ),
-  ];
 
-  late final List<Widget> _pages = const [
-    HomeTabScreen(),
-    ChatTabScreen(),
-    MapsTabScreen(),
-    ProfileTabScreen(),
+  late final List<Widget> _pages = [
+    HomeTabScreen(bannerCarouselAutoPlay: widget.homeCarouselAutoPlay),
+    const ChatTabScreen(),
+    const MapsTabScreen(),
+    const ProfileTabScreen(),
   ];
 
   Future<void> _onNavTap(int index) async {
@@ -88,6 +73,30 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final navItems = [
+      NavItemData(
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home_rounded,
+        label: l.navHome,
+      ),
+      NavItemData(
+        icon: Icons.chat_bubble_outline_rounded,
+        activeIcon: Icons.chat_rounded,
+        label: l.navCommunity,
+      ),
+      NavItemData(
+        icon: Icons.map_outlined,
+        activeIcon: Icons.map_rounded,
+        label: l.navMap,
+      ),
+      NavItemData(
+        icon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
+        label: l.navMyPage,
+      ),
+    ];
+
     return Scaffold(
       backgroundColor: ShellColors.background,
       extendBody: true,
@@ -126,7 +135,7 @@ class _MainShellState extends State<MainShell> {
               child: FloatingBottomNav(
                 currentIndex: _selectedIndex,
                 onTap: _onNavTap,
-                items: _navItems,
+                items: navItems,
                 chatBadgeCount: 3,
               ),
             ),

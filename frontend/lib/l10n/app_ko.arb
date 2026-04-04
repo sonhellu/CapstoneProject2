@@ -1,9 +1,116 @@
 {
   "@@locale": "ko",
+
   "appTitle": "Capstone",
   "homeTitle": "홈",
   "counterLabel": "버튼을 누른 횟수:",
   "incrementTooltip": "증가",
   "languagePickerTooltip": "언어",
-  "languageSheetTitle": "언어 선택"
+  "languageSheetTitle": "언어 선택",
+
+  "navHome": "홈",
+  "navMap": "지도",
+  "navCommunity": "커뮤니티",
+  "navMyPage": "마이페이지",
+
+  "mapSearchHere": "이 지역 검색",
+  "mapMyLocation": "내 위치",
+  "mapPinSpot": "이 장소 저장",
+  "mapGetDirections": "길 찾기",
+  "mapDirections": "길 찾기",
+
+  "btnConfirm": "확인",
+  "btnCancel": "취소",
+  "btnSave": "저장",
+  "btnEdit": "수정",
+  "btnDelete": "삭제",
+  "btnClose": "닫기",
+  "btnNext": "다음",
+  "btnBack": "뒤로",
+
+  "filterAll": "전체",
+  "filterRestaurants": "식당",
+  "filterRealEstate": "부동산",
+  "filterConvenience": "편의점",
+  "filterAtm": "ATM",
+
+  "statusLoadingMap": "지도 불러오는 중…",
+  "statusLocating": "위치 확인 중…",
+  "statusPermissionDenied": "권한이 거부되었습니다",
+  "statusEnableGps": "GPS를 켜주세요",
+
+  "foodMenu": "메뉴",
+  "foodPrice": "가격",
+  "foodHours": "영업시간",
+  "foodHalal": "할랄",
+  "foodVeggie": "채식",
+  "foodAuthentic": "현지맛",
+
+  "housingRent": "월세",
+  "housingDeposit": "보증금",
+  "housingFee": "관리비",
+  "housingNoDeposit": "무보증금",
+  "housingStationNearby": "역 근처",
+
+  "actionCall": "전화",
+  "actionMessage": "메시지",
+  "actionReview": "리뷰",
+  "actionShare": "공유",
+  "actionPhoto": "사진",
+
+  "distanceAway": "{distance} 거리",
+  "@distanceAway": {
+    "placeholders": { "distance": { "type": "String", "example": "500m" } }
+  },
+  "minWalk": "도보 {time}분",
+  "@minWalk": {
+    "placeholders": { "time": { "type": "String", "example": "5" } }
+  },
+
+  "alertEnterName": "이름 입력",
+  "alertWrongPhone": "잘못된 번호",
+  "alertNotFound": "찾을 수 없음",
+  "alertTryAgain": "다시 시도",
+  "alertLoginFirst": "로그인 필요",
+
+  "profileMyProfile": "내 프로필",
+  "profileEdit": "프로필 수정",
+  "profileMyPosts": "내 게시물",
+  "profileSavedPlaces": "저장한 장소",
+  "profileLogout": "로그아웃",
+  "profileDeleteAccount": "계정 삭제",
+
+  "chatMessages": "메시지",
+  "chatTyping": "입력 중…",
+  "chatSent": "전송됨",
+  "chatDelivered": "전달됨",
+  "chatRead": "읽음",
+  "chatCall": "통화",
+  "chatStartConversation": "대화를 시작해보세요",
+
+  "communityPostStory": "게시물 올리기",
+  "communityWhatsOnMind": "무슨 생각을 하고 있나요?",
+  "communityPublic": "전체 공개",
+  "communityPrivate": "나만 보기",
+  "communityAnonymous": "익명",
+  "communityReport": "신고",
+
+  "settingsLanguage": "언어",
+  "settingsNotifications": "알림",
+  "settingsDarkMode": "다크 모드",
+  "settingsTerms": "이용약관",
+  "settingsPrivacy": "개인정보 처리방침",
+  "settingsHelp": "고객센터",
+  "settingsVersion": "버전",
+
+  "timeJustNow": "방금",
+  "timeMinAgo": "{count, plural, other{{count}분 전}}",
+  "@timeMinAgo": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "timeHourAgo": "{count, plural, other{{count}시간 전}}",
+  "@timeHourAgo": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "timeYesterday": "어제"
 }

@@ -41,7 +41,14 @@ const _banners = [
 
 // ─────────────────────────── Screen ───────────────────────────
 class HomeTabScreen extends StatefulWidget {
-  const HomeTabScreen({super.key});
+  const HomeTabScreen({
+    super.key,
+    this.bannerCarouselAutoPlay = true,
+  });
+
+  /// When `false`, banner [CarouselSlider] does not auto-advance (e.g. widget
+  /// tests, where autoPlay prevents [WidgetTester.pumpAndSettle] from idling).
+  final bool bannerCarouselAutoPlay;
 
   @override
   State<HomeTabScreen> createState() => _HomeTabScreenState();
@@ -208,7 +215,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               height: 200,
               viewportFraction: 0.9,
               enlargeCenterPage: true,
-              autoPlay: true,
+              autoPlay: widget.bannerCarouselAutoPlay,
               autoPlayInterval: const Duration(seconds: 4),
               autoPlayCurve: Curves.easeInOutCubic,
               onPageChanged: (i, _) => setState(() => _bannerIndex = i),
