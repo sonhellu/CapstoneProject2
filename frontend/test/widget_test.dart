@@ -7,6 +7,8 @@ import 'package:capstone_frontend/core/locale/locale_controller.dart';
 import 'package:capstone_frontend/core/naver_map/naver_map_sdk_controller.dart';
 import 'package:capstone_frontend/features/auth/providers/auth_provider.dart';
 import 'package:capstone_frontend/features/chat/services/chat_service.dart';
+import 'package:capstone_frontend/features/shell/main_shell.dart';
+import 'package:capstone_frontend/l10n/app_localizations.dart';
 
 void main() {
   setUp(() {
@@ -25,24 +27,29 @@ void main() {
           ChangeNotifierProvider(create: (_) => LocaleController()),
           ChangeNotifierProvider(create: (_) => NaverMapSdkController()),
         ],
-        child: const CapstoneApp(),
+        // Production wiring: [CapstoneApp] → [MaterialApp] with
+        // [AppLocalizations.localizationsDelegates] / [supportedLocales];
+        // [LocaleController] supplies [MaterialApp.locale] (default vi).
+        child: const CapstoneApp(homeCarouselAutoPlay: false),
       ),
     );
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byKey(const Key('login_email')),
-      'test@duhoc.vn',
-    );
-    await tester.enterText(
-      find.byKey(const Key('login_password')),
-      'password12',
-    );
+    expect(find.text('Đăng nhập'), findsWidgets);
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'test@duhoc.vn');
+    await tester.enterText(find.byType(TextFormField).at(1), 'password12');
+    await tester.pump();
     await tester.ensureVisible(find.byKey(const Key('login_submit')));
     await tester.pump();
     await tester.tap(find.byKey(const Key('login_submit')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Home'), findsOneWidget);
+    final shellContext = tester.element(find.byType(MainShell));
+    final l10n = AppLocalizations.of(shellContext)!;
+
+    expect(Localizations.localeOf(shellContext), const Locale('vi'));
+    expect(l10n.navHome, 'Trang chủ');
+    expect(find.text(l10n.navHome), findsOneWidget);
   });
 }

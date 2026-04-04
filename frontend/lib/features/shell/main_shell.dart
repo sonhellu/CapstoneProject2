@@ -13,7 +13,13 @@ import 'widgets/map_loading_overlay.dart';
 
 /// Shell chính: 4 tab + bottom bar nổi + delay khi mở Maps.
 class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+  const MainShell({
+    super.key,
+    this.homeCarouselAutoPlay = true,
+  });
+
+  /// Passed to [HomeTabScreen]; set to `false` in widget tests.
+  final bool homeCarouselAutoPlay;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -32,11 +38,11 @@ class _MainShellState extends State<MainShell> {
   final math.Random _random = math.Random();
 
 
-  late final List<Widget> _pages = const [
-    HomeTabScreen(),
-    ChatTabScreen(),
-    MapsTabScreen(),
-    ProfileTabScreen(),
+  late final List<Widget> _pages = [
+    HomeTabScreen(bannerCarouselAutoPlay: widget.homeCarouselAutoPlay),
+    const ChatTabScreen(),
+    const MapsTabScreen(),
+    const ProfileTabScreen(),
   ];
 
   Future<void> _onNavTap(int index) async {
