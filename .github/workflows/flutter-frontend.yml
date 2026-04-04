@@ -23,5 +23,14 @@ jobs:
           channel: stable
       - run: flutter pub get
       - run: flutter gen-l10n
+      - name: Create stub api_keys.dart for CI
+        run: |
+          mkdir -p lib/core/config
+          cat > lib/core/config/api_keys.dart << 'EOF'
+          abstract final class ApiKeys {
+            static const naverClientId     = '';
+            static const naverClientSecret = '';
+          }
+          EOF
       - run: flutter analyze
       - run: flutter test
