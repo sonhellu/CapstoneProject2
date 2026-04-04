@@ -12,7 +12,13 @@ import 'package:capstone_frontend/l10n/app_localizations.dart';
 
 /// Root widget: theme, routing, locale, overlay.
 class CapstoneApp extends StatelessWidget {
-  const CapstoneApp({super.key});
+  const CapstoneApp({
+    super.key,
+    this.homeCarouselAutoPlay = true,
+  });
+
+  /// Forwards to [MainShell] / [HomeTabScreen] (disable in widget tests).
+  final bool homeCarouselAutoPlay;
 
   // ── Dynamic font theme ──────────────────────────────────────────────────
   // Myanmar (my) requires Noto Sans Myanmar for correct Unicode rendering.
@@ -75,7 +81,7 @@ class CapstoneApp extends StatelessWidget {
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {
           if (auth.isAuthenticated) {
-            return const MainShell();
+            return MainShell(homeCarouselAutoPlay: homeCarouselAutoPlay);
           }
           return const AuthScreen();
         },

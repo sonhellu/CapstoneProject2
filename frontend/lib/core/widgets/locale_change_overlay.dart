@@ -4,6 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 // ─────────────────────────── Design Tokens ───────────────────────────
 const _kPrimary = Color(0xFF003478);
 
+/// Fixed determinate progress while switching locale. Indeterminate mode would
+/// spin forever while the overlay remains in the tree under [AnimatedOpacity]
+/// (opacity 0), which breaks [WidgetTester.pumpAndSettle] in tests.
+const double _kLocaleOverlayProgress = 0.45;
+
 // ─────────────────────────── Localized Loading Text ───────────────────────────
 
 /// Loading message shown IN the target language so the user immediately
@@ -60,12 +65,12 @@ class LocaleChangeOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Spinning indicator
               const SizedBox(
                 width: 52,
                 height: 52,
                 child: CircularProgressIndicator(
                   strokeWidth: 3.2,
+                  value: _kLocaleOverlayProgress,
                   valueColor: AlwaysStoppedAnimation<Color>(_kPrimary),
                   backgroundColor: Color(0x1F003478),
                 ),
