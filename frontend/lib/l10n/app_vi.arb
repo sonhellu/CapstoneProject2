@@ -1,9 +1,116 @@
 {
   "@@locale": "vi",
+
   "appTitle": "Capstone",
   "homeTitle": "Trang chủ",
   "counterLabel": "Bạn đã bấm nút số lần:",
   "incrementTooltip": "Tăng",
   "languagePickerTooltip": "Ngôn ngữ",
-  "languageSheetTitle": "Chọn ngôn ngữ"
+  "languageSheetTitle": "Chọn ngôn ngữ",
+
+  "navHome": "Trang chủ",
+  "navMap": "Bản đồ",
+  "navCommunity": "Cộng đồng",
+  "navMyPage": "Cá nhân",
+
+  "mapSearchHere": "Tìm khu vực này",
+  "mapMyLocation": "Vị trí của tôi",
+  "mapPinSpot": "Ghim địa điểm",
+  "mapGetDirections": "Chỉ đường",
+  "mapDirections": "Chỉ đường",
+
+  "btnConfirm": "Xác nhận",
+  "btnCancel": "Hủy",
+  "btnSave": "Lưu",
+  "btnEdit": "Chỉnh sửa",
+  "btnDelete": "Xóa",
+  "btnClose": "Đóng",
+  "btnNext": "Tiếp theo",
+  "btnBack": "Quay lại",
+
+  "filterAll": "Tất cả",
+  "filterRestaurants": "Nhà hàng",
+  "filterRealEstate": "Bất động sản",
+  "filterConvenience": "Tiện lợi",
+  "filterAtm": "ATM",
+
+  "statusLoadingMap": "Đang tải bản đồ…",
+  "statusLocating": "Đang định vị…",
+  "statusPermissionDenied": "Quyền truy cập bị từ chối",
+  "statusEnableGps": "Vui lòng bật GPS",
+
+  "foodMenu": "Thực đơn",
+  "foodPrice": "Giá",
+  "foodHours": "Giờ mở cửa",
+  "foodHalal": "Halal",
+  "foodVeggie": "Chay",
+  "foodAuthentic": "Chuẩn vị",
+
+  "housingRent": "Tiền thuê",
+  "housingDeposit": "Đặt cọc",
+  "housingFee": "Phí QL",
+  "housingNoDeposit": "Không cọc",
+  "housingStationNearby": "Gần ga",
+
+  "actionCall": "Gọi",
+  "actionMessage": "Nhắn tin",
+  "actionReview": "Đánh giá",
+  "actionShare": "Chia sẻ",
+  "actionPhoto": "Ảnh",
+
+  "distanceAway": "Cách {distance}",
+  "@distanceAway": {
+    "placeholders": { "distance": { "type": "String", "example": "500m" } }
+  },
+  "minWalk": "Đi bộ {time} phút",
+  "@minWalk": {
+    "placeholders": { "time": { "type": "String", "example": "5" } }
+  },
+
+  "alertEnterName": "Nhập tên",
+  "alertWrongPhone": "Sai số ĐT",
+  "alertNotFound": "Không tìm thấy",
+  "alertTryAgain": "Thử lại",
+  "alertLoginFirst": "Đăng nhập trước",
+
+  "profileMyProfile": "Trang cá nhân",
+  "profileEdit": "Chỉnh sửa",
+  "profileMyPosts": "Bài viết của tôi",
+  "profileSavedPlaces": "Địa điểm đã lưu",
+  "profileLogout": "Đăng xuất",
+  "profileDeleteAccount": "Xóa tài khoản",
+
+  "chatMessages": "Tin nhắn",
+  "chatTyping": "Đang nhập…",
+  "chatSent": "Đã gửi",
+  "chatDelivered": "Đã nhận",
+  "chatRead": "Đã xem",
+  "chatCall": "Gọi",
+  "chatStartConversation": "Bắt đầu trò chuyện",
+
+  "communityPostStory": "Đăng bài",
+  "communityWhatsOnMind": "Bạn đang nghĩ gì?",
+  "communityPublic": "Công khai",
+  "communityPrivate": "Riêng tư",
+  "communityAnonymous": "Ẩn danh",
+  "communityReport": "Báo cáo",
+
+  "settingsLanguage": "Ngôn ngữ",
+  "settingsNotifications": "Thông báo",
+  "settingsDarkMode": "Chế độ tối",
+  "settingsTerms": "Điều khoản dịch vụ",
+  "settingsPrivacy": "Chính sách bảo mật",
+  "settingsHelp": "Trung tâm hỗ trợ",
+  "settingsVersion": "Phiên bản",
+
+  "timeJustNow": "Vừa xong",
+  "timeMinAgo": "{count, plural, other{{count} phút trước}}",
+  "@timeMinAgo": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "timeHourAgo": "{count, plural, other{{count} giờ trước}}",
+  "@timeHourAgo": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "timeYesterday": "Hôm qua"
 }

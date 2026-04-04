@@ -1,12 +1,191 @@
 {
   "@@locale": "en",
+
   "appTitle": "Capstone",
-  "@appTitle": {
-    "description": "Application title in task switcher"
-  },
+  "@appTitle": { "description": "Application title in task switcher" },
   "homeTitle": "Home",
   "counterLabel": "You have pushed the button this many times:",
   "incrementTooltip": "Increment",
   "languagePickerTooltip": "Language",
-  "languageSheetTitle": "Choose language"
+  "languageSheetTitle": "Choose language",
+
+  "navHome": "Home",
+  "navMap": "Map",
+  "navCommunity": "Community",
+  "navMyPage": "My Page",
+
+  "mapSearchHere": "Search here",
+  "mapMyLocation": "My Location",
+  "mapPinSpot": "Pin this spot",
+  "mapGetDirections": "Get directions",
+  "mapDirections": "Directions",
+
+  "btnConfirm": "Confirm",
+  "btnCancel": "Cancel",
+  "btnSave": "Save",
+  "btnEdit": "Edit",
+  "btnDelete": "Delete",
+  "btnClose": "Close",
+  "btnNext": "Next",
+  "btnBack": "Back",
+
+  "filterAll": "All",
+  "filterRestaurants": "Restaurants",
+  "filterRealEstate": "Real Estate",
+  "filterConvenience": "Convenience",
+  "filterAtm": "ATMs",
+
+  "statusLoadingMap": "Loading map…",
+  "statusLocating": "Locating…",
+  "statusPermissionDenied": "Permission denied",
+  "statusEnableGps": "Please enable GPS",
+
+  "foodMenu": "Menu",
+  "@foodMenu": { "description": "Food detail: menu label" },
+  "foodPrice": "Price",
+  "@foodPrice": { "description": "Food detail: price label" },
+  "foodHours": "Hours",
+  "@foodHours": { "description": "Food detail: opening hours" },
+  "foodHalal": "Halal",
+  "@foodHalal": { "description": "Food badge: halal certified" },
+  "foodVeggie": "Veggie",
+  "@foodVeggie": { "description": "Food badge: vegetarian options" },
+  "foodAuthentic": "Authentic",
+  "@foodAuthentic": { "description": "Food badge: home-country cuisine" },
+
+  "housingRent": "Rent",
+  "@housingRent": { "description": "Housing: monthly rent (월세)" },
+  "housingDeposit": "Deposit",
+  "@housingDeposit": { "description": "Housing: security deposit (보증금)" },
+  "housingFee": "Mgmt Fee",
+  "@housingFee": { "description": "Housing: management fee (관리비)" },
+  "housingNoDeposit": "No Deposit",
+  "@housingNoDeposit": { "description": "Housing badge: no deposit required" },
+  "housingStationNearby": "Near Station",
+  "@housingStationNearby": { "description": "Housing badge: close to subway" },
+
+  "actionCall": "Call",
+  "@actionCall": { "description": "Action button: phone call" },
+  "actionMessage": "Message",
+  "@actionMessage": { "description": "Action button: send message" },
+  "actionReview": "Review",
+  "@actionReview": { "description": "Action button: write review" },
+  "actionShare": "Share",
+  "@actionShare": { "description": "Action button: share place" },
+  "actionPhoto": "Photo",
+  "@actionPhoto": { "description": "Action button: view photos" },
+
+  "distanceAway": "{distance} away",
+  "@distanceAway": {
+    "description": "Distance from current location",
+    "placeholders": {
+      "distance": { "type": "String", "example": "500m" }
+    }
+  },
+  "minWalk": "{time} min walk",
+  "@minWalk": {
+    "description": "Walking time",
+    "placeholders": {
+      "time": { "type": "String", "example": "5" }
+    }
+  },
+
+  "alertEnterName": "Enter name",
+  "@alertEnterName": { "description": "Validation: name field is empty" },
+  "alertWrongPhone": "Wrong number",
+  "@alertWrongPhone": { "description": "Validation: phone number is invalid" },
+  "alertNotFound": "Not found",
+  "@alertNotFound": { "description": "Search result: nothing found" },
+  "alertTryAgain": "Try again",
+  "@alertTryAgain": { "description": "Generic retry prompt" },
+  "alertLoginFirst": "Login first",
+  "@alertLoginFirst": { "description": "Auth gate: must be logged in" },
+
+  "@@section_profile": {},
+
+  "profileMyProfile": "My Profile",
+  "@profileMyProfile": { "description": "Profile screen: section title" },
+  "profileEdit": "Edit Profile",
+  "@profileEdit": { "description": "Profile: open edit mode" },
+  "profileMyPosts": "My Posts",
+  "@profileMyPosts": { "description": "Profile: user's own posts" },
+  "profileSavedPlaces": "Saved Places",
+  "@profileSavedPlaces": { "description": "Profile: bookmarked map pins" },
+  "profileLogout": "Logout",
+  "@profileLogout": { "description": "Profile: sign out" },
+  "profileDeleteAccount": "Delete Account",
+  "@profileDeleteAccount": { "description": "Profile: permanently remove account" },
+
+  "@@section_chat": {},
+
+  "chatMessages": "Messages",
+  "@chatMessages": { "description": "Chat tab / inbox title" },
+  "chatTyping": "Typing…",
+  "@chatTyping": { "description": "Chat: other user is composing" },
+  "chatSent": "Sent",
+  "@chatSent": { "description": "Message status: sent to server" },
+  "chatDelivered": "Delivered",
+  "@chatDelivered": { "description": "Message status: reached recipient device" },
+  "chatRead": "Read",
+  "@chatRead": { "description": "Message status: opened by recipient" },
+  "chatCall": "Call",
+  "@chatCall": { "description": "Chat: voice/video call button" },
+  "chatStartConversation": "Start a conversation",
+  "@chatStartConversation": { "description": "Empty chat state prompt" },
+
+  "@@section_community": {},
+
+  "communityPostStory": "Post a story",
+  "@communityPostStory": { "description": "Community: create a new post CTA" },
+  "communityWhatsOnMind": "What's on your mind?",
+  "@communityWhatsOnMind": { "description": "Community: post input placeholder" },
+  "communityPublic": "Public",
+  "@communityPublic": { "description": "Post visibility: everyone can see" },
+  "communityPrivate": "Private",
+  "@communityPrivate": { "description": "Post visibility: only me" },
+  "communityAnonymous": "Anonymous",
+  "@communityAnonymous": { "description": "Post option: hide identity" },
+  "communityReport": "Report",
+  "@communityReport": { "description": "Community: flag content" },
+
+  "@@section_settings": {},
+
+  "settingsLanguage": "Language",
+  "@settingsLanguage": { "description": "Settings: language picker row" },
+  "settingsNotifications": "Notifications",
+  "@settingsNotifications": { "description": "Settings: push notification toggle" },
+  "settingsDarkMode": "Dark Mode",
+  "@settingsDarkMode": { "description": "Settings: theme toggle" },
+  "settingsTerms": "Terms of Service",
+  "@settingsTerms": { "description": "Settings: ToS link" },
+  "settingsPrivacy": "Privacy Policy",
+  "@settingsPrivacy": { "description": "Settings: privacy policy link" },
+  "settingsHelp": "Help Center",
+  "@settingsHelp": { "description": "Settings: support / FAQ" },
+  "settingsVersion": "Version",
+  "@settingsVersion": { "description": "Settings: app version label" },
+
+  "@@section_time": {},
+
+  "timeJustNow": "Just now",
+  "@timeJustNow": { "description": "Timestamp: posted seconds ago" },
+
+  "timeMinAgo": "{count, plural, =1{1 min ago} other{{count} mins ago}}",
+  "@timeMinAgo": {
+    "description": "Timestamp: N minutes ago",
+    "placeholders": {
+      "count": { "type": "num", "format": "compact" }
+    }
+  },
+
+  "timeHourAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@timeHourAgo": {
+    "description": "Timestamp: N hours ago",
+    "placeholders": {
+      "count": { "type": "num", "format": "compact" }
+    }
+  },
+
+  "timeYesterday": "Yesterday",
+  "@timeYesterday": { "description": "Timestamp: posted yesterday" }
 }

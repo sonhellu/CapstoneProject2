@@ -12,6 +12,11 @@ class LocaleController extends ChangeNotifier {
   Locale _locale = const Locale('vi');
   Locale get locale => _locale;
 
+  /// The locale we are switching TO while [isLocaleChanging] is true.
+  /// Null when not switching. Used by the overlay to show target-language text.
+  Locale? _pendingLocale;
+  Locale? get pendingLocale => _pendingLocale;
+
   bool _isLocaleChanging = false;
   bool get isLocaleChanging => _isLocaleChanging;
 
@@ -54,10 +59,11 @@ class LocaleController extends ChangeNotifier {
   Future<void> setLocale(Locale next) async {
     if (_locale == next) return;
 
+    _pendingLocale = next;
     _isLocaleChanging = true;
     notifyListeners();
 
-    // Cho overlay vẽ một frame trước khi rebuild nặng với locale mới.
+    // Let overlay paint one frame before heavy locale rebuild.
     await Future<void>.delayed(const Duration(milliseconds: 32));
 
     _locale = next;
@@ -70,10 +76,11 @@ class LocaleController extends ChangeNotifier {
       debugPrint('LocaleController save: $e\n$st');
     }
 
-    // Giữ shimmer ngắn để chuỗi l10n / layout kịp ổn định.
-    await Future<void>.delayed(const Duration(milliseconds: 260));
+    // 1.2 s total (32 ms already consumed above).
+    await Future<void>.delayed(const Duration(milliseconds: 1168));
 
     _isLocaleChanging = false;
+    _pendingLocale = null;
     notifyListeners();
   }
 }

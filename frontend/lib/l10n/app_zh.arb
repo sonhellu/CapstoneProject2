@@ -1,9 +1,116 @@
 {
   "@@locale": "zh",
+
   "appTitle": "Capstone",
   "homeTitle": "首页",
   "counterLabel": "您已按下按钮的次数：",
   "incrementTooltip": "增加",
   "languagePickerTooltip": "语言",
-  "languageSheetTitle": "选择语言"
+  "languageSheetTitle": "选择语言",
+
+  "navHome": "首页",
+  "navMap": "地图",
+  "navCommunity": "社区",
+  "navMyPage": "我的",
+
+  "mapSearchHere": "搜索此处",
+  "mapMyLocation": "我的位置",
+  "mapPinSpot": "标记此地",
+  "mapGetDirections": "获取路线",
+  "mapDirections": "导航",
+
+  "btnConfirm": "确认",
+  "btnCancel": "取消",
+  "btnSave": "保存",
+  "btnEdit": "编辑",
+  "btnDelete": "删除",
+  "btnClose": "关闭",
+  "btnNext": "下一步",
+  "btnBack": "返回",
+
+  "filterAll": "全部",
+  "filterRestaurants": "餐厅",
+  "filterRealEstate": "房产",
+  "filterConvenience": "便利店",
+  "filterAtm": "ATM",
+
+  "statusLoadingMap": "地图加载中…",
+  "statusLocating": "定位中…",
+  "statusPermissionDenied": "权限被拒绝",
+  "statusEnableGps": "请开启GPS",
+
+  "foodMenu": "菜单",
+  "foodPrice": "价格",
+  "foodHours": "营业时间",
+  "foodHalal": "清真",
+  "foodVeggie": "素食",
+  "foodAuthentic": "正宗",
+
+  "housingRent": "月租",
+  "housingDeposit": "押金",
+  "housingFee": "管理费",
+  "housingNoDeposit": "免押金",
+  "housingStationNearby": "近地铁",
+
+  "actionCall": "拨打",
+  "actionMessage": "发消息",
+  "actionReview": "评价",
+  "actionShare": "分享",
+  "actionPhoto": "照片",
+
+  "distanceAway": "距此{distance}",
+  "@distanceAway": {
+    "placeholders": { "distance": { "type": "String", "example": "500m" } }
+  },
+  "minWalk": "步行{time}分钟",
+  "@minWalk": {
+    "placeholders": { "time": { "type": "String", "example": "5" } }
+  },
+
+  "alertEnterName": "请输入姓名",
+  "alertWrongPhone": "号码有误",
+  "alertNotFound": "未找到",
+  "alertTryAgain": "请重试",
+  "alertLoginFirst": "请先登录",
+
+  "profileMyProfile": "我的主页",
+  "profileEdit": "编辑资料",
+  "profileMyPosts": "我的帖子",
+  "profileSavedPlaces": "收藏地点",
+  "profileLogout": "退出登录",
+  "profileDeleteAccount": "注销账号",
+
+  "chatMessages": "消息",
+  "chatTyping": "正在输入…",
+  "chatSent": "已发送",
+  "chatDelivered": "已送达",
+  "chatRead": "已读",
+  "chatCall": "通话",
+  "chatStartConversation": "开始聊天吧",
+
+  "communityPostStory": "发布动态",
+  "communityWhatsOnMind": "你在想什么？",
+  "communityPublic": "公开",
+  "communityPrivate": "仅自己",
+  "communityAnonymous": "匿名",
+  "communityReport": "举报",
+
+  "settingsLanguage": "语言",
+  "settingsNotifications": "通知",
+  "settingsDarkMode": "深色模式",
+  "settingsTerms": "服务条款",
+  "settingsPrivacy": "隐私政策",
+  "settingsHelp": "帮助中心",
+  "settingsVersion": "版本",
+
+  "timeJustNow": "刚刚",
+  "timeMinAgo": "{count, plural, other{{count}分钟前}}",
+  "@timeMinAgo": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "timeHourAgo": "{count, plural, other{{count}小时前}}",
+  "@timeHourAgo": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "timeYesterday": "昨天"
 }
