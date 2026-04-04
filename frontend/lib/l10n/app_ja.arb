@@ -1,9 +1,116 @@
 {
   "@@locale": "ja",
+
   "appTitle": "Capstone",
   "homeTitle": "ホーム",
   "counterLabel": "ボタンを押した回数:",
   "incrementTooltip": "増やす",
   "languagePickerTooltip": "言語",
-  "languageSheetTitle": "言語を選択"
+  "languageSheetTitle": "言語を選択",
+
+  "navHome": "ホーム",
+  "navMap": "マップ",
+  "navCommunity": "コミュニティ",
+  "navMyPage": "マイページ",
+
+  "mapSearchHere": "このエリアを検索",
+  "mapMyLocation": "現在地",
+  "mapPinSpot": "ここをピン留め",
+  "mapGetDirections": "ルートを検索",
+  "mapDirections": "ルート",
+
+  "btnConfirm": "確認",
+  "btnCancel": "キャンセル",
+  "btnSave": "保存",
+  "btnEdit": "編集",
+  "btnDelete": "削除",
+  "btnClose": "閉じる",
+  "btnNext": "次へ",
+  "btnBack": "戻る",
+
+  "filterAll": "すべて",
+  "filterRestaurants": "レストラン",
+  "filterRealEstate": "不動産",
+  "filterConvenience": "コンビニ",
+  "filterAtm": "ATM",
+
+  "statusLoadingMap": "マップ読み込み中…",
+  "statusLocating": "位置情報取得中…",
+  "statusPermissionDenied": "権限が拒否されました",
+  "statusEnableGps": "GPSを有効にしてください",
+
+  "foodMenu": "メニュー",
+  "foodPrice": "料金",
+  "foodHours": "営業時間",
+  "foodHalal": "ハラール",
+  "foodVeggie": "ベジ",
+  "foodAuthentic": "本場の味",
+
+  "housingRent": "家賃",
+  "housingDeposit": "敷金",
+  "housingFee": "管理費",
+  "housingNoDeposit": "敷金なし",
+  "housingStationNearby": "駅近",
+
+  "actionCall": "電話",
+  "actionMessage": "メッセージ",
+  "actionReview": "レビュー",
+  "actionShare": "シェア",
+  "actionPhoto": "写真",
+
+  "distanceAway": "{distance}先",
+  "@distanceAway": {
+    "placeholders": { "distance": { "type": "String", "example": "500m" } }
+  },
+  "minWalk": "徒歩{time}分",
+  "@minWalk": {
+    "placeholders": { "time": { "type": "String", "example": "5" } }
+  },
+
+  "alertEnterName": "名前を入力",
+  "alertWrongPhone": "番号が違います",
+  "alertNotFound": "見つかりません",
+  "alertTryAgain": "再試行",
+  "alertLoginFirst": "ログインが必要",
+
+  "profileMyProfile": "マイプロフィール",
+  "profileEdit": "プロフィール編集",
+  "profileMyPosts": "投稿一覧",
+  "profileSavedPlaces": "保存済みの場所",
+  "profileLogout": "ログアウト",
+  "profileDeleteAccount": "アカウント削除",
+
+  "chatMessages": "メッセージ",
+  "chatTyping": "入力中…",
+  "chatSent": "送信済み",
+  "chatDelivered": "配信済み",
+  "chatRead": "既読",
+  "chatCall": "通話",
+  "chatStartConversation": "会話を始めましょう",
+
+  "communityPostStory": "投稿する",
+  "communityWhatsOnMind": "今何を考えていますか？",
+  "communityPublic": "公開",
+  "communityPrivate": "非公開",
+  "communityAnonymous": "匿名",
+  "communityReport": "報告",
+
+  "settingsLanguage": "言語",
+  "settingsNotifications": "通知",
+  "settingsDarkMode": "ダークモード",
+  "settingsTerms": "利用規約",
+  "settingsPrivacy": "プライバシーポリシー",
+  "settingsHelp": "ヘルプセンター",
+  "settingsVersion": "バージョン",
+
+  "timeJustNow": "たった今",
+  "timeMinAgo": "{count, plural, other{{count}分前}}",
+  "@timeMinAgo": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "timeHourAgo": "{count, plural, other{{count}時間前}}",
+  "@timeHourAgo": {
+    "placeholders": { "count": { "type": "num", "format": "compact" } }
+  },
+  "timeYesterday": "昨日"
 }

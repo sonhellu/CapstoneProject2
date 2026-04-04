@@ -248,11 +248,33 @@ class _LanguageTile extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
+  // Myanmar script requires a Unicode-compliant font; others use NotoSansKr.
+  TextStyle _nativeLabelStyle(bool isSelected) {
+    final weight = isSelected ? FontWeight.w700 : FontWeight.w500;
+    final color = isSelected ? _T.primary : _T.textDark;
+    if (language.languageCode == 'my') {
+      return GoogleFonts.notoSansMyanmar(
+          fontSize: 15, fontWeight: weight, color: color);
+    }
+    return GoogleFonts.notoSansKr(
+        fontSize: 15, fontWeight: weight, color: color);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
-      color: isSelected ? _T.selectedBg : Colors.white,
+      decoration: BoxDecoration(
+        color: isSelected ? _T.selectedBg : Colors.white,
+        // #003478 left-edge accent bar when selected.
+        border: isSelected
+            ? const Border(
+                left: BorderSide(color: _T.primary, width: 3),
+              )
+            : const Border(
+                left: BorderSide(color: Colors.transparent, width: 3),
+              ),
+      ),
       child: InkWell(
         onTap: onTap,
         splashColor: _T.primary.withValues(alpha: 0.08),
@@ -271,10 +293,7 @@ class _LanguageTile extends StatelessWidget {
                       ? _T.primary.withValues(alpha: 0.08)
                       : const Color(0xFFF5F7FA),
                   border: isSelected
-                      ? Border.all(
-                          color: _T.primary.withValues(alpha: 0.25),
-                          width: 1.5,
-                        )
+                      ? Border.all(color: _T.primary, width: 2)
                       : null,
                 ),
                 alignment: Alignment.center,
@@ -291,13 +310,7 @@ class _LanguageTile extends StatelessWidget {
                   children: [
                     Text(
                       language.nativeLabel,
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 15,
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: isSelected ? _T.primary : _T.textDark,
-                      ),
+                      style: _nativeLabelStyle(isSelected),
                     ),
                     if (!language.isSystemDefault) ...[
                       const SizedBox(height: 2),

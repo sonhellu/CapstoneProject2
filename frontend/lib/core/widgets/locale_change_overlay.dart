@@ -1,60 +1,91 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// Lớp phủ nhẹ giữa màn hình khi đổi locale — tránh cảm giác “khựng”.
+// ─────────────────────────── Design Tokens ───────────────────────────
+const _kPrimary = Color(0xFF003478);
+
+/// Fixed determinate progress while switching locale. Indeterminate mode would
+/// spin forever while the overlay remains in the tree under [AnimatedOpacity]
+/// (opacity 0), which breaks [WidgetTester.pumpAndSettle] in tests.
+const double _kLocaleOverlayProgress = 0.45;
+
+// ─────────────────────────── Localized Loading Text ───────────────────────────
+
+/// Loading message shown IN the target language so the user immediately
+/// recognises that the switch is happening in their chosen language.
+const _kMessages = <String, String>{
+  'vi': 'Đang đổi ngôn ngữ…',
+  'ko': '언어 변경 중…',
+  'en': 'Changing language…',
+  'ja': '言語を変更中…',
+  'zh': '正在切换语言…',
+  'my': 'ဘာသာစကား ပြောင်းနေသည်…',
+};
+
+// ─────────────────────────── Overlay Widget ───────────────────────────
+
+/// Full-screen overlay shown during locale switching.
+///
+/// Placed inside an [AnimatedOpacity] in [CapstoneApp] so it fades in
+/// when [LocaleController.isLocaleChanging] becomes true and fades out
+/// when it becomes false — without ever being removed from the tree mid-animation.
+///
+/// [targetLocale] drives the displayed loading message so it already
+/// appears in the language the user just selected.
 class LocaleChangeOverlay extends StatelessWidget {
-  const LocaleChangeOverlay({super.key});
+  const LocaleChangeOverlay({super.key, this.targetLocale});
+
+  final Locale? targetLocale;
+
+  String get _message =>
+      _kMessages[targetLocale?.languageCode] ?? 'Changing language…';
+
+  // Myanmar needs a Unicode-compliant font; all others use NotoSansKr.
+  TextStyle get _textStyle {
+    if (targetLocale?.languageCode == 'my') {
+      return GoogleFonts.notoSansMyanmar(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        color: _kPrimary,
+      );
+    }
+    return GoogleFonts.notoSansKr(
+      fontSize: 15,
+      fontWeight: FontWeight.w600,
+      color: _kPrimary,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final border = scheme.outlineVariant;
-
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 140),
-      curve: Curves.easeOut,
-      builder: (context, t, child) {
-        return Opacity(opacity: t, child: child);
-      },
-      child: AbsorbPointer(
-        child: Material(
-          color: scheme.surface.withValues(alpha: 0.82),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Shimmer.fromColors(
-                  baseColor: border.withValues(alpha: 0.65),
-                  highlightColor: scheme.surface,
-                  period: const Duration(milliseconds: 1100),
-                  child: Container(
-                    width: 88,
-                    height: 88,
-                    decoration: BoxDecoration(
-                      color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: scheme.primary.withValues(alpha: 0.14),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                  ),
+    return AbsorbPointer(
+      child: Material(
+        color: Colors.white.withValues(alpha: 0.94),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 52,
+                height: 52,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3.2,
+                  value: _kLocaleOverlayProgress,
+                  valueColor: AlwaysStoppedAnimation<Color>(_kPrimary),
+                  backgroundColor: Color(0x1F003478),
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: 30,
-                  height: 30,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.8,
-                    color: scheme.primary,
-                  ),
+              ),
+              const SizedBox(height: 20),
+              // Target-language loading text
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  _message,
+                  key: ValueKey(targetLocale?.languageCode),
+                  style: _textStyle,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
