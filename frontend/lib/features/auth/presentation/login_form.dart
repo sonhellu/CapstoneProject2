@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../utils/auth_validators.dart';
 import 'widgets/auth_primary_button.dart';
@@ -19,6 +20,7 @@ class LoginForm extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final email = useTextEditingController();
     final password = useTextEditingController();
@@ -46,40 +48,40 @@ class LoginForm extends HookWidget {
           AuthTextField(
             key: const Key('login_email'),
             controller: email,
-            label: 'Email',
-            hint: 'ten.email@duhoc.vn',
+            label: l.authFieldEmail,
+            hint: l.authHintEmail,
             prefixIcon: Icons.mail_outline_rounded,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.email],
-            validator: AuthValidators.email,
+            validator: (v) => AuthValidators.email(v, l),
           ),
           const SizedBox(height: 18),
           AuthTextField(
             key: const Key('login_password'),
             controller: password,
-            label: 'Mật khẩu',
-            hint: '••••••••',
+            label: l.authFieldPassword,
+            hint: l.authHintPasswordDots,
             prefixIcon: Icons.lock_outline_rounded,
             obscureText: obscure.value,
             showObscureToggle: true,
             onToggleObscure: () => obscure.value = !obscure.value,
             textInputAction: TextInputAction.done,
             autofillHints: const [AutofillHints.password],
-            validator: AuthValidators.password,
+            validator: (v) => AuthValidators.password(v, l),
             onSubmitted: (_) => submit(),
           ),
           const SizedBox(height: 24),
           AuthPrimaryButton(
             key: const Key('login_submit'),
-            label: 'Đăng nhập',
+            label: l.authButtonLogin,
             isLoading: loading.value,
             onPressed: submit,
           ),
           const SizedBox(height: 24),
           SocialAuthButtons(
-            onGoogle: () => _snack(context, 'Đăng nhập Google (demo)'),
-            onKakao: () => _snack(context, 'Đăng nhập KakaoTalk (demo)'),
+            onGoogle: () => _snack(context, l.authSocialGoogleLoginDemo),
+            onKakao: () => _snack(context, l.authSocialKakaoLoginDemo),
           ),
         ],
       ),

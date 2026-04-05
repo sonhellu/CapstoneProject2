@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../../../core/widgets/language_picker_button.dart';
+import '../../../l10n/app_localizations.dart';
 import '../theme/auth_theme.dart';
 import 'login_form.dart';
 import 'register_form.dart';
@@ -17,6 +18,7 @@ class AuthScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final mode = useState(AuthMode.login);
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AuthColors.background,
@@ -74,7 +76,7 @@ class AuthScreen extends HookWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Đăng nhập',
+                                          l.authLoginTitle,
                                           style: Theme.of(context)
                                               .textTheme
                                               .titleLarge
@@ -85,7 +87,7 @@ class AuthScreen extends HookWidget {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Nhập email và mật khẩu để tiếp tục.',
+                                          l.authLoginSubtitle,
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodySmall
@@ -103,7 +105,7 @@ class AuthScreen extends HookWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Đăng ký',
+                                          l.authRegisterTitle,
                                           style: Theme.of(context)
                                               .textTheme
                                               .titleLarge
@@ -114,7 +116,7 @@ class AuthScreen extends HookWidget {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Tạo tài khoản để mở khóa lộ trình du học.',
+                                          l.authRegisterSubtitle,
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodySmall
@@ -134,8 +136,8 @@ class AuthScreen extends HookWidget {
                             children: [
                               Text(
                                 mode.value == AuthMode.login
-                                    ? 'Chưa có tài khoản?'
-                                    : 'Đã có tài khoản?',
+                                    ? l.authFooterNoAccount
+                                    : l.authFooterHasAccount,
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(color: AuthColors.textSecondary),
                               ),
@@ -153,8 +155,8 @@ class AuthScreen extends HookWidget {
                                 ),
                                 child: Text(
                                   mode.value == AuthMode.login
-                                      ? 'Đăng ký'
-                                      : 'Đăng nhập',
+                                      ? l.authSwitchToRegister
+                                      : l.authSwitchToLogin,
                                 ),
                               ),
                             ],

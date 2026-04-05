@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../l10n/app_localizations.dart';
+
 // ──────────────────────────── Design Tokens ────────────────────────────
 abstract final class _T {
   static const primary    = Color(0xFF003478);
@@ -119,66 +121,69 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (ctx) => SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFFDDE3EA),
-                borderRadius: BorderRadius.circular(2),
+      builder: (ctx) {
+        final l = AppLocalizations.of(ctx)!;
+        return SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDDE3EA),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Post Language',
-              style: GoogleFonts.notoSansKr(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: _T.textDark,
+              const SizedBox(height: 16),
+              Text(
+                l.createPostLanguage,
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _T.textDark,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _Cfg.languages.length,
-              itemBuilder: (_, i) {
-                final lang  = _Cfg.languages[i];
-                final flag  = _Cfg.langFlags[lang] ?? '🌐';
-                final isSel = lang == _language;
-                return ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 20),
-                  leading: Text(flag,
-                      style: const TextStyle(fontSize: 22)),
-                  title: Text(
-                    lang,
-                    style: GoogleFonts.notoSansKr(
-                      fontSize: 15,
-                      fontWeight:
-                          isSel ? FontWeight.w700 : FontWeight.w400,
-                      color: isSel ? _T.primary : _T.textDark,
+              const SizedBox(height: 8),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _Cfg.languages.length,
+                itemBuilder: (_, i) {
+                  final lang  = _Cfg.languages[i];
+                  final flag  = _Cfg.langFlags[lang] ?? '🌐';
+                  final isSel = lang == _language;
+                  return ListTile(
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 20),
+                    leading: Text(flag,
+                        style: const TextStyle(fontSize: 22)),
+                    title: Text(
+                      lang,
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 15,
+                        fontWeight:
+                            isSel ? FontWeight.w700 : FontWeight.w400,
+                        color: isSel ? _T.primary : _T.textDark,
+                      ),
                     ),
-                  ),
-                  trailing: isSel
-                      ? const Icon(Icons.check_rounded, color: _T.primary)
-                      : null,
-                  onTap: () {
-                    setState(() => _language = lang);
-                    Navigator.pop(ctx);
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+                    trailing: isSel
+                        ? const Icon(Icons.check_rounded, color: _T.primary)
+                        : null,
+                    onTap: () {
+                      setState(() => _language = lang);
+                      Navigator.pop(ctx);
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -186,6 +191,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: _T.background,
       resizeToAvoidBottomInset: true,
@@ -198,7 +204,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'New Post',
+          AppLocalizations.of(context)!.createPostNew,
           style: GoogleFonts.notoSansKr(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -218,7 +224,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
         children: [
           // ── Category ──
-          const _Label('Category'),
+          _Label(l.createPostCategory),
           const SizedBox(height: 10),
           Row(
             children: _Cfg.categories.map((cat) => Padding(
@@ -236,7 +242,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const _Label('Title'),
+              _Label(l.createPostTitleLabel),
               _CharCounter(ctrl: _titleCtrl, max: _Cfg.titleMax),
             ],
           ),
@@ -257,7 +263,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               textInputAction: TextInputAction.next,
               onEditingComplete: _contentFocus.requestFocus,
               decoration: InputDecoration.collapsed(
-                hintText: 'Enter a clear, concise title…',
+                hintText: l.createPostTitleHint,
                 hintStyle: GoogleFonts.notoSansKr(
                     fontSize: 15, color: _T.textLight),
               ),
@@ -266,7 +272,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           const SizedBox(height: 20),
 
           // ── Language ──
-          const _Label('Post Language'),
+          _Label(l.createPostLanguage),
           const SizedBox(height: 10),
           _buildLanguageTile(),
           const SizedBox(height: 20),
@@ -275,7 +281,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const _Label('Content'),
+              _Label(l.createPostContent),
               _CharCounter(ctrl: _contentCtrl, max: _Cfg.contentMax),
             ],
           ),
@@ -294,7 +300,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               style: GoogleFonts.notoSansKr(
                   fontSize: 14, color: _T.textDark, height: 1.75),
               decoration: InputDecoration.collapsed(
-                hintText: 'Write your post here…',
+                hintText: l.createPostContentHint,
                 hintStyle: GoogleFonts.notoSansKr(
                     fontSize: 14, color: _T.textLight),
               ),
@@ -303,7 +309,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           const SizedBox(height: 20),
 
           // ── Photos ──
-          _Label('Photos  ($_photoCount/${_Cfg.maxPhotos})'),
+          _Label('${l.createPostPhotos}  ($_photoCount/${_Cfg.maxPhotos})'),
           const SizedBox(height: 10),
           _buildPhotoWrap(),
           const SizedBox(height: 32),
@@ -346,7 +352,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         ),
       ),
       subtitle: Text(
-        'Post language',
+        AppLocalizations.of(context)!.createPostLanguage,
         style: GoogleFonts.notoSansKr(fontSize: 11, color: _T.primary),
       ),
       trailing: const Icon(Icons.keyboard_arrow_down_rounded,
@@ -380,7 +386,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       color: _T.primary, size: 26),
                   const SizedBox(height: 4),
                   Text(
-                    'Add',
+                    AppLocalizations.of(context)!.createPostAddPhoto,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 10,
                       color: _T.primary,
@@ -482,13 +488,13 @@ class _BottomBar extends StatelessWidget {
             children: [
               _BarBtn(
                 icon: Icons.photo_library_outlined,
-                label: 'Gallery',
+                label: AppLocalizations.of(context)!.createPostGallery,
                 onTap: canAddPhoto ? onGallery : null,
               ),
               const SizedBox(width: 20),
               _BarBtn(
                 icon: Icons.camera_alt_outlined,
-                label: 'Camera',
+                label: AppLocalizations.of(context)!.createPostCamera,
                 onTap: canAddPhoto ? onCamera : null,
               ),
             ],
@@ -618,7 +624,7 @@ class _PublishButton extends StatelessWidget {
                 ),
               )
             : Text(
-                'Publish Post',
+                AppLocalizations.of(context)!.createPostPublish,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
