@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../theme/auth_theme.dart';
 
 class AuthHeader extends StatelessWidget {
@@ -8,6 +9,7 @@ class AuthHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         Container(
@@ -31,7 +33,7 @@ class AuthHeader extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'Chào bạn, du học sinh!',
+          l.authHeaderTitle,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
@@ -41,7 +43,7 @@ class AuthHeader extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Cùng nhau chinh phục hành trình học tập toàn cầu.',
+          l.authHeaderSubtitle,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AuthColors.textSecondary,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../theme/auth_theme.dart';
 
 class SocialAuthButtons extends StatelessWidget {
@@ -14,6 +15,7 @@ class SocialAuthButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         Row(
@@ -22,7 +24,7 @@ class SocialAuthButtons extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
-                'hoặc',
+                l.authSocialOr,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AuthColors.textSecondary,
                       fontWeight: FontWeight.w500,
@@ -42,7 +44,7 @@ class SocialAuthButtons extends StatelessWidget {
               const _GoogleMark(),
               const SizedBox(width: 12),
               Text(
-                'Tiếp tục với Google',
+                l.authSocialContinueGoogle,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AuthColors.textPrimary,
@@ -62,7 +64,7 @@ class SocialAuthButtons extends StatelessWidget {
               Icon(Icons.chat_bubble_rounded, color: Colors.brown.shade800, size: 22),
               const SizedBox(width: 10),
               Text(
-                'KakaoTalk ID',
+                l.authSocialKakaoLabel,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: Colors.brown.shade900,

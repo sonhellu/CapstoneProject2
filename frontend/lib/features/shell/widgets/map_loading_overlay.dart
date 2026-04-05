@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../theme/shell_theme.dart';
 
 /// Overlay khi khởi tạo Maps — CircularProgressIndicator tùy chỉnh.
@@ -8,6 +9,7 @@ class MapLoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Material(
       color: Colors.white.withValues(alpha: 0.92),
       child: Center(
@@ -32,7 +34,7 @@ class MapLoadingOverlay extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'Đang tải bản đồ…',
+                l.statusLoadingMap,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: ShellColors.primaryBlue,
                       fontWeight: FontWeight.w600,

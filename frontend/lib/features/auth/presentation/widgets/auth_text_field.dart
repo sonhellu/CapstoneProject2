@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../theme/auth_theme.dart';
 
 class AuthTextField extends StatelessWidget {
@@ -34,6 +35,7 @@ class AuthTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -72,7 +74,9 @@ class AuthTextField extends StatelessWidget {
             ),
             suffixIcon: showObscureToggle
                 ? IconButton(
-                    tooltip: obscureText ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+                    tooltip: obscureText
+                        ? l.authTooltipShowPassword
+                        : l.authTooltipHidePassword,
                     onPressed: onToggleObscure,
                     icon: Icon(
                       obscureText

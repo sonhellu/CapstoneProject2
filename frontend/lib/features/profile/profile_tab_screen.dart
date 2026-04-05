@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/widgets/language_picker_button.dart';
+import '../../l10n/app_localizations.dart';
 
 // ─────────────────────────── Constants ───────────────────────────
 abstract final class _C {
@@ -150,28 +151,29 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   void _cancelEdit() => setState(() => _isEditMode = false);
 
   Future<void> _confirmLogout() async {
+    final l = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Sign Out',
+          l.profileLogout,
           style: GoogleFonts.notoSansKr(
               fontWeight: FontWeight.w700, color: _C.textDark),
         ),
         content: Text(
-          'Are you sure you want to sign out?',
+          l.profileLogoutConfirm,
           style: GoogleFonts.notoSansKr(fontSize: 14, color: _C.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancel',
+            child: Text(l.btnCancel,
                 style: GoogleFonts.notoSansKr(color: _C.textGrey)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Sign Out',
+            child: Text(l.profileLogout,
                 style: GoogleFonts.notoSansKr(
                     color: Colors.red, fontWeight: FontWeight.w700)),
           ),
@@ -220,6 +222,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   // ─── Build ───
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: _C.background,
       body: SafeArea(
@@ -234,7 +237,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildHeader(),
+              _buildHeader(context),
               const SizedBox(height: 28),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 320),
@@ -262,7 +265,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                         majors: _majors,
                         isSaving: _isSaving,
                         onPickLanguage: () => _pickFromSheet(
-                          title: 'Native Language',
+                          title: l.profileNativeLang,
                           options: _languages,
                           current: _editDraft.nativeLanguage,
                           onSelected: (v) => setState(() {
@@ -271,7 +274,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                           }),
                         ),
                         onPickUniversity: () => _pickFromSheet(
-                          title: 'University',
+                          title: l.profileUniversity,
                           options: _universities,
                           current: _editDraft.university,
                           onSelected: (v) => setState(() {
@@ -279,7 +282,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                           }),
                         ),
                         onPickMajor: () => _pickFromSheet(
-                          title: 'Major',
+                          title: l.profileMajor,
                           options: _majors,
                           current: _editDraft.major,
                           onSelected: (v) => setState(() {
@@ -287,7 +290,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                           }),
                         ),
                         onPickNationality: () => _pickFromSheet(
-                          title: 'Nationality',
+                          title: l.profileNationality,
                           options: _nationalities,
                           current: _editDraft.nationality,
                           onSelected: (v) => setState(() {
@@ -315,7 +318,8 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   // ─── Header ───
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         // ── Language button row ──
@@ -333,7 +337,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                       size: 18, color: _C.primary),
                   const SizedBox(width: 4),
                   Text(
-                    'Language',
+                    l.settingsLanguage,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -426,19 +430,20 @@ class _DisplayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return _Card(
-      title: 'Personal Information',
+      title: l.profilePersonalInfo,
       child: Column(
         children: [
           _InfoRow(
             icon: Icons.language_outlined,
-            label: 'Native Language',
+            label: l.profileNativeLang,
             value: profile.nativeLanguage,
           ),
           _divider(),
           _InfoRow(
             icon: Icons.school_outlined,
-            label: 'University',
+            label: l.profileUniversity,
             value: profile.university,
             badge: isVerified
                 ? const _VerifiedBadge()
@@ -447,19 +452,19 @@ class _DisplayCard extends StatelessWidget {
           _divider(),
           _InfoRow(
             icon: Icons.menu_book_outlined,
-            label: 'Major',
+            label: l.profileMajor,
             value: profile.major,
           ),
           _divider(),
           _InfoRow(
             icon: Icons.flag_outlined,
-            label: 'Nationality',
+            label: l.profileNationality,
             value: profile.nationality,
           ),
           _divider(),
           _InfoRow(
             icon: Icons.email_outlined,
-            label: 'Email',
+            label: l.profileEmail,
             value: profile.email,
           ),
         ],
@@ -507,50 +512,51 @@ class _EditForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _Card(
-          title: 'Edit Information',
+          title: l.profileEditInfo,
           child: Column(
             children: [
               _Field(
                 icon: Icons.person_outline_rounded,
-                label: 'Full Name',
+                label: l.profileFullName,
                 controller: nameCtrl,
               ),
               const SizedBox(height: 16),
               _TapField(
                 icon: Icons.language_outlined,
-                label: 'Native Language',
+                label: l.profileNativeLang,
                 value: draft.nativeLanguage,
                 onTap: onPickLanguage,
               ),
               const SizedBox(height: 16),
               _TapField(
                 icon: Icons.school_outlined,
-                label: 'University',
+                label: l.profileUniversity,
                 value: draft.university,
                 onTap: onPickUniversity,
               ),
               const SizedBox(height: 16),
               _TapField(
                 icon: Icons.menu_book_outlined,
-                label: 'Major',
+                label: l.profileMajor,
                 value: draft.major,
                 onTap: onPickMajor,
               ),
               const SizedBox(height: 16),
               _TapField(
                 icon: Icons.flag_outlined,
-                label: 'Nationality',
+                label: l.profileNationality,
                 value: draft.nationality,
                 onTap: onPickNationality,
               ),
               const SizedBox(height: 16),
               _Field(
                 icon: Icons.email_outlined,
-                label: 'Email',
+                label: l.profileEmail,
                 controller: TextEditingController(text: draft.email),
                 readOnly: true,
               ),
@@ -565,7 +571,7 @@ class _EditForm extends StatelessWidget {
         TextButton(
           onPressed: isSaving ? null : onCancel,
           child: Text(
-            'Cancel',
+            l.btnCancel,
             style: GoogleFonts.notoSansKr(
               color: _C.textGrey,
               fontWeight: FontWeight.w500,
@@ -697,7 +703,7 @@ class _VerifiedBadge extends StatelessWidget {
           const Icon(Icons.verified_rounded, size: 12, color: _C.primary),
           const SizedBox(width: 3),
           Text(
-            'Verified',
+            AppLocalizations.of(context)!.profileVerified,
             style: GoogleFonts.notoSansKr(
               fontSize: 10,
               fontWeight: FontWeight.w700,
@@ -847,7 +853,7 @@ class _SaveButton extends StatelessWidget {
                 ),
               )
             : Text(
-                'Save Changes',
+                AppLocalizations.of(context)!.profileSaveChanges,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -871,7 +877,7 @@ class _LogoutButton extends StatelessWidget {
         onPressed: onTap,
         icon: const Icon(Icons.logout_rounded, size: 18, color: Colors.red),
         label: Text(
-          'Sign Out',
+          AppLocalizations.of(context)!.profileLogout,
           style: GoogleFonts.notoSansKr(
             fontSize: 15,
             fontWeight: FontWeight.w700,

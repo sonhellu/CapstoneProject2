@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../l10n/app_localizations.dart';
+
 import 'models/post.dart';
 import 'widgets/post_card.dart' show postImageHeroTag, postAvatarHeroTag;
 
@@ -70,7 +72,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 color: Colors.white, size: 16),
             const SizedBox(width: 8),
             Text(
-              'Copied to clipboard',
+              AppLocalizations.of(context)!.postCopied,
               style: GoogleFonts.notoSansKr(fontSize: 13),
             ),
           ],
@@ -338,7 +340,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         // Copy
         _ActionButton(
           icon: Icons.copy_rounded,
-          label: 'Copy',
+          label: AppLocalizations.of(context)!.postActionCopy,
           color: _T.primary,
           bg: _T.primary.withValues(alpha: 0.07),
           onTap: _copyContent,
@@ -347,7 +349,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         // Save
         _ActionButton(
           icon: Icons.bookmark_border_rounded,
-          label: 'Save',
+          label: AppLocalizations.of(context)!.btnSave,
           color: _T.textGrey,
           bg: const Color(0xFFF5F5F5),
           onTap: () {},
@@ -427,7 +429,7 @@ class _FollowButton extends StatelessWidget {
           ),
         ),
         child: Text(
-          isFollowing ? 'Following' : 'Follow',
+          isFollowing ? AppLocalizations.of(context)!.postFollowing : AppLocalizations.of(context)!.postFollow,
           style: GoogleFonts.notoSansKr(
             fontSize: 12,
             fontWeight: FontWeight.w700,
