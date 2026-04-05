@@ -1,15 +1,29 @@
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 // ──────────────────────────── Pin Type ────────────────────────────
 
 enum PinType {
-  restaurant('Quán ăn ngon', '🍜'),
-  realEstate('Bất động sản tốt', '🏠'),
-  utility('Tiện ích khác', '📍');
+  restaurant('🍜'),
+  realEstate('🏠'),
+  utility('📍');
 
-  const PinType(this.label, this.emoji);
-  final String label;
+  const PinType(this.emoji);
   final String emoji;
+}
+
+extension PinTypeLocalization on PinType {
+  String localizedLabel(AppLocalizations l) {
+    switch (this) {
+      case PinType.restaurant:
+        return l.pinTypeRestaurant;
+      case PinType.realEstate:
+        return l.pinTypeRealEstate;
+      case PinType.utility:
+        return l.pinTypeUtility;
+    }
+  }
 }
 
 // ──────────────────────────── UserPinModel ────────────────────────────

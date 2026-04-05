@@ -290,4 +290,390 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timeYesterday => '어제';
+
+  @override
+  String get homeViewAll => '전체보기';
+
+  @override
+  String get homeIntlNews => '국제 뉴스 🌏';
+
+  @override
+  String get homeCampusLife => '캠퍼스 라이프 🇰🇷';
+
+  @override
+  String get profilePersonalInfo => '개인 정보';
+
+  @override
+  String get profileEditInfo => '정보 수정';
+
+  @override
+  String get profileNativeLang => '모국어';
+
+  @override
+  String get profileUniversity => '대학교';
+
+  @override
+  String get profileMajor => '전공';
+
+  @override
+  String get profileNationality => '국적';
+
+  @override
+  String get profileEmail => '이메일';
+
+  @override
+  String get profileFullName => '이름';
+
+  @override
+  String get profileVerified => '인증됨';
+
+  @override
+  String get profileLogoutConfirm => '로그아웃하시겠습니까?';
+
+  @override
+  String get profileSaveChanges => '변경 사항 저장';
+
+  @override
+  String get communityBoardTitle => '커뮤니티 게시판';
+
+  @override
+  String get communitySearchHint => '게시물, 작성자 검색…';
+
+  @override
+  String communityPostCount(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString개 게시물',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communitySortRecent => '최신';
+
+  @override
+  String get communitySortPopular => '인기';
+
+  @override
+  String get communityNoPosts => '게시물이 없습니다';
+
+  @override
+  String get createPostNew => '새 게시물';
+
+  @override
+  String get createPostCategory => '카테고리';
+
+  @override
+  String get createPostTitleLabel => '제목';
+
+  @override
+  String get createPostTitleHint => '명확한 제목을 입력하세요…';
+
+  @override
+  String get createPostLanguage => '언어 선택';
+
+  @override
+  String get createPostContent => '내용';
+
+  @override
+  String get createPostContentHint => '내용을 입력하세요…';
+
+  @override
+  String get createPostPhotos => '사진';
+
+  @override
+  String get createPostAddPhoto => '추가';
+
+  @override
+  String get createPostGallery => '갤러리';
+
+  @override
+  String get createPostCamera => '카메라';
+
+  @override
+  String get createPostPublish => '게시하기';
+
+  @override
+  String get postCopied => '클립보드에 복사됨';
+
+  @override
+  String get postFollow => '팔로우';
+
+  @override
+  String get postFollowing => '팔로잉';
+
+  @override
+  String get postActionCopy => '복사';
+
+  @override
+  String get postNoImage => '이미지 없음';
+
+  @override
+  String get authHeaderTitle => '안녕하세요, 유학생 여러분!';
+
+  @override
+  String get authHeaderSubtitle => '함께 글로벌 학습 여정을 완성해요.';
+
+  @override
+  String get authLoginTitle => '로그인';
+
+  @override
+  String get authLoginSubtitle => '이메일과 비밀번호를 입력하세요.';
+
+  @override
+  String get authRegisterTitle => '회원가입';
+
+  @override
+  String get authRegisterSubtitle => '계정을 만들어 유학 생활을 시작하세요.';
+
+  @override
+  String get authFooterNoAccount => '계정이 없으신가요?';
+
+  @override
+  String get authFooterHasAccount => '이미 계정이 있으신가요?';
+
+  @override
+  String get authSwitchToRegister => '회원가입';
+
+  @override
+  String get authSwitchToLogin => '로그인';
+
+  @override
+  String get authFieldEmail => '이메일';
+
+  @override
+  String get authFieldPassword => '비밀번호';
+
+  @override
+  String get authFieldPasswordConfirm => '비밀번호 확인';
+
+  @override
+  String get authFieldFullName => '이름';
+
+  @override
+  String get authHintEmail => 'you@school.edu';
+
+  @override
+  String get authHintPasswordDots => '••••••••';
+
+  @override
+  String get authHintPasswordMin => '최소 8자';
+
+  @override
+  String get authHintConfirmPassword => '비밀번호 다시 입력';
+
+  @override
+  String get authHintNameExample => '홍길동';
+
+  @override
+  String get authButtonLogin => '로그인';
+
+  @override
+  String get authButtonRegister => '계정 만들기';
+
+  @override
+  String get authSocialGoogleLoginDemo => 'Google 로그인 (데모)';
+
+  @override
+  String get authSocialKakaoLoginDemo => '카카오톡 로그인 (데모)';
+
+  @override
+  String get authSocialGoogleRegisterDemo => 'Google 회원가입 (데모)';
+
+  @override
+  String get authSocialKakaoRegisterDemo => '카카오톡 회원가입 (데모)';
+
+  @override
+  String get authSocialOr => '또는';
+
+  @override
+  String get authSocialContinueGoogle => 'Google로 계속';
+
+  @override
+  String get authSocialKakaoLabel => '카카오톡 ID';
+
+  @override
+  String get authValidationEmailEmpty => '이메일을 입력하세요';
+
+  @override
+  String get authValidationEmailInvalid => '이메일 형식이 올바르지 않습니다';
+
+  @override
+  String get authValidationPasswordEmpty => '비밀번호를 입력하세요';
+
+  @override
+  String get authValidationPasswordMin => '비밀번호는 최소 8자입니다';
+
+  @override
+  String get authValidationNameEmpty => '이름을 입력하세요';
+
+  @override
+  String get authValidationNameShort => '이름이 너무 짧습니다';
+
+  @override
+  String get authValidationConfirmEmpty => '비밀번호를 확인하세요';
+
+  @override
+  String get authValidationConfirmMismatch => '비밀번호가 일치하지 않습니다';
+
+  @override
+  String get authTooltipShowPassword => '비밀번호 표시';
+
+  @override
+  String get authTooltipHidePassword => '비밀번호 숨기기';
+
+  @override
+  String get languageSheetSubtitle => '원하는 앱 언어를 선택하세요';
+
+  @override
+  String get mapPinFormTitle => '장소 저장';
+
+  @override
+  String get mapPinSectionVisibility => '공개 범위';
+
+  @override
+  String get mapPinSectionType => '장소 유형';
+
+  @override
+  String get mapPinSectionName => '장소 이름 *';
+
+  @override
+  String get mapPinSectionNotes => '친구에게 남기는 메모';
+
+  @override
+  String get mapPinSectionRating => '별점';
+
+  @override
+  String get mapPinSectionPhotos => '사진';
+
+  @override
+  String get mapPinNameHint => '예: O. Sáu 콩나물국밥';
+
+  @override
+  String get mapPinNotesHint => '가격, 분위기, 메뉴… 솔직하게 공유해요!';
+
+  @override
+  String get mapPinVisibilityPublic => '공개 — 모든 학생에게 보임';
+
+  @override
+  String get mapPinVisibilityPrivate => '나만 보기';
+
+  @override
+  String get mapPinSaveFail => '저장에 실패했습니다. 다시 시도하세요.';
+
+  @override
+  String get mapPinAddPhoto => '사진 추가';
+
+  @override
+  String get mapPinSaveButton => '장소 저장';
+
+  @override
+  String get mapPinSuccessTitle => '저장되었습니다!';
+
+  @override
+  String get mapPinShareTitle => '이 장소를 공유할까요?';
+
+  @override
+  String get mapPinShareMessage => '맛집, 하우징, 또는 캠퍼스 근처 편의 장소를 저장하세요.';
+
+  @override
+  String get mapPinShareAction => '이 장소 저장';
+
+  @override
+  String get mapLocationServicesDisabled => '위치 서비스를 켜주세요.';
+
+  @override
+  String get mapLocationPermissionRequired => '위치 권한이 필요합니다.';
+
+  @override
+  String get statusFetchingLocation => '위치를 가져오는 중…';
+
+  @override
+  String get mapUnavailable => '지도를 사용할 수 없음';
+
+  @override
+  String get mapSdkInitializing => '네이버 지도 SDK 초기화 중…';
+
+  @override
+  String mapSdkError(String error) {
+    return '오류: $error';
+  }
+
+  @override
+  String get mapPinInfoPublicShort => '공개';
+
+  @override
+  String get pinTypeRestaurant => '맛집';
+
+  @override
+  String get pinTypeRealEstate => '하우징';
+
+  @override
+  String get pinTypeUtility => '기타 편의시설';
+
+  @override
+  String get partnerSearchTitle => '언어 파트너';
+
+  @override
+  String get partnerGenderAny => '전체';
+
+  @override
+  String get partnerGenderMale => '남성';
+
+  @override
+  String get partnerGenderFemale => '여성';
+
+  @override
+  String get partnerEmptyTitle => '파트너를 찾을 수 없음';
+
+  @override
+  String get partnerEmptySubtitle => '필터를 변경해 보세요.';
+
+  @override
+  String get partnerOnline => '온라인';
+
+  @override
+  String get partnerSendRequest => '요청 보내기';
+
+  @override
+  String get partnerPending => '대기 중…';
+
+  @override
+  String get partnerAccepted => '수락됨!';
+
+  @override
+  String get chatSearchConversations => '대화 검색…';
+
+  @override
+  String get chatEmptyTitle => '아직 대화가 없습니다';
+
+  @override
+  String get chatEmptySubtitle => '언어 파트너를 찾아 대화를 시작하세요!';
+
+  @override
+  String get chatFindPartnerButton => '파트너 찾기';
+
+  @override
+  String get chatFilterFindPartner => '언어 파트너 찾기';
+
+  @override
+  String get chatFilterGender => '성별';
+
+  @override
+  String get chatFilterTargetLanguage => '배우고 싶은 언어';
+
+  @override
+  String get chatFilterFindPartners => '파트너 찾기';
+
+  @override
+  String get chatRequestPending => '요청 대기 중…';
+
+  @override
+  String get chatFilterLanguageAny => '전체';
 }

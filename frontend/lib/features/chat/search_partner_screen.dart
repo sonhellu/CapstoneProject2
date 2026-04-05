@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../l10n/app_localizations.dart';
 import 'models/chat_models.dart';
 import 'services/chat_service.dart';
 
@@ -72,10 +73,11 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final genderLabel = switch (widget.gender) {
-      Gender.any => 'Any',
-      Gender.male => 'Male',
-      Gender.female => 'Female',
+      Gender.any => l.partnerGenderAny,
+      Gender.male => l.partnerGenderMale,
+      Gender.female => l.partnerGenderFemale,
     };
 
     return Scaffold(
@@ -84,7 +86,7 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
         bottom: false,
         child: Column(
           children: [
-            _buildHeader(context, genderLabel),
+            _buildHeader(context, l, genderLabel),
             Expanded(
               child: FutureBuilder<List<PartnerModel>>(
                 future: _resultsFuture,
@@ -93,7 +95,7 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
                     return _buildLoading();
                   }
                   final partners = snapshot.data ?? [];
-                  if (partners.isEmpty) return _buildEmpty();
+                  if (partners.isEmpty) return _buildEmpty(context);
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
                     itemCount: partners.length,
@@ -114,7 +116,11 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, String genderLabel) {
+  Widget _buildHeader(
+    BuildContext context,
+    AppLocalizations l,
+    String genderLabel,
+  ) {
     return Container(
       color: _T.surface,
       padding: const EdgeInsets.fromLTRB(4, 4, 16, 12),
@@ -130,7 +136,7 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Language Partners',
+                  l.partnerSearchTitle,
                   style: GoogleFonts.notoSansKr(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -159,7 +165,8 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
     );
   }
 
-  Widget _buildEmpty() {
+  Widget _buildEmpty(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -168,7 +175,7 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
               color: _T.primary.withValues(alpha: 0.25)),
           const SizedBox(height: 16),
           Text(
-            'No partners found',
+            l.partnerEmptyTitle,
             style: GoogleFonts.notoSansKr(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -177,7 +184,7 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Try changing your filter settings.',
+            l.partnerEmptySubtitle,
             style: GoogleFonts.notoSansKr(
                 fontSize: 13, color: _T.textGrey),
           ),
@@ -201,6 +208,7 @@ class _PartnerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final nativeFg =
         _langColors[partner.nativeLanguage] ?? _T.primary;
     final nativeBg =
@@ -288,7 +296,7 @@ class _PartnerCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    'Online',
+                    l.partnerOnline,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
@@ -333,7 +341,7 @@ class _PartnerCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: _RequestButton(
-                status: status, onTap: onSendRequest),
+                l: l, status: status, onTap: onSendRequest),
           ),
         ],
       ),
@@ -343,7 +351,12 @@ class _PartnerCard extends StatelessWidget {
 
 // ─────────────────────────── Request Button ───────────────────────────
 class _RequestButton extends StatelessWidget {
-  const _RequestButton({required this.status, required this.onTap});
+  const _RequestButton({
+    required this.l,
+    required this.status,
+    required this.onTap,
+  });
+  final AppLocalizations l;
   final RequestStatus status;
   final VoidCallback onTap;
 
@@ -354,7 +367,7 @@ class _RequestButton extends StatelessWidget {
           onPressed: onTap,
           icon: const Icon(Icons.send_rounded, size: 16),
           label: Text(
-            'Send Request',
+            l.partnerSendRequest,
             style: GoogleFonts.notoSansKr(
                 fontSize: 13, fontWeight: FontWeight.w700),
           ),
@@ -378,7 +391,7 @@ class _RequestButton extends StatelessWidget {
             ),
           ),
           label: Text(
-            'Pending…',
+            l.partnerPending,
             style: GoogleFonts.notoSansKr(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -395,7 +408,7 @@ class _RequestButton extends StatelessWidget {
           onPressed: null,
           icon: const Icon(Icons.check_rounded, size: 16),
           label: Text(
-            'Accepted!',
+            l.partnerAccepted,
             style: GoogleFonts.notoSansKr(
                 fontSize: 13, fontWeight: FontWeight.w700),
           ),

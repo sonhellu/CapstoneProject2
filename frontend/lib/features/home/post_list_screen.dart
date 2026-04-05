@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../l10n/app_localizations.dart';
 import 'models/post.dart';
 import 'widgets/post_card.dart';
 
@@ -93,6 +94,7 @@ class _PostListScreenState extends State<PostListScreen> {
 
   // ─── Header ───
   Widget _buildHeader(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       color: _T.surface,
       padding: const EdgeInsets.fromLTRB(4, 4, 8, 4),
@@ -105,7 +107,7 @@ class _PostListScreenState extends State<PostListScreen> {
           ),
           Expanded(
             child: Text(
-              'Community Board',
+              l.communityBoardTitle,
               style: GoogleFonts.notoSansKr(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -142,7 +144,7 @@ class _PostListScreenState extends State<PostListScreen> {
         style: GoogleFonts.notoSansKr(fontSize: 14, color: _T.textDark),
         onChanged: (v) => setState(() => _query = v),
         decoration: InputDecoration(
-          hintText: 'Search posts, authors…',
+          hintText: AppLocalizations.of(context)!.communitySearchHint,
           hintStyle: GoogleFonts.notoSansKr(
             fontSize: 14,
             color: _T.textLight,
@@ -164,13 +166,14 @@ class _PostListScreenState extends State<PostListScreen> {
 
   // ─── Sort Row ───
   Widget _buildSortRow() {
+    final l = AppLocalizations.of(context)!;
     return Container(
       color: _T.surface,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: Row(
         children: [
           Text(
-            '${_filtered.length} posts',
+            l.communityPostCount(_filtered.length),
             style: GoogleFonts.notoSansKr(
               fontSize: 12,
               color: _T.textLight,
@@ -178,13 +181,13 @@ class _PostListScreenState extends State<PostListScreen> {
           ),
           const Spacer(),
           _SortChip(
-            label: 'Recent',
+            label: l.communitySortRecent,
             selected: _sortMode == 'Recent',
             onTap: () => setState(() => _sortMode = 'Recent'),
           ),
           const SizedBox(width: 8),
           _SortChip(
-            label: 'Popular',
+            label: l.communitySortPopular,
             icon: Icons.local_fire_department_rounded,
             selected: _sortMode == 'Popular',
             onTap: () => setState(() => _sortMode = 'Popular'),
@@ -202,7 +205,7 @@ class _PostListScreenState extends State<PostListScreen> {
           Icon(Icons.search_off_rounded, size: 56, color: _T.textLight),
           const SizedBox(height: 12),
           Text(
-            'No posts found',
+            AppLocalizations.of(context)!.communityNoPosts,
             style: GoogleFonts.notoSansKr(
               fontSize: 15,
               color: _T.textGrey,

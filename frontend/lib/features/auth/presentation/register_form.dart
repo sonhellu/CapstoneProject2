@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../utils/auth_validators.dart';
 import 'widgets/auth_primary_button.dart';
@@ -19,6 +20,7 @@ class RegisterForm extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final name = useTextEditingController();
     final email = useTextEditingController();
@@ -50,65 +52,65 @@ class RegisterForm extends HookWidget {
           AuthTextField(
             key: const Key('register_name'),
             controller: name,
-            label: 'Họ và tên',
-            hint: 'Nguyễn Văn A',
+            label: l.authFieldFullName,
+            hint: l.authHintNameExample,
             prefixIcon: Icons.person_outline_rounded,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.name],
-            validator: AuthValidators.name,
+            validator: (v) => AuthValidators.name(v, l),
           ),
           const SizedBox(height: 16),
           AuthTextField(
             key: const Key('register_email'),
             controller: email,
-            label: 'Email',
-            hint: 'ten.email@duhoc.vn',
+            label: l.authFieldEmail,
+            hint: l.authHintEmail,
             prefixIcon: Icons.mail_outline_rounded,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.email],
-            validator: AuthValidators.email,
+            validator: (v) => AuthValidators.email(v, l),
           ),
           const SizedBox(height: 16),
           AuthTextField(
             key: const Key('register_password'),
             controller: password,
-            label: 'Mật khẩu',
-            hint: 'Ít nhất 8 ký tự',
+            label: l.authFieldPassword,
+            hint: l.authHintPasswordMin,
             prefixIcon: Icons.lock_outline_rounded,
             obscureText: obscure.value,
             showObscureToggle: true,
             onToggleObscure: () => obscure.value = !obscure.value,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.newPassword],
-            validator: AuthValidators.password,
+            validator: (v) => AuthValidators.password(v, l),
           ),
           const SizedBox(height: 16),
           AuthTextField(
             key: const Key('register_confirm'),
             controller: confirm,
-            label: 'Xác nhận mật khẩu',
-            hint: 'Nhập lại mật khẩu',
+            label: l.authFieldPasswordConfirm,
+            hint: l.authHintConfirmPassword,
             prefixIcon: Icons.verified_user_outlined,
             obscureText: obscureConfirm.value,
             showObscureToggle: true,
             onToggleObscure: () => obscureConfirm.value = !obscureConfirm.value,
             textInputAction: TextInputAction.done,
             validator: (v) =>
-                AuthValidators.confirmPassword(v, password.text),
+                AuthValidators.confirmPassword(v, password.text, l),
             onSubmitted: (_) => submit(),
           ),
           const SizedBox(height: 24),
           AuthPrimaryButton(
             key: const Key('register_submit'),
-            label: 'Tạo tài khoản',
+            label: l.authButtonRegister,
             isLoading: loading.value,
             onPressed: submit,
           ),
           const SizedBox(height: 24),
           SocialAuthButtons(
-            onGoogle: () => _snack(context, 'Đăng ký với Google (demo)'),
-            onKakao: () => _snack(context, 'Đăng ký với KakaoTalk (demo)'),
+            onGoogle: () => _snack(context, l.authSocialGoogleRegisterDemo),
+            onKakao: () => _snack(context, l.authSocialKakaoRegisterDemo),
           ),
         ],
       ),
