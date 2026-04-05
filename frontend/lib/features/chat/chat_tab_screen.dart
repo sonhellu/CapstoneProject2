@@ -1,6 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
 
+import '../../l10n/app_localizations.dart';
 import 'chat_detail_screen.dart';
 import 'models/chat_models.dart';
 import 'search_partner_screen.dart';
@@ -79,9 +83,9 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _MatchFilterSheet(
+      builder: (ctx) => _MatchFilterSheet(
         onFind: (gender, language) {
-          Navigator.pop(context);
+          Navigator.pop(ctx);
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -98,13 +102,15 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final safeBottom = MediaQuery.of(context).padding.bottom;
+    final mq = MediaQuery.of(context);
+    final safeBottom = mq.viewPadding.bottom;
     final navBarHeight = kBottomNavigationBarHeight + safeBottom;
+    final fabBottomPadding = math.max(0.0, navBarHeight + 40.0);
 
     return Scaffold(
       backgroundColor: _T.background,
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: navBarHeight - 60),
+        padding: EdgeInsets.only(bottom: fabBottomPadding),
         child: FloatingActionButton(
           onPressed: _openMatchFilter,
           backgroundColor: _T.primary,
@@ -120,36 +126,45 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
             _buildHeader(),
             if (_isSearchOpen) _buildSearchBar(),
             Expanded(
-              child: _isLoading
-                  ? _buildSkeleton()
-                  : _filtered.isEmpty
-                      ? _buildEmpty()
-                      : RefreshIndicator(
-                          onRefresh: _loadChats,
-                          color: _T.primary,
-                          child: ListView.separated(
-                            padding:
-                                EdgeInsets.only(bottom: navBarHeight + 16),
-                            itemCount: _filtered.length,
-                            separatorBuilder: (_, _) => const Divider(
-                              height: 1,
-                              indent: 80,
-                              color: _T.divider,
-                            ),
-                            itemBuilder: (context, i) =>
-                                _ChatTile(
-                              chat: _filtered[i],
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ChatDetailScreen(
-                                    chat: _filtered[i],
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 340),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: child,
+                ),
+                child: _isLoading
+                    ? _buildSkeleton()
+                    : _filtered.isEmpty
+                        ? _buildEmpty()
+                        : RefreshIndicator(
+                            key: const ValueKey('chat-list'),
+                            onRefresh: _loadChats,
+                            color: _T.primary,
+                            child: ListView.separated(
+                              padding:
+                                  EdgeInsets.only(bottom: navBarHeight + 16),
+                              itemCount: _filtered.length,
+                              separatorBuilder: (_, _) => const Divider(
+                                height: 1,
+                                indent: 80,
+                                color: _T.divider,
+                              ),
+                              itemBuilder: (context, i) => _ChatTile(
+                                chat: _filtered[i],
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ChatDetailScreen(
+                                      chat: _filtered[i],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
+              ),
             ),
           ],
         ),
@@ -158,6 +173,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   }
 
   Widget _buildHeader() {
+    final l = AppLocalizations.of(context)!;
     return Container(
       color: _T.surface,
       padding: const EdgeInsets.fromLTRB(20, 16, 8, 12),
@@ -165,7 +181,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
         children: [
           Expanded(
             child: Text(
-              'Messages',
+              l.chatMessages,
               style: GoogleFonts.notoSansKr(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
@@ -191,6 +207,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   }
 
   Widget _buildSearchBar() {
+    final l = AppLocalizations.of(context)!;
     return Container(
       color: _T.surface,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -201,7 +218,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
         style:
             GoogleFonts.notoSansKr(fontSize: 14, color: _T.textDark),
         decoration: InputDecoration(
-          hintText: 'Search conversations…',
+          hintText: l.chatSearchConversations,
           hintStyle: GoogleFonts.notoSansKr(
               fontSize: 14, color: _T.textLight),
           prefixIcon: const Icon(Icons.search_rounded,
@@ -220,6 +237,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   }
 
   Widget _buildEmpty() {
+    final l = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -239,7 +257,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            'No conversations yet',
+            l.chatEmptyTitle,
             style: GoogleFonts.notoSansKr(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -248,7 +266,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Find a language partner to start chatting!',
+            l.chatEmptySubtitle,
             style: GoogleFonts.notoSansKr(
                 fontSize: 13, color: _T.textGrey),
             textAlign: TextAlign.center,
@@ -258,7 +276,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
             onPressed: _openMatchFilter,
             icon: const Icon(Icons.person_search_rounded, size: 18),
             label: Text(
-              'Find Partner',
+              l.chatFindPartnerButton,
               style: GoogleFonts.notoSansKr(
                   fontSize: 14, fontWeight: FontWeight.w700),
             ),
@@ -277,11 +295,18 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   }
 
   Widget _buildSkeleton() {
-    return ListView.separated(
-      itemCount: 5,
-      separatorBuilder: (_, _) =>
-          const Divider(height: 1, indent: 80, color: _T.divider),
-      itemBuilder: (_, _) => const _SkeletonTile(),
+    return Shimmer.fromColors(
+      key: const ValueKey('skeleton'),
+      baseColor: const Color(0xFFEEEFF1),
+      highlightColor: const Color(0xFFFAFAFB),
+      period: const Duration(milliseconds: 1200),
+      child: ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 6,
+        separatorBuilder: (_, _) =>
+            const Divider(height: 1, indent: 80, color: _T.divider),
+        itemBuilder: (_, _) => const _SkeletonTile(),
+      ),
     );
   }
 }
@@ -294,6 +319,7 @@ class _ChatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final hasUnread = chat.unreadCount > 0;
 
     return InkWell(
@@ -368,7 +394,7 @@ class _ChatTile extends StatelessWidget {
                         child: Text(
                           chat.isActive
                               ? chat.lastMessage
-                              : '⏳ Request pending…',
+                              : '⏳ ${l.chatRequestPending}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.notoSansKr(
@@ -432,6 +458,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final safeBottom = MediaQuery.of(context).padding.bottom;
 
     return Container(
@@ -471,7 +498,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
               ),
               const SizedBox(width: 12),
               Text(
-                'Find Language Partner',
+                l.chatFilterFindPartner,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
@@ -483,7 +510,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
           const SizedBox(height: 24),
           // Gender
           Text(
-            'Gender',
+            l.chatFilterGender,
             style: GoogleFonts.notoSansKr(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -494,9 +521,9 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
           Row(
             children: Gender.values.map((g) {
               final label = switch (g) {
-                Gender.any => '🌐  Any',
-                Gender.male => '👨  Male',
-                Gender.female => '👩  Female',
+                Gender.any => '🌐  ${l.partnerGenderAny}',
+                Gender.male => '👨  ${l.partnerGenderMale}',
+                Gender.female => '👩  ${l.partnerGenderFemale}',
               };
               final selected = _gender == g;
               return Expanded(
@@ -535,7 +562,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
           const SizedBox(height: 20),
           // Language
           Text(
-            'Target Language to Learn',
+            l.chatFilterTargetLanguage,
             style: GoogleFonts.notoSansKr(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -548,6 +575,8 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
             runSpacing: 8,
             children: _languages.map((lang) {
               final selected = _language == lang;
+              final displayText =
+                  lang == 'Any' ? l.chatFilterLanguageAny : lang;
               return GestureDetector(
                 onTap: () => setState(() => _language = lang),
                 child: AnimatedContainer(
@@ -566,7 +595,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                     ),
                   ),
                   child: Text(
-                    lang,
+                    displayText,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -586,7 +615,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
               onPressed: () => widget.onFind(_gender, _language),
               icon: const Icon(Icons.search_rounded, size: 18),
               label: Text(
-                'Find Partners',
+                l.chatFilterFindPartners,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -608,24 +637,50 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
 }
 
 // ─────────────────────────── Skeleton Tile ───────────────────────────
+/// Mirrors [_ChatTile] layout exactly so the shimmer transition feels natural.
+/// Shimmer colour is driven by the parent [Shimmer.fromColors] — these boxes
+/// must be white so the gradient shows through correctly.
 class _SkeletonTile extends StatelessWidget {
   const _SkeletonTile();
+
+  // White fill — Shimmer.fromColors paints over this with its gradient.
+  static const _fill = Colors.white;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _shimmerBox(52, 52, circle: true),
+          // ── Avatar circle ──
+          Container(
+            width: 52,
+            height: 52,
+            decoration: const BoxDecoration(
+              color: _fill,
+              shape: BoxShape.circle,
+            ),
+          ),
           const SizedBox(width: 14),
+          // ── Two text lines ──
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _shimmerBox(12, 120),
-                const SizedBox(height: 6),
-                _shimmerBox(10, 200),
+                // Name row: name line + timestamp stub
+                Row(
+                  children: [
+                    _box(h: 13, w: 130),
+                    const Spacer(),
+                    _box(h: 11, w: 36),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Last message line — shorter than full width
+                _box(h: 11, w: double.infinity),
+                const SizedBox(height: 4),
+                _box(h: 11, w: 140),
               ],
             ),
           ),
@@ -634,17 +689,14 @@ class _SkeletonTile extends StatelessWidget {
     );
   }
 
-  Widget _shimmerBox(double h, double w, {bool circle = false}) {
-    return Container(
-      width: w,
-      height: h,
-      decoration: BoxDecoration(
-        color: const Color(0xFFEEEEEE),
-        shape: circle ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: circle ? null : BorderRadius.circular(6),
-      ),
-    );
-  }
+  Widget _box({required double h, required double w}) => Container(
+        width: w,
+        height: h,
+        decoration: BoxDecoration(
+          color: _fill,
+          borderRadius: BorderRadius.circular(6),
+        ),
+      );
 }
 
 // ─────────────────────────── Avatar ───────────────────────────

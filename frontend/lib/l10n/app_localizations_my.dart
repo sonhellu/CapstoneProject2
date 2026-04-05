@@ -290,4 +290,398 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get timeYesterday => 'မနေ့က';
+
+  @override
+  String get homeViewAll => 'အားလုံးကြည့်';
+
+  @override
+  String get homeIntlNews => 'နိုင်ငံတကာသတင်း 🌏';
+
+  @override
+  String get homeCampusLife => 'ကျောင်းဘဝ 🇰🇷';
+
+  @override
+  String get profilePersonalInfo => 'ကိုယ်ရေးအချက်အလက်';
+
+  @override
+  String get profileEditInfo => 'အချက်အလက်တည်းဖြတ်';
+
+  @override
+  String get profileNativeLang => 'မိခင်ဘာသာ';
+
+  @override
+  String get profileUniversity => 'တက္ကသိုလ်';
+
+  @override
+  String get profileMajor => 'အဓိကဘာသာ';
+
+  @override
+  String get profileNationality => 'နိုင်ငံသားဖြစ်မှု';
+
+  @override
+  String get profileEmail => 'အီးမေးလ်';
+
+  @override
+  String get profileFullName => 'အမည်';
+
+  @override
+  String get profileVerified => 'အတည်ပြုပြီး';
+
+  @override
+  String get profileLogoutConfirm => 'ထွက်မည်မှာ သေချာသလား?';
+
+  @override
+  String get profileSaveChanges => 'ပြောင်းလဲမှုများ သိမ်းဆည်း';
+
+  @override
+  String get communityBoardTitle => 'အသိုင်းအဝိုင်းဘုတ်';
+
+  @override
+  String get communitySearchHint => 'ပို့စ်များ၊ ရေးသားသူများ ရှာဖွေ…';
+
+  @override
+  String communityPostCount(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString ပို့စ်',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communitySortRecent => 'နောက်ဆုံး';
+
+  @override
+  String get communitySortPopular => 'လူကြိုက်များ';
+
+  @override
+  String get communityNoPosts => 'ပို့စ်မတွေ့ပါ';
+
+  @override
+  String get createPostNew => 'ပို့စ်အသစ်';
+
+  @override
+  String get createPostCategory => 'အမျိုးအစား';
+
+  @override
+  String get createPostTitleLabel => 'ခေါင်းစဉ်';
+
+  @override
+  String get createPostTitleHint => 'ရှင်းလင်းသောခေါင်းစဉ်ထည့်ပါ…';
+
+  @override
+  String get createPostLanguage => 'ပို့စ်ဘာသာ';
+
+  @override
+  String get createPostContent => 'အကြောင်းအရာ';
+
+  @override
+  String get createPostContentHint => 'ပို့စ်ရေးပါ…';
+
+  @override
+  String get createPostPhotos => 'ဓာတ်ပုံ';
+
+  @override
+  String get createPostAddPhoto => 'ထည့်';
+
+  @override
+  String get createPostGallery => 'ဓာတ်ပုံပြခန်း';
+
+  @override
+  String get createPostCamera => 'ကင်မရာ';
+
+  @override
+  String get createPostPublish => 'တင်မည်';
+
+  @override
+  String get postCopied => 'ကလစ်ဘုတ်သို့ကူးပြီး';
+
+  @override
+  String get postFollow => 'လိုက်နာ';
+
+  @override
+  String get postFollowing => 'လိုက်နာနေ';
+
+  @override
+  String get postActionCopy => 'ကူး';
+
+  @override
+  String get postNoImage => 'ပုံမရှိ';
+
+  @override
+  String get authHeaderTitle => 'နိုင်ငံတကာကျောင်းသားများ၊ မင်္ဂလာပါ!';
+
+  @override
+  String get authHeaderSubtitle =>
+      'ကမ္ဘာ့သင်ယူမှုခရီးကို အတူတကွ လျှောက်လှမ်းကြပါစို့။';
+
+  @override
+  String get authLoginTitle => 'ဝင်ရောက်မည်';
+
+  @override
+  String get authLoginSubtitle => 'အီးမေးလ်နှင့် စကားဝှက်ထည့်ပါ။';
+
+  @override
+  String get authRegisterTitle => 'အကောင့်ဖွင့်မည်';
+
+  @override
+  String get authRegisterSubtitle =>
+      'အကောင့်ဖန်တီးပြီး နိုင်ငံတကာကျောင်းသားဘဝကို စတင်ပါ။';
+
+  @override
+  String get authFooterNoAccount => 'အကောင့်မရှိသေးဘူးလား?';
+
+  @override
+  String get authFooterHasAccount => 'အကောင့်ရှိပြီးသားလား?';
+
+  @override
+  String get authSwitchToRegister => 'မှတ်ပုံတင်မည်';
+
+  @override
+  String get authSwitchToLogin => 'ဝင်မည်';
+
+  @override
+  String get authFieldEmail => 'အီးမေးလ်';
+
+  @override
+  String get authFieldPassword => 'စကားဝှက်';
+
+  @override
+  String get authFieldPasswordConfirm => 'စကားဝှက်အတည်ပြု';
+
+  @override
+  String get authFieldFullName => 'အမည်အပြည့်အစုံ';
+
+  @override
+  String get authHintEmail => 'you@school.edu';
+
+  @override
+  String get authHintPasswordDots => '••••••••';
+
+  @override
+  String get authHintPasswordMin => 'အနည်းဆုံး ၈ လုံး';
+
+  @override
+  String get authHintConfirmPassword => 'စကားဝှက်ပြန်ထည့်';
+
+  @override
+  String get authHintNameExample => 'အောင်အောင်';
+
+  @override
+  String get authButtonLogin => 'ဝင်မည်';
+
+  @override
+  String get authButtonRegister => 'အကောင့်ဖန်တီးမည်';
+
+  @override
+  String get authSocialGoogleLoginDemo => 'Google ဖြင့် ဝင်ရောက်မည် (ဒမို)';
+
+  @override
+  String get authSocialKakaoLoginDemo => 'KakaoTalk ဖြင့် ဝင်ရောက်မည် (ဒမို)';
+
+  @override
+  String get authSocialGoogleRegisterDemo =>
+      'Google ဖြင့် မှတ်ပုံတင်မည် (ဒမို)';
+
+  @override
+  String get authSocialKakaoRegisterDemo =>
+      'KakaoTalk ဖြင့် မှတ်ပုံတင်မည် (ဒမို)';
+
+  @override
+  String get authSocialOr => 'သို့မဟုတ်';
+
+  @override
+  String get authSocialContinueGoogle => 'Google ဖြင့် ဆက်လုပ်မည်';
+
+  @override
+  String get authSocialKakaoLabel => 'KakaoTalk ID';
+
+  @override
+  String get authValidationEmailEmpty => 'အီးမေးလ်ထည့်ပါ';
+
+  @override
+  String get authValidationEmailInvalid => 'အီးမေးလ်ပုံစံမမှန်ပါ';
+
+  @override
+  String get authValidationPasswordEmpty => 'စကားဝှက်ထည့်ပါ';
+
+  @override
+  String get authValidationPasswordMin => 'စကားဝှက် အနည်းဆုံး ၈ လုံး လိုအပ်သည်';
+
+  @override
+  String get authValidationNameEmpty => 'အမည်ထည့်ပါ';
+
+  @override
+  String get authValidationNameShort => 'အမည်တိုလွန်းသည်';
+
+  @override
+  String get authValidationConfirmEmpty => 'စကားဝှက်အတည်ပြုပါ';
+
+  @override
+  String get authValidationConfirmMismatch => 'စကားဝှက်မတူညီပါ';
+
+  @override
+  String get authTooltipShowPassword => 'စကားဝှက်ပြမည်';
+
+  @override
+  String get authTooltipHidePassword => 'စကားဝှက်ဖျောက်မည်';
+
+  @override
+  String get languageSheetSubtitle => 'အက်ပ်ဘာသာစကားကို ရွေးချယ်ပါ';
+
+  @override
+  String get mapPinFormTitle => 'နေရာပင်ထိုးမည်';
+
+  @override
+  String get mapPinSectionVisibility => 'မြင်သာမှု';
+
+  @override
+  String get mapPinSectionType => 'နေရာအမျိုးအစား';
+
+  @override
+  String get mapPinSectionName => 'နေရာအမည် *';
+
+  @override
+  String get mapPinSectionNotes => 'သူငယ်ချင်းများအတွက် မှတ်ချက်';
+
+  @override
+  String get mapPinSectionRating => 'အဆင့်သတ်မှတ်ချက်';
+
+  @override
+  String get mapPinSectionPhotos => 'ဓာတ်ပုံ';
+
+  @override
+  String get mapPinNameHint => 'ဥပမာ — O. Sáu အသားခေါက်ဆွဲ';
+
+  @override
+  String get mapPinNotesHint =>
+      'စျေးနှုန်း၊ လေထု၊ အစားအစာ… ရိုးသားစွာ မျှဝေပါ!';
+
+  @override
+  String get mapPinVisibilityPublic =>
+      'အများမြင် — ကျောင်းသားအားလုံး မြင်နိုင်သည်';
+
+  @override
+  String get mapPinVisibilityPrivate => 'ကျွန်ုပ်တစ်ဦးတည်းသာ';
+
+  @override
+  String get mapPinSaveFail => 'သိမ်းဆည်း၍မရပါ။ ထပ်ကြိုးစားပါ။';
+
+  @override
+  String get mapPinAddPhoto => 'ဓာတ်ပုံထည့်';
+
+  @override
+  String get mapPinSaveButton => 'နေရာသိမ်းဆည်း';
+
+  @override
+  String get mapPinSuccessTitle => 'ပင်ထိုးပြီးပါပြီ!';
+
+  @override
+  String get mapPinShareTitle => 'ဤနေရာကို မျှဝေမလား?';
+
+  @override
+  String get mapPinShareMessage =>
+      'စားသောက်ဆိုင်၊ အိမ်ခြံမြေ သို့မဟုတ် ကျောင်းအနီးဆိုင်ရာ နေရာကို သိမ်းဆည်းပါ။';
+
+  @override
+  String get mapPinShareAction => 'ဤနေရာကို ပင်ထိုးမည်';
+
+  @override
+  String get mapLocationServicesDisabled => 'တည်နေရာဝန်ဆောင်မှုကို ဖွင့်ပါ။';
+
+  @override
+  String get mapLocationPermissionRequired => 'တည်နေရာခွင့်ပြုချက် လိုအပ်သည်။';
+
+  @override
+  String get statusFetchingLocation => 'တည်နေရာရယူနေသည်…';
+
+  @override
+  String get mapUnavailable => 'မြေပုံ မရနိုင်ပါ';
+
+  @override
+  String get mapSdkInitializing => 'Naver Map SDK စတင်နေသည်…';
+
+  @override
+  String mapSdkError(String error) {
+    return 'အမှား: $error';
+  }
+
+  @override
+  String get mapPinInfoPublicShort => 'အများမြင်';
+
+  @override
+  String get pinTypeRestaurant => 'စားကောင်းသောနေရာ';
+
+  @override
+  String get pinTypeRealEstate => 'အိမ်ခြံမြေ';
+
+  @override
+  String get pinTypeUtility => 'အခြားအဆင်ပြေများ';
+
+  @override
+  String get partnerSearchTitle => 'ဘာသာစကားဖော်ဖော်ရှာဖော်များ';
+
+  @override
+  String get partnerGenderAny => 'အားလုံး';
+
+  @override
+  String get partnerGenderMale => 'ကျား';
+
+  @override
+  String get partnerGenderFemale => 'မ';
+
+  @override
+  String get partnerEmptyTitle => 'ဖော်ဖော်ရှာဖော် မတွေ့ပါ';
+
+  @override
+  String get partnerEmptySubtitle => 'စစ်ထုတ်မှုကို ပြောင်းကြည့်ပါ။';
+
+  @override
+  String get partnerOnline => 'အွန်လိုင်း';
+
+  @override
+  String get partnerSendRequest => 'တောင်းဆိုမှုပို့မည်';
+
+  @override
+  String get partnerPending => 'စောင့်ဆိုင်းနေသည်…';
+
+  @override
+  String get partnerAccepted => 'လက်ခံပြီး!';
+
+  @override
+  String get chatSearchConversations => 'စကားပြောများကို ရှာဖွေပါ…';
+
+  @override
+  String get chatEmptyTitle => 'စကားပြောမရှိသေးပါ';
+
+  @override
+  String get chatEmptySubtitle =>
+      'ဘာသာစကားဖော်ဖော်ရှာဖော်ရှာပြီး စကားပြောစမည်!';
+
+  @override
+  String get chatFindPartnerButton => 'ဖော်ဖော်ရှာဖော်ရှာ';
+
+  @override
+  String get chatFilterFindPartner => 'ဘာသာစကားဖော်ဖော်ရှာဖော်ရှာ';
+
+  @override
+  String get chatFilterGender => 'ကျား/မ';
+
+  @override
+  String get chatFilterTargetLanguage => 'သင်ယူလိုသော ဘာသာ';
+
+  @override
+  String get chatFilterFindPartners => 'ဖော်ဖော်ရှာဖော်များ ရှာမည်';
+
+  @override
+  String get chatRequestPending => 'တောင်းဆိုမှု စောင့်ဆိုင်းနေသည်…';
+
+  @override
+  String get chatFilterLanguageAny => 'အားလုံး';
 }

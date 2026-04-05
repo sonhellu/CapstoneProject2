@@ -1,9 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/widgets/language_picker_button.dart';
+import '../../l10n/app_localizations.dart';
 import 'create_post_screen.dart';
 import 'models/post.dart';
 import 'post_list_screen.dart';
@@ -107,13 +110,17 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final safeBottom = MediaQuery.of(context).padding.bottom;
+    final l = AppLocalizations.of(context)!;
+    final mq = MediaQuery.of(context);
+    // viewPadding: physical safe area; not reduced when keyboard opens (unlike padding.bottom).
+    final safeBottom = mq.viewPadding.bottom;
     final navBarHeight = kBottomNavigationBarHeight + safeBottom;
+    final fabBottomPadding = math.max(0.0, navBarHeight + 40.0);
 
     return Scaffold(
       backgroundColor: _T.background,
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: navBarHeight - 60),
+        padding: EdgeInsets.only(bottom: fabBottomPadding),
         child: AnimatedScale(
           scale: _fabScale,
           duration: const Duration(milliseconds: 200),
@@ -130,7 +137,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           // ── International horizontal section ──
           SliverToBoxAdapter(
             child: _SectionHeader(
-              title: 'International News 🌏',
+              title: l.homeIntlNews,
               onViewAll: _openPostList,
             ),
           ),
@@ -139,7 +146,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           // ── Campus vertical section ──
           SliverToBoxAdapter(
             child: _SectionHeader(
-              title: 'Campus Life 🇰🇷',
+              title: l.homeCampusLife,
               onViewAll: _openPostList,
             ),
           ),
@@ -360,7 +367,7 @@ class _SectionHeader extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
             child: Text(
-              'View All',
+              AppLocalizations.of(context)!.homeViewAll,
               style: GoogleFonts.notoSansKr(fontSize: 12),
             ),
           ),

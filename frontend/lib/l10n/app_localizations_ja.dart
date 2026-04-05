@@ -290,4 +290,390 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timeYesterday => '昨日';
+
+  @override
+  String get homeViewAll => 'すべて見る';
+
+  @override
+  String get homeIntlNews => '国際ニュース 🌏';
+
+  @override
+  String get homeCampusLife => 'キャンパスライフ 🇰🇷';
+
+  @override
+  String get profilePersonalInfo => '個人情報';
+
+  @override
+  String get profileEditInfo => '情報編集';
+
+  @override
+  String get profileNativeLang => '母国語';
+
+  @override
+  String get profileUniversity => '大学';
+
+  @override
+  String get profileMajor => '専攻';
+
+  @override
+  String get profileNationality => '国籍';
+
+  @override
+  String get profileEmail => 'メール';
+
+  @override
+  String get profileFullName => '氏名';
+
+  @override
+  String get profileVerified => '認証済み';
+
+  @override
+  String get profileLogoutConfirm => '本当にサインアウトしますか？';
+
+  @override
+  String get profileSaveChanges => '変更を保存';
+
+  @override
+  String get communityBoardTitle => 'コミュニティ掲示板';
+
+  @override
+  String get communitySearchHint => '投稿、ユーザーを検索…';
+
+  @override
+  String communityPostCount(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件の投稿',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communitySortRecent => '新着';
+
+  @override
+  String get communitySortPopular => '人気';
+
+  @override
+  String get communityNoPosts => '投稿が見つかりません';
+
+  @override
+  String get createPostNew => '新規投稿';
+
+  @override
+  String get createPostCategory => 'カテゴリー';
+
+  @override
+  String get createPostTitleLabel => 'タイトル';
+
+  @override
+  String get createPostTitleHint => '明確なタイトルを入力…';
+
+  @override
+  String get createPostLanguage => '投稿言語';
+
+  @override
+  String get createPostContent => '内容';
+
+  @override
+  String get createPostContentHint => 'ここに投稿内容を入力…';
+
+  @override
+  String get createPostPhotos => '写真';
+
+  @override
+  String get createPostAddPhoto => '追加';
+
+  @override
+  String get createPostGallery => 'ギャラリー';
+
+  @override
+  String get createPostCamera => 'カメラ';
+
+  @override
+  String get createPostPublish => '投稿する';
+
+  @override
+  String get postCopied => 'クリップボードにコピーしました';
+
+  @override
+  String get postFollow => 'フォロー';
+
+  @override
+  String get postFollowing => 'フォロー中';
+
+  @override
+  String get postActionCopy => 'コピー';
+
+  @override
+  String get postNoImage => '画像なし';
+
+  @override
+  String get authHeaderTitle => '留学生の皆さん、こんにちは！';
+
+  @override
+  String get authHeaderSubtitle => '一緒にグローバルな学びの旅を歩みましょう。';
+
+  @override
+  String get authLoginTitle => 'ログイン';
+
+  @override
+  String get authLoginSubtitle => 'メールとパスワードを入力してください。';
+
+  @override
+  String get authRegisterTitle => '新規登録';
+
+  @override
+  String get authRegisterSubtitle => 'アカウントを作成して留学ライフを始めましょう。';
+
+  @override
+  String get authFooterNoAccount => 'アカウントをお持ちでないですか？';
+
+  @override
+  String get authFooterHasAccount => 'すでにアカウントをお持ちですか？';
+
+  @override
+  String get authSwitchToRegister => '新規登録';
+
+  @override
+  String get authSwitchToLogin => 'ログイン';
+
+  @override
+  String get authFieldEmail => 'メール';
+
+  @override
+  String get authFieldPassword => 'パスワード';
+
+  @override
+  String get authFieldPasswordConfirm => 'パスワード確認';
+
+  @override
+  String get authFieldFullName => '氏名';
+
+  @override
+  String get authHintEmail => 'you@school.edu';
+
+  @override
+  String get authHintPasswordDots => '••••••••';
+
+  @override
+  String get authHintPasswordMin => '8文字以上';
+
+  @override
+  String get authHintConfirmPassword => 'パスワードを再入力';
+
+  @override
+  String get authHintNameExample => '山田 太郎';
+
+  @override
+  String get authButtonLogin => 'ログイン';
+
+  @override
+  String get authButtonRegister => 'アカウント作成';
+
+  @override
+  String get authSocialGoogleLoginDemo => 'Googleでログイン（デモ）';
+
+  @override
+  String get authSocialKakaoLoginDemo => 'KakaoTalkでログイン（デモ）';
+
+  @override
+  String get authSocialGoogleRegisterDemo => 'Googleで登録（デモ）';
+
+  @override
+  String get authSocialKakaoRegisterDemo => 'KakaoTalkで登録（デモ）';
+
+  @override
+  String get authSocialOr => 'または';
+
+  @override
+  String get authSocialContinueGoogle => 'Googleで続ける';
+
+  @override
+  String get authSocialKakaoLabel => 'KakaoTalk ID';
+
+  @override
+  String get authValidationEmailEmpty => 'メールを入力してください';
+
+  @override
+  String get authValidationEmailInvalid => 'メール形式が正しくありません';
+
+  @override
+  String get authValidationPasswordEmpty => 'パスワードを入力してください';
+
+  @override
+  String get authValidationPasswordMin => 'パスワードは8文字以上にしてください';
+
+  @override
+  String get authValidationNameEmpty => '名前を入力してください';
+
+  @override
+  String get authValidationNameShort => '名前が短すぎます';
+
+  @override
+  String get authValidationConfirmEmpty => 'パスワードを確認してください';
+
+  @override
+  String get authValidationConfirmMismatch => 'パスワードが一致しません';
+
+  @override
+  String get authTooltipShowPassword => 'パスワードを表示';
+
+  @override
+  String get authTooltipHidePassword => 'パスワードを隠す';
+
+  @override
+  String get languageSheetSubtitle => '表示言語を選んでください';
+
+  @override
+  String get mapPinFormTitle => '場所を保存';
+
+  @override
+  String get mapPinSectionVisibility => '公開範囲';
+
+  @override
+  String get mapPinSectionType => 'スポットの種類';
+
+  @override
+  String get mapPinSectionName => '場所名 *';
+
+  @override
+  String get mapPinSectionNotes => '友だちへのメモ';
+
+  @override
+  String get mapPinSectionRating => '評価';
+
+  @override
+  String get mapPinSectionPhotos => '写真';
+
+  @override
+  String get mapPinNameHint => '例：O. Sáu ビーフン';
+
+  @override
+  String get mapPinNotesHint => '価格、雰囲気、おすすめ料理…正直にシェア！';
+
+  @override
+  String get mapPinVisibilityPublic => '公開 — 全員に表示';
+
+  @override
+  String get mapPinVisibilityPrivate => '自分だけ';
+
+  @override
+  String get mapPinSaveFail => '保存に失敗しました。もう一度お試しください。';
+
+  @override
+  String get mapPinAddPhoto => '写真を追加';
+
+  @override
+  String get mapPinSaveButton => '場所を保存';
+
+  @override
+  String get mapPinSuccessTitle => '保存しました！';
+
+  @override
+  String get mapPinShareTitle => 'この場所を共有しますか？';
+
+  @override
+  String get mapPinShareMessage => 'おすすめの店、住まい、キャンパス近くの便利スポットをピン留めしましょう。';
+
+  @override
+  String get mapPinShareAction => 'この場所をピン留め';
+
+  @override
+  String get mapLocationServicesDisabled => '位置情報サービスをオンにしてください。';
+
+  @override
+  String get mapLocationPermissionRequired => '位置情報の許可が必要です。';
+
+  @override
+  String get statusFetchingLocation => '位置情報を取得中…';
+
+  @override
+  String get mapUnavailable => '地図を利用できません';
+
+  @override
+  String get mapSdkInitializing => 'Naver Map SDK を初期化中…';
+
+  @override
+  String mapSdkError(String error) {
+    return 'エラー: $error';
+  }
+
+  @override
+  String get mapPinInfoPublicShort => '公開';
+
+  @override
+  String get pinTypeRestaurant => 'グルメ';
+
+  @override
+  String get pinTypeRealEstate => '住まい';
+
+  @override
+  String get pinTypeUtility => 'その他の施設';
+
+  @override
+  String get partnerSearchTitle => '語学パートナー';
+
+  @override
+  String get partnerGenderAny => '指定なし';
+
+  @override
+  String get partnerGenderMale => '男性';
+
+  @override
+  String get partnerGenderFemale => '女性';
+
+  @override
+  String get partnerEmptyTitle => 'パートナーが見つかりません';
+
+  @override
+  String get partnerEmptySubtitle => 'フィルターを変えてみてください。';
+
+  @override
+  String get partnerOnline => 'オンライン';
+
+  @override
+  String get partnerSendRequest => 'リクエストを送る';
+
+  @override
+  String get partnerPending => '保留中…';
+
+  @override
+  String get partnerAccepted => '承認済み！';
+
+  @override
+  String get chatSearchConversations => '会話を検索…';
+
+  @override
+  String get chatEmptyTitle => 'まだ会話がありません';
+
+  @override
+  String get chatEmptySubtitle => '語学パートナーを見つけてチャットを始めましょう！';
+
+  @override
+  String get chatFindPartnerButton => 'パートナーを探す';
+
+  @override
+  String get chatFilterFindPartner => '語学パートナーを探す';
+
+  @override
+  String get chatFilterGender => '性別';
+
+  @override
+  String get chatFilterTargetLanguage => '学びたい言語';
+
+  @override
+  String get chatFilterFindPartners => 'パートナーを探す';
+
+  @override
+  String get chatRequestPending => 'リクエスト保留中…';
+
+  @override
+  String get chatFilterLanguageAny => '指定なし';
 }

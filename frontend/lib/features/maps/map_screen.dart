@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/naver_map/naver_map_sdk_controller.dart';
+import '../../l10n/app_localizations.dart';
 import '../shell/theme/shell_theme.dart';
 import 'models/user_pin_model.dart';
 import 'widgets/pin_bottom_sheet.dart';
@@ -52,8 +54,53 @@ class _MapScreenState extends State<MapScreen>
   /// In-memory list of pins saved this session.
   final List<UserPinModel> _pins = [];
 
+  // ── Search ───────────────────────────────────────────────────────
+  final _searchCtrl = TextEditingController();
+  final _searchFocus = FocusNode();
+  bool _searchActive = false;
+
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    _searchFocus.dispose();
+    super.dispose();
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Search Logic
+  // ────────────────────────────────────────────────────────────────
+
+  /// Called on every keystroke. Flies the camera to the first matching pin.
+  /// Replace the body with a real API call when the backend is ready.
+  void _onSearch(String query) {
+    debugPrint('[Map] search: "$query"');
+    if (query.trim().isEmpty || _mapCtrl == null) return;
+
+    final q = query.trim().toLowerCase();
+    final match = _pins.firstWhereOrNull(
+      (p) => p.name.toLowerCase().contains(q),
+    );
+    if (match == null) return;
+
+    final update = NCameraUpdate.scrollAndZoomTo(
+      target: match.latLng,
+      zoom: 16.0,
+    );
+    update.setAnimation(
+      animation: NCameraAnimation.fly,
+      duration: const Duration(milliseconds: 700),
+    );
+    _mapCtrl!.updateCamera(update);
+  }
+
+  void _clearSearch() {
+    _searchCtrl.clear();
+    setState(() => _searchActive = false);
+    _searchFocus.unfocus();
+  }
 
   // ────────────────────────────────────────────────────────────────
   // Location Logic
@@ -77,7 +124,8 @@ class _MapScreenState extends State<MapScreen>
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        _showSnack('Please enable location services.');
+        if (!mounted) return;
+        _showSnack(AppLocalizations.of(context)!.mapLocationServicesDisabled);
         return;
       }
 
@@ -87,7 +135,8 @@ class _MapScreenState extends State<MapScreen>
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        _showSnack('Location permission is required.');
+        if (!mounted) return;
+        _showSnack(AppLocalizations.of(context)!.mapLocationPermissionRequired);
         return;
       }
 
@@ -159,40 +208,43 @@ class _MapScreenState extends State<MapScreen>
   Future<bool> _showPinConfirmSheet() async {
     final result = await showCupertinoModalPopup<bool>(
       context: context,
-      builder: (_) => CupertinoActionSheet(
-        title: Text(
-          'Bạn muốn chia sẻ địa điểm này?',
-          style: GoogleFonts.notoSansKr(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        message: Text(
-          'Ghim một quán ăn ngon, phòng trọ tốt hay tiện ích gần trường.',
-          style: GoogleFonts.notoSansKr(fontSize: 13),
-        ),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              '📍  Ghim địa điểm này?',
-              style: GoogleFonts.notoSansKr(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF003478),
-              ),
+      builder: (ctx) {
+        final l = AppLocalizations.of(ctx)!;
+        return CupertinoActionSheet(
+          title: Text(
+            l.mapPinShareTitle,
+            style: GoogleFonts.notoSansKr(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
             ),
           ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          isDestructiveAction: true,
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(
-            'Huỷ',
-            style: GoogleFonts.notoSansKr(fontSize: 16),
+          message: Text(
+            l.mapPinShareMessage,
+            style: GoogleFonts.notoSansKr(fontSize: 13),
           ),
-        ),
-      ),
+          actions: [
+            CupertinoActionSheetAction(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(
+                '📍  ${l.mapPinShareAction}',
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF003478),
+                ),
+              ),
+            ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              l.btnCancel,
+              style: GoogleFonts.notoSansKr(fontSize: 16),
+            ),
+          ),
+        );
+      },
     );
     return result ?? false;
   }
@@ -258,7 +310,7 @@ class _MapScreenState extends State<MapScreen>
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => _PinInfoSheet(pin: pin),
+      builder: (ctx) => _PinInfoSheet(pin: pin),
     );
   }
 
@@ -289,7 +341,7 @@ class _MapScreenState extends State<MapScreen>
       return _SdkErrorBody(error: sdk.initError);
     }
 
-    final fabBottom = MediaQuery.of(context).padding.bottom + 100.0;
+    final fabBottom = MediaQuery.of(context).padding.bottom + 30.0;
 
     return Scaffold(
       backgroundColor: ShellColors.background,
@@ -348,6 +400,115 @@ class _MapScreenState extends State<MapScreen>
               curve: Curves.easeOut,
               child: const _LoadingOverlay(),
             ),
+          ),
+
+          // Floating search bar — always on top, below status bar.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: _MapSearchBar(
+                  controller: _searchCtrl,
+                  focusNode: _searchFocus,
+                  isActive: _searchActive,
+                  onChanged: (q) {
+                    setState(() => _searchActive = q.isNotEmpty);
+                    _onSearch(q);
+                  },
+                  onClear: _clearSearch,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ──────────────────────────── _MapSearchBar ────────────────────────────
+
+class _MapSearchBar extends StatelessWidget {
+  const _MapSearchBar({
+    required this.controller,
+    required this.focusNode,
+    required this.isActive,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool isActive;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 16,
+            spreadRadius: 0,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 16),
+          const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              focusNode: focusNode,
+              onChanged: onChanged,
+              textInputAction: TextInputAction.search,
+              onSubmitted: onChanged,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 14,
+                color: const Color(0xFF1A1A1A),
+              ),
+              decoration: InputDecoration(
+                isCollapsed: true,
+                border: InputBorder.none,
+                hintText: l.mapSearchHere,
+                hintStyle: GoogleFonts.notoSansKr(
+                  fontSize: 14,
+                  color: const Color(0xFFADB5BD),
+                ),
+              ),
+            ),
+          ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 180),
+            child: isActive
+                ? GestureDetector(
+                    key: const ValueKey('clear'),
+                    onTap: onClear,
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14),
+                      child: Icon(Icons.close_rounded,
+                          color: Color(0xFF94A3B8), size: 20),
+                    ),
+                  )
+                : const Padding(
+                    key: ValueKey('mic'),
+                    padding: EdgeInsets.symmetric(horizontal: 14),
+                    child: Icon(Icons.tune_rounded,
+                        color: Color(0xFF003478), size: 20),
+                  ),
           ),
         ],
       ),
@@ -424,6 +585,7 @@ class _SuccessToast extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -449,7 +611,7 @@ class _SuccessToast extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Đã ghim thành công!',
+                  l.mapPinSuccessTitle,
                   style: GoogleFonts.notoSansKr(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -481,6 +643,7 @@ class _PinInfoSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -522,7 +685,7 @@ class _PinInfoSheet extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        pin.type.label,
+                        pin.type.localizedLabel(l),
                         style: GoogleFonts.notoSansKr(
                             fontSize: 12,
                             color: const Color(0xFF6A6A6A)),
@@ -572,7 +735,7 @@ class _PinInfoSheet extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  pin.isPublic ? 'Công khai' : 'Chỉ mình tôi',
+                  pin.isPublic ? l.mapPinInfoPublicShort : l.mapPinVisibilityPrivate,
                   style: GoogleFonts.notoSansKr(
                       fontSize: 11, color: const Color(0xFFADB5BD)),
                 ),
@@ -650,6 +813,7 @@ class _LoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return ColoredBox(
       color: Colors.white,
       child: Center(
@@ -674,7 +838,7 @@ class _LoadingOverlay extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'Loading map…',
+                l.statusLoadingMap,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -683,7 +847,7 @@ class _LoadingOverlay extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Fetching your location',
+                l.statusFetchingLocation,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 12,
                   color: Color(0xFF94A3B8),
@@ -705,6 +869,7 @@ class _SdkErrorBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: ShellColors.background,
       body: Center(
@@ -718,7 +883,7 @@ class _SdkErrorBody extends StatelessWidget {
                   color: ShellColors.primaryBlue.withValues(alpha: 0.4)),
               const SizedBox(height: 16),
               Text(
-                'Map unavailable',
+                l.mapUnavailable,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
@@ -728,8 +893,8 @@ class _SdkErrorBody extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 error == null
-                    ? 'Initializing Naver Map SDK…'
-                    : 'Error: $error',
+                    ? l.mapSdkInitializing
+                    : l.mapSdkError(error.toString()),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 13,

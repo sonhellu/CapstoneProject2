@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../models/user_pin_model.dart';
 import '../repository/pin_repository.dart';
 
@@ -33,7 +34,7 @@ Future<UserPinModel?> showPinBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => DraggableScrollableSheet(
+    builder: (ctx) => DraggableScrollableSheet(
       initialChildSize: 0.78,
       minChildSize: 0.55,
       maxChildSize: 0.93,
@@ -107,10 +108,11 @@ class _PinFormSheetState extends State<_PinFormSheet> {
       Navigator.of(context).pop(pin);
     } else {
       setState(() => _isSaving = false);
+      final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Lưu thất bại. Vui lòng thử lại.',
+            l.mapPinSaveFail,
             style: GoogleFonts.notoSansKr(fontSize: 13),
           ),
           backgroundColor: _T.danger,
@@ -124,6 +126,7 @@ class _PinFormSheetState extends State<_PinFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         color: _T.surface,
@@ -162,7 +165,7 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Ghim địa điểm',
+                        l.mapPinFormTitle,
                         style: GoogleFonts.notoSansKr(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
@@ -197,25 +200,27 @@ class _PinFormSheetState extends State<_PinFormSheet> {
               ),
               children: [
                 // ── Public / Private toggle ──────────────────────
-                _SectionLabel('Chế độ hiển thị'),
+                _SectionLabel(l.mapPinSectionVisibility),
                 const SizedBox(height: 10),
                 _VisibilityToggle(
+                  l: l,
                   isPublic: _isPublic,
                   onChanged: (v) => setState(() => _isPublic = v),
                 ),
                 const SizedBox(height: 20),
 
                 // ── Pin type dropdown ────────────────────────────
-                _SectionLabel('Loại địa điểm'),
+                _SectionLabel(l.mapPinSectionType),
                 const SizedBox(height: 10),
                 _TypeSelector(
+                  l: l,
                   selected: _type,
                   onChanged: (t) => setState(() => _type = t),
                 ),
                 const SizedBox(height: 20),
 
                 // ── Name field ───────────────────────────────────
-                _SectionLabel('Tên địa điểm *'),
+                _SectionLabel(l.mapPinSectionName),
                 const SizedBox(height: 10),
                 _FormBox(
                   child: TextField(
@@ -229,7 +234,7 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                     style: GoogleFonts.notoSansKr(
                         fontSize: 15, color: _T.textDark),
                     decoration: InputDecoration.collapsed(
-                      hintText: 'VD: Quán bún bò O. Sáu',
+                      hintText: l.mapPinNameHint,
                       hintStyle: GoogleFonts.notoSansKr(
                           fontSize: 15, color: _T.textLight),
                     ),
@@ -238,7 +243,7 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                 const SizedBox(height: 16),
 
                 // ── Notes field ──────────────────────────────────
-                _SectionLabel('Cảm nhận / Lưu ý cho bạn bè'),
+                _SectionLabel(l.mapPinSectionNotes),
                 const SizedBox(height: 10),
                 _FormBox(
                   child: TextField(
@@ -250,8 +255,7 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                     style: GoogleFonts.notoSansKr(
                         fontSize: 14, color: _T.textDark, height: 1.6),
                     decoration: InputDecoration.collapsed(
-                      hintText:
-                          'Giá cả, không khí, món ngon… chia sẻ thật lòng nhé!',
+                      hintText: l.mapPinNotesHint,
                       hintStyle: GoogleFonts.notoSansKr(
                           fontSize: 14, color: _T.textLight),
                     ),
@@ -260,7 +264,7 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                 const SizedBox(height: 20),
 
                 // ── Rating ───────────────────────────────────────
-                _SectionLabel('Đánh giá'),
+                _SectionLabel(l.mapPinSectionRating),
                 const SizedBox(height: 10),
                 _StarRating(
                   rating: _rating,
@@ -272,9 +276,10 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                 const SizedBox(height: 20),
 
                 // ── Photo picker placeholder ─────────────────────
-                _SectionLabel('Ảnh thực tế  ($_photoCount/4)'),
+                _SectionLabel('${l.mapPinSectionPhotos}  ($_photoCount/4)'),
                 const SizedBox(height: 10),
                 _PhotoPickerRow(
+                  l: l,
                   count: _photoCount,
                   onAdd: () => setState(() {
                     if (_photoCount < 4) _photoCount++;
@@ -287,6 +292,7 @@ class _PinFormSheetState extends State<_PinFormSheet> {
 
                 // ── Save button ──────────────────────────────────
                 _SaveButton(
+                  l: l,
                   enabled: _canSave,
                   isSaving: _isSaving,
                   onTap: _save,
@@ -305,9 +311,11 @@ class _PinFormSheetState extends State<_PinFormSheet> {
 
 class _VisibilityToggle extends StatelessWidget {
   const _VisibilityToggle({
+    required this.l,
     required this.isPublic,
     required this.onChanged,
   });
+  final AppLocalizations l;
   final bool isPublic;
   final ValueChanged<bool> onChanged;
 
@@ -330,7 +338,7 @@ class _VisibilityToggle extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              isPublic ? 'Công khai — mọi sinh viên đều thấy' : 'Chỉ mình tôi',
+              isPublic ? l.mapPinVisibilityPublic : l.mapPinVisibilityPrivate,
               style: GoogleFonts.notoSansKr(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -354,9 +362,11 @@ class _VisibilityToggle extends StatelessWidget {
 
 class _TypeSelector extends StatelessWidget {
   const _TypeSelector({
+    required this.l,
     required this.selected,
     required this.onChanged,
   });
+  final AppLocalizations l;
   final PinType selected;
   final ValueChanged<PinType> onChanged;
 
@@ -381,7 +391,7 @@ class _TypeSelector extends StatelessWidget {
               ),
             ),
             child: Text(
-              '${type.emoji}  ${type.label}',
+              '${type.emoji}  ${type.localizedLabel(l)}',
               style: GoogleFonts.notoSansKr(
                 fontSize: 13,
                 fontWeight:
@@ -427,10 +437,12 @@ class _StarRating extends StatelessWidget {
 
 class _PhotoPickerRow extends StatelessWidget {
   const _PhotoPickerRow({
+    required this.l,
     required this.count,
     required this.onAdd,
     required this.onRemove,
   });
+  final AppLocalizations l;
   final int count;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
@@ -464,7 +476,7 @@ class _PhotoPickerRow extends StatelessWidget {
                         color: _T.gold, size: 24),
                     const SizedBox(height: 4),
                     Text(
-                      'Thêm ảnh',
+                      l.mapPinAddPhoto,
                       style: GoogleFonts.notoSansKr(
                         fontSize: 9,
                         fontWeight: FontWeight.w700,
@@ -520,10 +532,12 @@ class _PhotoPickerRow extends StatelessWidget {
 
 class _SaveButton extends StatelessWidget {
   const _SaveButton({
+    required this.l,
     required this.enabled,
     required this.isSaving,
     required this.onTap,
   });
+  final AppLocalizations l;
   final bool enabled;
   final bool isSaving;
   final VoidCallback onTap;
@@ -558,7 +572,7 @@ class _SaveButton extends StatelessWidget {
                   const Icon(Icons.push_pin_rounded, size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    'Lưu địa điểm',
+                    l.mapPinSaveButton,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,

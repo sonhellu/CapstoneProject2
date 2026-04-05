@@ -1,33 +1,35 @@
+import '../../../l10n/app_localizations.dart';
+
 class AuthValidators {
   static final RegExp _email = RegExp(
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
   );
 
-  static String? email(String? value) {
+  static String? email(String? value, AppLocalizations l) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return 'Vui lòng nhập email';
-    if (!_email.hasMatch(v)) return 'Email không hợp lệ';
+    if (v.isEmpty) return l.authValidationEmailEmpty;
+    if (!_email.hasMatch(v)) return l.authValidationEmailInvalid;
     return null;
   }
 
-  static String? password(String? value) {
+  static String? password(String? value, AppLocalizations l) {
     final v = value ?? '';
-    if (v.isEmpty) return 'Vui lòng nhập mật khẩu';
-    if (v.length < 8) return 'Mật khẩu cần ít nhất 8 ký tự';
+    if (v.isEmpty) return l.authValidationPasswordEmpty;
+    if (v.length < 8) return l.authValidationPasswordMin;
     return null;
   }
 
-  static String? name(String? value) {
+  static String? name(String? value, AppLocalizations l) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return 'Vui lòng nhập họ tên';
-    if (v.length < 2) return 'Họ tên quá ngắn';
+    if (v.isEmpty) return l.authValidationNameEmpty;
+    if (v.length < 2) return l.authValidationNameShort;
     return null;
   }
 
-  static String? confirmPassword(String? value, String password) {
+  static String? confirmPassword(String? value, String password, AppLocalizations l) {
     final v = value ?? '';
-    if (v.isEmpty) return 'Vui lòng xác nhận mật khẩu';
-    if (v != password) return 'Mật khẩu xác nhận không khớp';
+    if (v.isEmpty) return l.authValidationConfirmEmpty;
+    if (v != password) return l.authValidationConfirmMismatch;
     return null;
   }
 }
