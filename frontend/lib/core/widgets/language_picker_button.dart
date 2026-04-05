@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../locale/language_model.dart';
 import '../locale/locale_controller.dart';
 
@@ -23,8 +24,9 @@ class LanguagePickerButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return IconButton(
-      tooltip: 'Select Language',
+      tooltip: l.languagePickerTooltip,
       onPressed: () => LanguageBottomSheet.show(context),
       icon: const Icon(Icons.language_rounded),
       color: Theme.of(context).colorScheme.onSurface,
@@ -43,7 +45,7 @@ class LanguageBottomSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const LanguageBottomSheet._(),
+      builder: (ctx) => const LanguageBottomSheet._(),
     );
   }
 
@@ -101,10 +103,10 @@ class _LanguageBottomSheetState extends State<LanguageBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildHandle(),
-          _buildTitle(),
+          _buildTitle(context),
           const Divider(height: 1, thickness: 1, color: _T.divider),
           _buildLanguageList(),
-          _buildConfirmButton(),
+          _buildConfirmButton(context),
         ],
       ),
     );
@@ -126,7 +128,8 @@ class _LanguageBottomSheetState extends State<LanguageBottomSheet> {
   }
 
   // ─── Title Row ───
-  Widget _buildTitle() {
+  Widget _buildTitle(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 16, 16),
       child: Row(
@@ -150,7 +153,7 @@ class _LanguageBottomSheetState extends State<LanguageBottomSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Select Language',
+                  l.languageSheetTitle,
                   style: GoogleFonts.notoSansKr(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -158,7 +161,7 @@ class _LanguageBottomSheetState extends State<LanguageBottomSheet> {
                   ),
                 ),
                 Text(
-                  'Choose your preferred app language',
+                  l.languageSheetSubtitle,
                   style: GoogleFonts.notoSansKr(
                     fontSize: 12,
                     color: _T.textGrey,
@@ -208,7 +211,8 @@ class _LanguageBottomSheetState extends State<LanguageBottomSheet> {
   }
 
   // ─── Confirm Button ───
-  Widget _buildConfirmButton() {
+  Widget _buildConfirmButton(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
       child: SizedBox(
@@ -223,7 +227,7 @@ class _LanguageBottomSheetState extends State<LanguageBottomSheet> {
             elevation: 0,
           ),
           child: Text(
-            'Confirm',
+            l.btnConfirm,
             style: GoogleFonts.notoSansKr(
               fontSize: 15,
               fontWeight: FontWeight.w700,

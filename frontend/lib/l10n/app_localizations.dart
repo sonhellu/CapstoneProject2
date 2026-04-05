@@ -615,6 +615,750 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Yesterday'**
   String get timeYesterday;
+
+  /// Section header: link to see all posts
+  ///
+  /// In en, this message translates to:
+  /// **'View All'**
+  String get homeViewAll;
+
+  /// Home screen: international section title
+  ///
+  /// In en, this message translates to:
+  /// **'International News 🌏'**
+  String get homeIntlNews;
+
+  /// Home screen: campus section title
+  ///
+  /// In en, this message translates to:
+  /// **'Campus Life 🇰🇷'**
+  String get homeCampusLife;
+
+  /// Profile card title
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get profilePersonalInfo;
+
+  /// Profile edit card title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Information'**
+  String get profileEditInfo;
+
+  /// Profile field label
+  ///
+  /// In en, this message translates to:
+  /// **'Native Language'**
+  String get profileNativeLang;
+
+  /// Profile field label
+  ///
+  /// In en, this message translates to:
+  /// **'University'**
+  String get profileUniversity;
+
+  /// Profile field label
+  ///
+  /// In en, this message translates to:
+  /// **'Major'**
+  String get profileMajor;
+
+  /// Profile field label
+  ///
+  /// In en, this message translates to:
+  /// **'Nationality'**
+  String get profileNationality;
+
+  /// Profile field label
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get profileEmail;
+
+  /// Profile edit field label
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get profileFullName;
+
+  /// Profile badge: university-verified email
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get profileVerified;
+
+  /// Logout confirmation dialog body
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to sign out?'**
+  String get profileLogoutConfirm;
+
+  /// Profile edit save button
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get profileSaveChanges;
+
+  /// Post list screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Community Board'**
+  String get communityBoardTitle;
+
+  /// Post list search field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Search posts, authors…'**
+  String get communitySearchHint;
+
+  /// Post count label
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 post} other{{count} posts}}'**
+  String communityPostCount(num count);
+
+  /// Sort chip: newest first
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get communitySortRecent;
+
+  /// Sort chip: most likes
+  ///
+  /// In en, this message translates to:
+  /// **'Popular'**
+  String get communitySortPopular;
+
+  /// Post list empty state
+  ///
+  /// In en, this message translates to:
+  /// **'No posts found'**
+  String get communityNoPosts;
+
+  /// Create post screen app bar title
+  ///
+  /// In en, this message translates to:
+  /// **'New Post'**
+  String get createPostNew;
+
+  /// Create post: category section label
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get createPostCategory;
+
+  /// Create post: title field label
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get createPostTitleLabel;
+
+  /// Create post: title field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a clear, concise title…'**
+  String get createPostTitleHint;
+
+  /// Create post: language picker label
+  ///
+  /// In en, this message translates to:
+  /// **'Post Language'**
+  String get createPostLanguage;
+
+  /// Create post: content field label
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get createPostContent;
+
+  /// Create post: content field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Write your post here…'**
+  String get createPostContentHint;
+
+  /// Create post: photos section label
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get createPostPhotos;
+
+  /// Create post: add photo button
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get createPostAddPhoto;
+
+  /// Create post: gallery bottom bar button
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get createPostGallery;
+
+  /// Create post: camera bottom bar button
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get createPostCamera;
+
+  /// Create post: submit button
+  ///
+  /// In en, this message translates to:
+  /// **'Publish Post'**
+  String get createPostPublish;
+
+  /// Snackbar after copying post content
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get postCopied;
+
+  /// Follow button: not yet following
+  ///
+  /// In en, this message translates to:
+  /// **'Follow'**
+  String get postFollow;
+
+  /// Follow button: already following
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get postFollowing;
+
+  /// Post detail action: copy text
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get postActionCopy;
+
+  /// Post card image error placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'No image'**
+  String get postNoImage;
+
+  /// No description provided for @authHeaderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello, international student!'**
+  String get authHeaderTitle;
+
+  /// No description provided for @authHeaderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Together, let\'s conquer your global learning journey.'**
+  String get authHeaderSubtitle;
+
+  /// No description provided for @authLoginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authLoginTitle;
+
+  /// No description provided for @authLoginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email and password to continue.'**
+  String get authLoginSubtitle;
+
+  /// No description provided for @authRegisterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up'**
+  String get authRegisterTitle;
+
+  /// No description provided for @authRegisterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account to unlock your study abroad journey.'**
+  String get authRegisterSubtitle;
+
+  /// No description provided for @authFooterNoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account?'**
+  String get authFooterNoAccount;
+
+  /// No description provided for @authFooterHasAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get authFooterHasAccount;
+
+  /// No description provided for @authSwitchToRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up'**
+  String get authSwitchToRegister;
+
+  /// No description provided for @authSwitchToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authSwitchToLogin;
+
+  /// No description provided for @authFieldEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get authFieldEmail;
+
+  /// No description provided for @authFieldPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get authFieldPassword;
+
+  /// No description provided for @authFieldPasswordConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get authFieldPasswordConfirm;
+
+  /// No description provided for @authFieldFullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get authFieldFullName;
+
+  /// No description provided for @authHintEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'you@school.edu'**
+  String get authHintEmail;
+
+  /// No description provided for @authHintPasswordDots.
+  ///
+  /// In en, this message translates to:
+  /// **'••••••••'**
+  String get authHintPasswordDots;
+
+  /// No description provided for @authHintPasswordMin.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters'**
+  String get authHintPasswordMin;
+
+  /// No description provided for @authHintConfirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enter password'**
+  String get authHintConfirmPassword;
+
+  /// No description provided for @authHintNameExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Jane Doe'**
+  String get authHintNameExample;
+
+  /// No description provided for @authButtonLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authButtonLogin;
+
+  /// No description provided for @authButtonRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get authButtonRegister;
+
+  /// No description provided for @authSocialGoogleLoginDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in (demo)'**
+  String get authSocialGoogleLoginDemo;
+
+  /// No description provided for @authSocialKakaoLoginDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'KakaoTalk sign-in (demo)'**
+  String get authSocialKakaoLoginDemo;
+
+  /// No description provided for @authSocialGoogleRegisterDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-up (demo)'**
+  String get authSocialGoogleRegisterDemo;
+
+  /// No description provided for @authSocialKakaoRegisterDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'KakaoTalk sign-up (demo)'**
+  String get authSocialKakaoRegisterDemo;
+
+  /// No description provided for @authSocialOr.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get authSocialOr;
+
+  /// No description provided for @authSocialContinueGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get authSocialContinueGoogle;
+
+  /// No description provided for @authSocialKakaoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'KakaoTalk ID'**
+  String get authSocialKakaoLabel;
+
+  /// No description provided for @authValidationEmailEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter email'**
+  String get authValidationEmailEmpty;
+
+  /// No description provided for @authValidationEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email'**
+  String get authValidationEmailInvalid;
+
+  /// No description provided for @authValidationPasswordEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter password'**
+  String get authValidationPasswordEmpty;
+
+  /// No description provided for @authValidationPasswordMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get authValidationPasswordMin;
+
+  /// No description provided for @authValidationNameEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your name'**
+  String get authValidationNameEmpty;
+
+  /// No description provided for @authValidationNameShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is too short'**
+  String get authValidationNameShort;
+
+  /// No description provided for @authValidationConfirmEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm password'**
+  String get authValidationConfirmEmpty;
+
+  /// No description provided for @authValidationConfirmMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get authValidationConfirmMismatch;
+
+  /// No description provided for @authTooltipShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get authTooltipShowPassword;
+
+  /// No description provided for @authTooltipHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get authTooltipHidePassword;
+
+  /// No description provided for @languageSheetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your preferred app language'**
+  String get languageSheetSubtitle;
+
+  /// No description provided for @mapPinFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin location'**
+  String get mapPinFormTitle;
+
+  /// No description provided for @mapPinSectionVisibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Visibility'**
+  String get mapPinSectionVisibility;
+
+  /// No description provided for @mapPinSectionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Place type'**
+  String get mapPinSectionType;
+
+  /// No description provided for @mapPinSectionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Place name *'**
+  String get mapPinSectionName;
+
+  /// No description provided for @mapPinSectionNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes for friends'**
+  String get mapPinSectionNotes;
+
+  /// No description provided for @mapPinSectionRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get mapPinSectionRating;
+
+  /// No description provided for @mapPinSectionPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get mapPinSectionPhotos;
+
+  /// No description provided for @mapPinNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. O. Sáu beef noodle'**
+  String get mapPinNameHint;
+
+  /// No description provided for @mapPinNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Price, vibe, dishes… share honestly!'**
+  String get mapPinNotesHint;
+
+  /// No description provided for @mapPinVisibilityPublic.
+  ///
+  /// In en, this message translates to:
+  /// **'Public — visible to all students'**
+  String get mapPinVisibilityPublic;
+
+  /// No description provided for @mapPinVisibilityPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Only me'**
+  String get mapPinVisibilityPrivate;
+
+  /// No description provided for @mapPinSaveFail.
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed. Please try again.'**
+  String get mapPinSaveFail;
+
+  /// No description provided for @mapPinAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get mapPinAddPhoto;
+
+  /// No description provided for @mapPinSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save place'**
+  String get mapPinSaveButton;
+
+  /// No description provided for @mapPinSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned successfully!'**
+  String get mapPinSuccessTitle;
+
+  /// No description provided for @mapPinShareTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this place?'**
+  String get mapPinShareTitle;
+
+  /// No description provided for @mapPinShareMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin a great eatery, housing, or a handy spot near campus.'**
+  String get mapPinShareMessage;
+
+  /// No description provided for @mapPinShareAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin this place'**
+  String get mapPinShareAction;
+
+  /// No description provided for @mapLocationServicesDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enable location services.'**
+  String get mapLocationServicesDisabled;
+
+  /// No description provided for @mapLocationPermissionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission is required.'**
+  String get mapLocationPermissionRequired;
+
+  /// No description provided for @statusFetchingLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching your location'**
+  String get statusFetchingLocation;
+
+  /// No description provided for @mapUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Map unavailable'**
+  String get mapUnavailable;
+
+  /// No description provided for @mapSdkInitializing.
+  ///
+  /// In en, this message translates to:
+  /// **'Initializing Naver Map SDK…'**
+  String get mapSdkInitializing;
+
+  /// No description provided for @mapSdkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String mapSdkError(String error);
+
+  /// No description provided for @mapPinInfoPublicShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Public'**
+  String get mapPinInfoPublicShort;
+
+  /// No description provided for @pinTypeRestaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'Good eats'**
+  String get pinTypeRestaurant;
+
+  /// No description provided for @pinTypeRealEstate.
+  ///
+  /// In en, this message translates to:
+  /// **'Housing'**
+  String get pinTypeRealEstate;
+
+  /// No description provided for @pinTypeUtility.
+  ///
+  /// In en, this message translates to:
+  /// **'Other utilities'**
+  String get pinTypeUtility;
+
+  /// No description provided for @partnerSearchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language partners'**
+  String get partnerSearchTitle;
+
+  /// No description provided for @partnerGenderAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get partnerGenderAny;
+
+  /// No description provided for @partnerGenderMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get partnerGenderMale;
+
+  /// No description provided for @partnerGenderFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get partnerGenderFemale;
+
+  /// No description provided for @partnerEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No partners found'**
+  String get partnerEmptyTitle;
+
+  /// No description provided for @partnerEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Try changing your filter settings.'**
+  String get partnerEmptySubtitle;
+
+  /// No description provided for @partnerOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get partnerOnline;
+
+  /// No description provided for @partnerSendRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Send request'**
+  String get partnerSendRequest;
+
+  /// No description provided for @partnerPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending…'**
+  String get partnerPending;
+
+  /// No description provided for @partnerAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted!'**
+  String get partnerAccepted;
+
+  /// No description provided for @chatSearchConversations.
+  ///
+  /// In en, this message translates to:
+  /// **'Search conversations…'**
+  String get chatSearchConversations;
+
+  /// No description provided for @chatEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get chatEmptyTitle;
+
+  /// No description provided for @chatEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a language partner to start chatting!'**
+  String get chatEmptySubtitle;
+
+  /// No description provided for @chatFindPartnerButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Find partner'**
+  String get chatFindPartnerButton;
+
+  /// No description provided for @chatFilterFindPartner.
+  ///
+  /// In en, this message translates to:
+  /// **'Find language partner'**
+  String get chatFilterFindPartner;
+
+  /// No description provided for @chatFilterGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get chatFilterGender;
+
+  /// No description provided for @chatFilterTargetLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Target language to learn'**
+  String get chatFilterTargetLanguage;
+
+  /// No description provided for @chatFilterFindPartners.
+  ///
+  /// In en, this message translates to:
+  /// **'Find partners'**
+  String get chatFilterFindPartners;
+
+  /// No description provided for @chatRequestPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Request pending…'**
+  String get chatRequestPending;
+
+  /// No description provided for @chatFilterLanguageAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get chatFilterLanguageAny;
 }
 
 class _AppLocalizationsDelegate

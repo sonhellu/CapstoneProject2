@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 import '../models/post.dart';
 import '../post_detail_screen.dart';
 
@@ -447,7 +449,7 @@ class _NetImage extends StatelessWidget {
             if ((height ?? 0) > 60) ...[
               const SizedBox(height: 4),
               Text(
-                'No image',
+                AppLocalizations.of(context)!.postNoImage,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 10,
                   color: const Color(0xFFCDD3D8),
