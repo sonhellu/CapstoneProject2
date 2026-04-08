@@ -1,94 +1,112 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-import '../config/api_keys.dart';
+// ──────────────────────────── Language codes ────────────────────────────
 
-/// Language codes dùng cho Naver Papago NMT API.
 abstract final class LangCode {
-  static const ko = 'ko'; // Korean
-  static const en = 'en'; // English
-  static const vi = 'vi'; // Vietnamese
-  static const ja = 'ja'; // Japanese
-  static const zhCn = 'zh-CN'; // Chinese Simplified
+  static const ko = 'ko';
+  static const en = 'en';
+  static const vi = 'vi';
+  static const ja = 'ja';
+  static const zhCn = 'zh-CN';
 
-  /// Map từ tag hiển thị trong app → Papago language code.
+  /// Accepts both app display tags (KR, VN, ZH) and ISO locale codes
+  /// (ko, vi, zh) returned by [Localizations.localeOf(context).languageCode].
   static String fromTag(String tag) => switch (tag.toUpperCase()) {
-        'KR' => ko,
-        'EN' => en,
-        'VN' => vi,
-        'JA' => ja,
-        'ZH' => zhCn,
-        _ => en,
-      };
+    'KR' || 'KO' => ko,
+    'EN'         => en,
+    'VN' || 'VI' => vi,
+    'JA'         => ja,
+    'ZH'         => zhCn,
+    _            => en, // Burmese & unsupported → fallback English
+  };
 
-  /// Tên ngôn ngữ đích hiển thị trên badge.
   static String displayName(String code) => switch (code) {
-        ko => '한국어',
-        en => 'English',
-        vi => 'Tiếng Việt',
-        ja => '日本語',
-        zhCn => '中文(简体)',
-        _ => code,
-      };
+    ko   => '한국어',
+    en   => 'English',
+    vi   => 'Tiếng Việt',
+    ja   => '日本語',
+    zhCn => '中文(简体)',
+    _    => code,
+  };
 }
 
-class TranslationService {
-  static const _endpoint =
-      'https://naveropenapi.apigw.ntruss.com/nmt/v1/translation';
+// ──────────────────────────── Service (Singleton) ────────────────────────────
 
-  /// Dịch [text] từ [sourceLang] sang [targetLang] qua Naver Papago NMT.
-  /// Ném [TranslationException] nếu API trả về lỗi.
-  static Future<String> translate({
-    required String text,
-    required String sourceLang,
-    required String targetLang,
+/// Provider-agnostic translation service backed by MyMemory API.
+///
+/// Usage:
+/// ```dart
+/// final result = await TranslationService.instance.translateText(
+///   '안녕하세요',
+///   from: LangCode.ko,
+///   to: LangCode.vi,
+/// );
+/// ```
+class TranslationService {
+  TranslationService._();
+  static final instance = TranslationService._();
+
+  static const _baseUrl = 'https://api.mymemory.translated.net/get';
+
+  // Registered email → 50,000 chars/day (vs 10,000 anonymous)
+  static const _email = 'sonhellu186@gmail.com';
+
+  /// Translates [text] from [from] language to [to] language.
+  ///
+  /// - Returns the original [text] on network error, quota exceeded, or any
+  ///   unexpected response — so the UI never shows an empty string.
+  /// - Logs a warning in debug mode when quota is finished or an error occurs.
+  Future<String> translateText(
+    String text, {
+    required String from,
+    required String to,
   }) async {
     if (text.trim().isEmpty) return text;
-    if (sourceLang == targetLang) return text;
+    if (from == to) return text;
 
-    final response = await http
-        .post(
-          Uri.parse(_endpoint),
-          headers: {
-            'X-NCP-APIGW-API-KEY-ID': ApiKeys.naverClientId,
-            'X-NCP-APIGW-API-KEY': ApiKeys.naverClientSecret,
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'source': sourceLang,
-            'target': targetLang,
-            'text': text,
-          }),
-        )
-        .timeout(const Duration(seconds: 10));
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return data['message']['result']['translatedText'] as String;
-    }
-
-    // Parse lỗi từ Naver
     try {
-      final err = jsonDecode(response.body) as Map<String, dynamic>;
-      final msg = err['error']?['message'] ?? 'Unknown error';
-      throw TranslationException('Papago: $msg (${response.statusCode})');
-    } catch (_) {
-      throw TranslationException('HTTP ${response.statusCode}');
+      final uri = Uri.parse(_baseUrl).replace(queryParameters: {
+        'q': text,
+        'langpair': '$from|$to',
+        'de': _email,
+      });
+
+      final response =
+          await http.get(uri).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode != 200) {
+        if (kDebugMode) {
+          debugPrint(
+            '[TranslationService] HTTP ${response.statusCode}: ${response.body}',
+          );
+        }
+        return text;
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      // Quota exceeded
+      final quotaFinished = data['quotaFinished'] as bool? ?? false;
+      if (quotaFinished) {
+        if (kDebugMode) {
+          debugPrint('[TranslationService] ⚠️ Daily quota finished — returning original text.');
+        }
+        return text;
+      }
+
+      final translated =
+          data['responseData']?['translatedText'] as String? ?? text;
+
+      // MyMemory echoes back original in caps when it cannot translate
+      if (translated.toUpperCase() == text.toUpperCase()) return text;
+
+      return translated;
+    } catch (e) {
+      if (kDebugMode) debugPrint('[TranslationService] Error: $e');
+      return text;
     }
   }
-
-  /// Tự động chọn ngôn ngữ đích:
-  /// - Bài không phải tiếng Anh → dịch sang EN
-  /// - Bài tiếng Anh → dịch sang KO (app dùng ở Hàn)
-  static String autoTarget(String sourceLang) =>
-      sourceLang == LangCode.en ? LangCode.ko : LangCode.en;
-}
-
-class TranslationException implements Exception {
-  const TranslationException(this.message);
-  final String message;
-
-  @override
-  String toString() => 'TranslationException: $message';
 }

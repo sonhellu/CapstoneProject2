@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../core/navigation/app_transitions.dart';
 import '../../../l10n/app_localizations.dart';
-
 import '../models/post.dart';
 import '../post_detail_screen.dart';
 
@@ -68,21 +69,9 @@ class PostCard extends StatelessWidget {
   final PostCardStyle style;
 
   void _onTap(BuildContext context) {
+    HapticFeedback.lightImpact();
     Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, _) => PostDetailScreen(post: post),
-        transitionsBuilder: (context, animation, _, child) => SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 0.06),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-          )),
-          child: FadeTransition(opacity: animation, child: child),
-        ),
-        transitionDuration: const Duration(milliseconds: 320),
-      ),
+      AppTransitions.fadeSlide(PostDetailScreen(post: post)),
     );
   }
 

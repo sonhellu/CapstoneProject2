@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/services/geocoding_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/user_pin_model.dart';
 import '../repository/pin_repository.dart';
@@ -25,11 +26,17 @@ abstract final class _T {
 // ──────────────────────────── Entry Point ────────────────────────────
 
 /// Opens a [DraggableScrollableSheet] form for pinning a location.
+///
+/// Pass [addressFuture] to auto-populate the address header (from
+/// [GeocodingService.getLocalizedAddress]).
+/// Pass [existingPin] to open in **edit mode** with pre-filled fields.
 /// Returns the saved [UserPinModel] on success, or null if dismissed.
 Future<UserPinModel?> showPinBottomSheet(
   BuildContext context,
-  NLatLng latLng,
-) {
+  NLatLng latLng, {
+  UserPinModel? existingPin,
+  Future<LocalizedAddress>? addressFuture,
+}) {
   return showModalBottomSheet<UserPinModel>(
     context: context,
     isScrollControlled: true,
@@ -42,6 +49,8 @@ Future<UserPinModel?> showPinBottomSheet(
       builder: (_, scrollCtrl) => _PinFormSheet(
         latLng: latLng,
         scrollController: scrollCtrl,
+        existingPin: existingPin,
+        addressFuture: addressFuture,
       ),
     ),
   );
@@ -53,10 +62,14 @@ class _PinFormSheet extends StatefulWidget {
   const _PinFormSheet({
     required this.latLng,
     required this.scrollController,
+    this.existingPin,
+    this.addressFuture,
   });
 
   final NLatLng latLng;
   final ScrollController scrollController;
+  final UserPinModel? existingPin;
+  final Future<LocalizedAddress>? addressFuture;
 
   @override
   State<_PinFormSheet> createState() => _PinFormSheetState();
@@ -67,11 +80,39 @@ class _PinFormSheetState extends State<_PinFormSheet> {
   final _notesCtrl = TextEditingController();
   final _nameFocus = FocusNode();
 
-  PinType _type     = PinType.restaurant;
-  bool    _isPublic = true;
-  int     _rating   = 5;
+  late PinType _type;
+  late bool    _isPublic;
+  late int     _rating;
   bool    _isSaving = false;
   int     _photoCount = 0;
+
+  // Resolved from addressFuture once geocoding completes
+  LocalizedAddress? _resolvedAddress;
+
+  bool get _isEditMode => widget.existingPin != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.existingPin;
+    _type     = p?.type     ?? PinType.restaurant;
+    _isPublic = p?.isPublic ?? true;
+    _rating   = p?.rating   ?? 5;
+    if (p != null) {
+      _nameCtrl.text  = p.name;
+      _notesCtrl.text = p.notes;
+      if (p.addressKorean.isNotEmpty) {
+        _resolvedAddress = LocalizedAddress(
+          korean: p.addressKorean,
+          localized: p.addressLocalized,
+        );
+      }
+    }
+    // Resolve address asynchronously — update header when ready
+    widget.addressFuture?.then((addr) {
+      if (mounted) setState(() => _resolvedAddress = addr);
+    });
+  }
 
   @override
   void dispose() {
@@ -89,15 +130,19 @@ class _PinFormSheetState extends State<_PinFormSheet> {
     HapticFeedback.mediumImpact();
     setState(() => _isSaving = true);
 
+    final existing = widget.existingPin;
     final pin = UserPinModel(
-      id: 'pin_${DateTime.now().millisecondsSinceEpoch}',
+      // Preserve id + createdAt when editing so the marker key stays stable.
+      id: existing?.id ?? 'pin_${DateTime.now().millisecondsSinceEpoch}',
       latLng: widget.latLng,
       name: _nameCtrl.text.trim(),
       notes: _notesCtrl.text.trim(),
       type: _type,
       isPublic: _isPublic,
       rating: _rating,
-      createdAt: DateTime.now(),
+      createdAt: existing?.createdAt ?? DateTime.now(),
+      addressKorean: _resolvedAddress?.korean ?? '',
+      addressLocalized: _resolvedAddress?.localized ?? '',
     );
 
     final success = await PinRepository.mockSavePin(pin);
@@ -165,19 +210,14 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        l.mapPinFormTitle,
+                        _isEditMode ? l.mapPinEditTitle : l.mapPinFormTitle,
                         style: GoogleFonts.notoSansKr(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                           color: _T.textDark,
                         ),
                       ),
-                      Text(
-                        '${widget.latLng.latitude.toStringAsFixed(5)}, '
-                        '${widget.latLng.longitude.toStringAsFixed(5)}',
-                        style: GoogleFonts.notoSansKr(
-                            fontSize: 11, color: _T.textLight),
-                      ),
+                      _AddressSubtitle(resolved: _resolvedAddress, latLng: widget.latLng),
                     ],
                   ),
                 ),
@@ -292,10 +332,10 @@ class _PinFormSheetState extends State<_PinFormSheet> {
 
                 // ── Save button ──────────────────────────────────
                 _SaveButton(
-                  l: l,
                   enabled: _canSave,
                   isSaving: _isSaving,
                   onTap: _save,
+                  label: _isEditMode ? l.mapPinSaveChanges : l.mapPinSaveButton,
                 ),
                 const SizedBox(height: 8),
               ],
@@ -532,15 +572,15 @@ class _PhotoPickerRow extends StatelessWidget {
 
 class _SaveButton extends StatelessWidget {
   const _SaveButton({
-    required this.l,
     required this.enabled,
     required this.isSaving,
     required this.onTap,
+    required this.label,
   });
-  final AppLocalizations l;
   final bool enabled;
   final bool isSaving;
   final VoidCallback onTap;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -572,7 +612,7 @@ class _SaveButton extends StatelessWidget {
                   const Icon(Icons.push_pin_rounded, size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    l.mapPinSaveButton,
+                    label,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -581,6 +621,68 @@ class _SaveButton extends StatelessWidget {
                 ],
               ),
       ),
+    );
+  }
+}
+
+// ──────────────────────────── _AddressSubtitle ────────────────────────────
+
+class _AddressSubtitle extends StatelessWidget {
+  const _AddressSubtitle({required this.resolved, required this.latLng});
+
+  final LocalizedAddress? resolved;
+  final NLatLng latLng;
+
+  @override
+  Widget build(BuildContext context) {
+    // Still loading geocoding
+    if (resolved == null) {
+      return Row(
+        children: [
+          const SizedBox(
+            width: 10,
+            height: 10,
+            child: CircularProgressIndicator(strokeWidth: 1.5, color: _T.textLight),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '${latLng.latitude.toStringAsFixed(5)}, ${latLng.longitude.toStringAsFixed(5)}',
+            style: GoogleFonts.notoSansKr(fontSize: 11, color: _T.textLight),
+          ),
+        ],
+      );
+    }
+
+    // Geocoding failed — show raw coords
+    if (resolved!.localized.isEmpty) {
+      return Text(
+        '${latLng.latitude.toStringAsFixed(5)}, ${latLng.longitude.toStringAsFixed(5)}',
+        style: GoogleFonts.notoSansKr(fontSize: 11, color: _T.textLight),
+      );
+    }
+
+    // Show translated address + original Korean below if different
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          resolved!.localized,
+          style: GoogleFonts.notoSansKr(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: _T.textGrey,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if (resolved!.hasTranslation)
+          Text(
+            resolved!.korean,
+            style: GoogleFonts.notoSansKr(fontSize: 10, color: _T.textLight),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+      ],
     );
   }
 }

@@ -103,7 +103,7 @@ const mockPosts = [
     time: '5h ago',
     category: 'Scholarship',
     images: [
-      'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
+      'https://images.unsplash.com/photo-1627556704302-624286467c65?w=800',
     ],
     language: 'EN',
     likes: 132,

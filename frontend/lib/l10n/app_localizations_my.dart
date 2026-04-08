@@ -54,6 +54,9 @@ class AppLocalizationsMy extends AppLocalizations {
   String get mapDirections => 'လမ်းညွှန်';
 
   @override
+  String get mapPinSaved => 'သိမ်းပြီး';
+
+  @override
   String get btnConfirm => 'အတည်ပြု';
 
   @override
@@ -91,6 +94,9 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get filterAtm => 'ATM';
+
+  @override
+  String get filterPharmacy => 'ဆေးဆိုင်';
 
   @override
   String get statusLoadingMap => 'မြေပုံ ဖွင့်နေသည်…';
@@ -412,7 +418,51 @@ class AppLocalizationsMy extends AppLocalizations {
   String get postActionCopy => 'ကူး';
 
   @override
+  String get postActionLike => 'နှစ်သက်သည်';
+
+  @override
+  String get postActionComment => 'မှတ်ချက်';
+
+  @override
+  String get postActionSave => 'သိမ်း';
+
+  @override
   String get postNoImage => 'ပုံမရှိ';
+
+  @override
+  String get reviewsTitle => 'သုံးသပ်ချက်';
+
+  @override
+  String reviewsCount(int count) {
+    return 'သုံးသပ်ချက် $count ခု';
+  }
+
+  @override
+  String get reviewNoItems =>
+      'မည်သည့်သုံးသပ်ချက်မှ မရှိသေးပါ။ ပထမဦးဆုံးဖြစ်လိုက်ပါ!';
+
+  @override
+  String get reviewWriteHint => 'သုံးသပ်ချက်ရေးပါ…';
+
+  @override
+  String get reviewSubmit => 'တင်သွင်း';
+
+  @override
+  String get reviewSeeAll => 'အားလုံးကြည့်';
+
+  @override
+  String reviewTimeAgo(int n, String unit) {
+    return '$n $unit ကြာပြီ';
+  }
+
+  @override
+  String get reviewTimeUnitMinute => 'မိနစ်';
+
+  @override
+  String get reviewTimeUnitHour => 'နာရီ';
+
+  @override
+  String get reviewTimeUnitDay => 'ရက်';
 
   @override
   String get authHeaderTitle => 'နိုင်ငံတကာကျောင်းသားများ၊ မင်္ဂလာပါ!';
@@ -580,6 +630,25 @@ class AppLocalizationsMy extends AppLocalizations {
   String get mapPinSaveButton => 'နေရာသိမ်းဆည်း';
 
   @override
+  String get mapPinEditTitle => 'နေရာပြင်ဆင်';
+
+  @override
+  String get mapPinSaveChanges => 'ပြောင်းလဲမှုသိမ်းဆည်း';
+
+  @override
+  String get mapPinDeleteConfirmTitle => 'Pin ဖျက်မည်လား?';
+
+  @override
+  String get mapPinDeleteConfirmMessage =>
+      'ဤ Pin ကို မြေပုံမှ အပြီးအပိုင်ဖျက်မည်။';
+
+  @override
+  String get mapPinDeletedToast => 'Pin ဖျက်ပြီ';
+
+  @override
+  String get mapPinUpdatedToast => 'Pin ပြင်ပြီ';
+
+  @override
   String get mapPinSuccessTitle => 'ပင်ထိုးပြီးပါပြီ!';
 
   @override
@@ -623,6 +692,9 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get pinTypeUtility => 'အခြားအဆင်ပြေများ';
+
+  @override
+  String get pinTypePharmacy => 'ဆေးဆိုင်';
 
   @override
   String get partnerSearchTitle => 'ဘာသာစကားဖော်ဖော်ရှာဖော်များ';
