@@ -54,6 +54,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get mapDirections => '길 찾기';
 
   @override
+  String get mapPinSaved => '저장됨';
+
+  @override
   String get btnConfirm => '확인';
 
   @override
@@ -91,6 +94,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get filterAtm => 'ATM';
+
+  @override
+  String get filterPharmacy => '약국';
 
   @override
   String get statusLoadingMap => '지도 불러오는 중…';
@@ -412,7 +418,50 @@ class AppLocalizationsKo extends AppLocalizations {
   String get postActionCopy => '복사';
 
   @override
+  String get postActionLike => '좋아요';
+
+  @override
+  String get postActionComment => '댓글';
+
+  @override
+  String get postActionSave => '저장';
+
+  @override
   String get postNoImage => '이미지 없음';
+
+  @override
+  String get reviewsTitle => '리뷰';
+
+  @override
+  String reviewsCount(int count) {
+    return '$count개의 리뷰';
+  }
+
+  @override
+  String get reviewNoItems => '아직 리뷰가 없어요. 첫 번째가 되어보세요!';
+
+  @override
+  String get reviewWriteHint => '리뷰 작성…';
+
+  @override
+  String get reviewSubmit => '제출';
+
+  @override
+  String get reviewSeeAll => '모두 보기';
+
+  @override
+  String reviewTimeAgo(int n, String unit) {
+    return '$n$unit 전';
+  }
+
+  @override
+  String get reviewTimeUnitMinute => '분';
+
+  @override
+  String get reviewTimeUnitHour => '시간';
+
+  @override
+  String get reviewTimeUnitDay => '일';
 
   @override
   String get authHeaderTitle => '안녕하세요, 유학생 여러분!';
@@ -574,6 +623,24 @@ class AppLocalizationsKo extends AppLocalizations {
   String get mapPinSaveButton => '장소 저장';
 
   @override
+  String get mapPinEditTitle => '장소 수정';
+
+  @override
+  String get mapPinSaveChanges => '변경 저장';
+
+  @override
+  String get mapPinDeleteConfirmTitle => '핀을 삭제하시겠습니까?';
+
+  @override
+  String get mapPinDeleteConfirmMessage => '이 핀이 지도에서 영구적으로 삭제됩니다.';
+
+  @override
+  String get mapPinDeletedToast => '핀이 삭제되었습니다';
+
+  @override
+  String get mapPinUpdatedToast => '핀이 수정되었습니다';
+
+  @override
   String get mapPinSuccessTitle => '저장되었습니다!';
 
   @override
@@ -616,6 +683,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get pinTypeUtility => '기타 편의시설';
+
+  @override
+  String get pinTypePharmacy => '약국';
 
   @override
   String get partnerSearchTitle => '언어 파트너';

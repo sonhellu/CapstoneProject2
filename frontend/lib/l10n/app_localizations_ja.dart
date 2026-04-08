@@ -54,6 +54,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get mapDirections => 'ルート';
 
   @override
+  String get mapPinSaved => '保存済み';
+
+  @override
   String get btnConfirm => '確認';
 
   @override
@@ -91,6 +94,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get filterAtm => 'ATM';
+
+  @override
+  String get filterPharmacy => '薬局';
 
   @override
   String get statusLoadingMap => 'マップ読み込み中…';
@@ -412,7 +418,50 @@ class AppLocalizationsJa extends AppLocalizations {
   String get postActionCopy => 'コピー';
 
   @override
+  String get postActionLike => 'いいね';
+
+  @override
+  String get postActionComment => 'コメント';
+
+  @override
+  String get postActionSave => '保存';
+
+  @override
   String get postNoImage => '画像なし';
+
+  @override
+  String get reviewsTitle => 'レビュー';
+
+  @override
+  String reviewsCount(int count) {
+    return '$count件のレビュー';
+  }
+
+  @override
+  String get reviewNoItems => 'まだレビューがありません。最初の投稿者になりましょう！';
+
+  @override
+  String get reviewWriteHint => 'レビューを書く…';
+
+  @override
+  String get reviewSubmit => '送信';
+
+  @override
+  String get reviewSeeAll => 'すべて見る';
+
+  @override
+  String reviewTimeAgo(int n, String unit) {
+    return '$n$unit前';
+  }
+
+  @override
+  String get reviewTimeUnitMinute => '分';
+
+  @override
+  String get reviewTimeUnitHour => '時間';
+
+  @override
+  String get reviewTimeUnitDay => '日';
 
   @override
   String get authHeaderTitle => '留学生の皆さん、こんにちは！';
@@ -574,6 +623,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get mapPinSaveButton => '場所を保存';
 
   @override
+  String get mapPinEditTitle => '場所を編集';
+
+  @override
+  String get mapPinSaveChanges => '変更を保存';
+
+  @override
+  String get mapPinDeleteConfirmTitle => 'ピンを削除しますか？';
+
+  @override
+  String get mapPinDeleteConfirmMessage => 'このピンは地図から完全に削除されます。';
+
+  @override
+  String get mapPinDeletedToast => 'ピンを削除しました';
+
+  @override
+  String get mapPinUpdatedToast => 'ピンを更新しました';
+
+  @override
   String get mapPinSuccessTitle => '保存しました！';
 
   @override
@@ -616,6 +683,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pinTypeUtility => 'その他の施設';
+
+  @override
+  String get pinTypePharmacy => '薬局';
 
   @override
   String get partnerSearchTitle => '語学パートナー';

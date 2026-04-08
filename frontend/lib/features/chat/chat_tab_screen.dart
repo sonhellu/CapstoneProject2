@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+
+import '../../core/navigation/app_transitions.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -86,14 +88,11 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
       builder: (ctx) => _MatchFilterSheet(
         onFind: (gender, language) {
           Navigator.pop(ctx);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => SearchPartnerScreen(
-                gender: gender,
-                language: language,
-              ),
-            ),
+          Navigator.of(context).push(
+            AppTransitions.fadeSlide(SearchPartnerScreen(
+              gender: gender,
+              language: language,
+            )),
           );
         },
       ),
@@ -153,12 +152,9 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                               ),
                               itemBuilder: (context, i) => _ChatTile(
                                 chat: _filtered[i],
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ChatDetailScreen(
-                                      chat: _filtered[i],
-                                    ),
+                                onTap: () => Navigator.of(context).push(
+                                  AppTransitions.fadeSlide(
+                                    ChatDetailScreen(chat: _filtered[i]),
                                   ),
                                 ),
                               ),
