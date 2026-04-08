@@ -1,10 +1,13 @@
 import 'dart:math' as math;
 
+import 'package:flutter/services.dart';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/navigation/app_transitions.dart';
 import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
 import 'create_post_screen.dart';
@@ -93,19 +96,17 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   }
 
   void _openCreatePost() {
+    HapticFeedback.mediumImpact();
     Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            FadeTransition(opacity: animation, child: const CreatePostScreen()),
-        transitionDuration: const Duration(milliseconds: 280),
-      ),
+      AppTransitions.fade(const CreatePostScreen()),
     );
   }
 
   void _openPostList() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const PostListScreen()));
+    HapticFeedback.lightImpact();
+    Navigator.of(context).push(
+      AppTransitions.fadeSlide(const PostListScreen()),
+    );
   }
 
   @override
@@ -141,7 +142,11 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               onViewAll: _openPostList,
             ),
           ),
-          SliverToBoxAdapter(child: _buildInternationalList()),
+          SliverToBoxAdapter(
+            child: _internationalPosts.isEmpty
+                ? const _EmptySection()
+                : _buildInternationalList(),
+          ),
           const SliverToBoxAdapter(child: SizedBox(height: 8)),
           // ── Campus vertical section ──
           SliverToBoxAdapter(
@@ -150,15 +155,18 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               onViewAll: _openPostList,
             ),
           ),
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(16, 0, 16, navBarHeight + 16),
-            sliver: SliverList.separated(
-              itemCount: _campusPosts.length,
-              separatorBuilder: (context, i) => const SizedBox(height: 10),
-              itemBuilder: (context, i) =>
-                  PostCard(post: _campusPosts[i], style: PostCardStyle.list),
+          if (_campusPosts.isEmpty)
+            const SliverToBoxAdapter(child: _EmptySection())
+          else
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, navBarHeight + 16),
+              sliver: SliverList.separated(
+                itemCount: _campusPosts.length,
+                separatorBuilder: (context, i) => const SizedBox(height: 10),
+                itemBuilder: (context, i) =>
+                    PostCard(post: _campusPosts[i], style: PostCardStyle.list),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -334,6 +342,34 @@ class _BannerCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────── Empty Section ───────────────────────────
+class _EmptySection extends StatelessWidget {
+  const _EmptySection();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 120,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.article_outlined, size: 36, color: _T.primary.withValues(alpha: 0.25)),
+            const SizedBox(height: 8),
+            Text(
+              AppLocalizations.of(context)!.communityNoPosts,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 13,
+                color: _T.textGrey,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

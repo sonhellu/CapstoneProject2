@@ -196,6 +196,12 @@ abstract class AppLocalizations {
   /// **'Directions'**
   String get mapDirections;
 
+  /// Save button: already saved state
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get mapPinSaved;
+
   /// No description provided for @btnConfirm.
   ///
   /// In en, this message translates to:
@@ -273,6 +279,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'ATMs'**
   String get filterAtm;
+
+  /// No description provided for @filterPharmacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Pharmacy'**
+  String get filterPharmacy;
 
   /// No description provided for @statusLoadingMap.
   ///
@@ -832,11 +844,89 @@ abstract class AppLocalizations {
   /// **'Copy'**
   String get postActionCopy;
 
+  /// Post detail action: like
+  ///
+  /// In en, this message translates to:
+  /// **'Like'**
+  String get postActionLike;
+
+  /// Post detail action: comment
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get postActionComment;
+
+  /// Post detail action: save/bookmark
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get postActionSave;
+
   /// Post card image error placeholder
   ///
   /// In en, this message translates to:
   /// **'No image'**
   String get postNoImage;
+
+  /// Review modal title
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviewsTitle;
+
+  /// Total review count label
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews'**
+  String reviewsCount(int count);
+
+  /// Empty state for review list
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet. Be the first!'**
+  String get reviewNoItems;
+
+  /// Review input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Write a review…'**
+  String get reviewWriteHint;
+
+  /// Submit review button
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get reviewSubmit;
+
+  /// See all reviews button
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get reviewSeeAll;
+
+  /// Relative time label e.g. '2 hours ago'
+  ///
+  /// In en, this message translates to:
+  /// **'{n} {unit} ago'**
+  String reviewTimeAgo(int n, String unit);
+
+  /// Time unit: minute(s)
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get reviewTimeUnitMinute;
+
+  /// Time unit: hour(s)
+  ///
+  /// In en, this message translates to:
+  /// **'hr'**
+  String get reviewTimeUnitHour;
+
+  /// Time unit: day(s)
+  ///
+  /// In en, this message translates to:
+  /// **'day'**
+  String get reviewTimeUnitDay;
 
   /// No description provided for @authHeaderTitle.
   ///
@@ -1156,6 +1246,42 @@ abstract class AppLocalizations {
   /// **'Save place'**
   String get mapPinSaveButton;
 
+  /// No description provided for @mapPinEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit place'**
+  String get mapPinEditTitle;
+
+  /// No description provided for @mapPinSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get mapPinSaveChanges;
+
+  /// No description provided for @mapPinDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete pin?'**
+  String get mapPinDeleteConfirmTitle;
+
+  /// No description provided for @mapPinDeleteConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently remove the pin from the map.'**
+  String get mapPinDeleteConfirmMessage;
+
+  /// No description provided for @mapPinDeletedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin deleted'**
+  String get mapPinDeletedToast;
+
+  /// No description provided for @mapPinUpdatedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin updated'**
+  String get mapPinUpdatedToast;
+
   /// No description provided for @mapPinSuccessTitle.
   ///
   /// In en, this message translates to:
@@ -1239,6 +1365,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other utilities'**
   String get pinTypeUtility;
+
+  /// No description provided for @pinTypePharmacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Pharmacy'**
+  String get pinTypePharmacy;
 
   /// No description provided for @partnerSearchTitle.
   ///

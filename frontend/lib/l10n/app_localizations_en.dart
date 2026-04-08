@@ -54,6 +54,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapDirections => 'Directions';
 
   @override
+  String get mapPinSaved => 'Saved';
+
+  @override
   String get btnConfirm => 'Confirm';
 
   @override
@@ -91,6 +94,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterAtm => 'ATMs';
+
+  @override
+  String get filterPharmacy => 'Pharmacy';
 
   @override
   String get statusLoadingMap => 'Loading map…';
@@ -415,7 +421,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get postActionCopy => 'Copy';
 
   @override
+  String get postActionLike => 'Like';
+
+  @override
+  String get postActionComment => 'Comment';
+
+  @override
+  String get postActionSave => 'Save';
+
+  @override
   String get postNoImage => 'No image';
+
+  @override
+  String get reviewsTitle => 'Reviews';
+
+  @override
+  String reviewsCount(int count) {
+    return '$count reviews';
+  }
+
+  @override
+  String get reviewNoItems => 'No reviews yet. Be the first!';
+
+  @override
+  String get reviewWriteHint => 'Write a review…';
+
+  @override
+  String get reviewSubmit => 'Submit';
+
+  @override
+  String get reviewSeeAll => 'See all';
+
+  @override
+  String reviewTimeAgo(int n, String unit) {
+    return '$n $unit ago';
+  }
+
+  @override
+  String get reviewTimeUnitMinute => 'min';
+
+  @override
+  String get reviewTimeUnitHour => 'hr';
+
+  @override
+  String get reviewTimeUnitDay => 'day';
 
   @override
   String get authHeaderTitle => 'Hello, international student!';
@@ -580,6 +629,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapPinSaveButton => 'Save place';
 
   @override
+  String get mapPinEditTitle => 'Edit place';
+
+  @override
+  String get mapPinSaveChanges => 'Save changes';
+
+  @override
+  String get mapPinDeleteConfirmTitle => 'Delete pin?';
+
+  @override
+  String get mapPinDeleteConfirmMessage =>
+      'This will permanently remove the pin from the map.';
+
+  @override
+  String get mapPinDeletedToast => 'Pin deleted';
+
+  @override
+  String get mapPinUpdatedToast => 'Pin updated';
+
+  @override
   String get mapPinSuccessTitle => 'Pinned successfully!';
 
   @override
@@ -624,6 +692,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinTypeUtility => 'Other utilities';
+
+  @override
+  String get pinTypePharmacy => 'Pharmacy';
 
   @override
   String get partnerSearchTitle => 'Language partners';
