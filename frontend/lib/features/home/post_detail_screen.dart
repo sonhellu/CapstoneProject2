@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../l10n/app_localizations.dart';
-
 import 'models/post.dart';
 import 'widgets/post_card.dart' show postImageHeroTag, postAvatarHeroTag;
 
@@ -314,45 +313,43 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   // ─── Action Bar ───
   Widget _buildActionBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         // Like
-        _ActionButton(
-          icon: _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-          label: '$_likeCount',
-          color: _isLiked ? Colors.redAccent : _T.textGrey,
-          bg: _isLiked ? const Color(0xFFFFEEEE) : const Color(0xFFF5F5F5),
-          onTap: () => setState(() {
-            _isLiked = !_isLiked;
-            _likeCount += _isLiked ? 1 : -1;
-          }),
+        Expanded(
+          child: _ActionButton(
+            icon: _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+            label: '$_likeCount',
+            color: _isLiked ? Colors.redAccent : _T.textGrey,
+            bg: _isLiked ? const Color(0xFFFFEEEE) : const Color(0xFFF5F5F5),
+            onTap: () => setState(() {
+              _isLiked = !_isLiked;
+              _likeCount += _isLiked ? 1 : -1;
+            }),
+          ),
         ),
         const SizedBox(width: 10),
         // Comment
-        _ActionButton(
-          icon: Icons.chat_bubble_outline_rounded,
-          label: '${widget.post.comments}',
-          color: _T.textGrey,
-          bg: const Color(0xFFF5F5F5),
-          onTap: () {},
-        ),
-        const Spacer(),
-        // Copy
-        _ActionButton(
-          icon: Icons.copy_rounded,
-          label: AppLocalizations.of(context)!.postActionCopy,
-          color: _T.primary,
-          bg: _T.primary.withValues(alpha: 0.07),
-          onTap: _copyContent,
+        Expanded(
+          child: _ActionButton(
+            icon: Icons.chat_bubble_outline_rounded,
+            label: '${widget.post.comments}',
+            color: _T.textGrey,
+            bg: const Color(0xFFF5F5F5),
+            onTap: () {},
+          ),
         ),
         const SizedBox(width: 10),
         // Save
-        _ActionButton(
-          icon: Icons.bookmark_border_rounded,
-          label: AppLocalizations.of(context)!.btnSave,
-          color: _T.textGrey,
-          bg: const Color(0xFFF5F5F5),
-          onTap: () {},
+        Expanded(
+          child: _ActionButton(
+            icon: Icons.bookmark_border_rounded,
+            label: l10n.postActionSave,
+            color: _T.textGrey,
+            bg: const Color(0xFFF5F5F5),
+            onTap: () {},
+          ),
         ),
       ],
     );
@@ -387,7 +384,7 @@ class _ActionButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 17, color: color),
             const SizedBox(width: 6),
@@ -429,7 +426,9 @@ class _FollowButton extends StatelessWidget {
           ),
         ),
         child: Text(
-          isFollowing ? AppLocalizations.of(context)!.postFollowing : AppLocalizations.of(context)!.postFollow,
+          isFollowing
+              ? AppLocalizations.of(context)!.postFollowing
+              : AppLocalizations.of(context)!.postFollow,
           style: GoogleFonts.notoSansKr(
             fontSize: 12,
             fontWeight: FontWeight.w700,

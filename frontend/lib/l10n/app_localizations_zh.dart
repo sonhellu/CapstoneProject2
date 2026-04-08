@@ -54,6 +54,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mapDirections => '导航';
 
   @override
+  String get mapPinSaved => '已收藏';
+
+  @override
   String get btnConfirm => '确认';
 
   @override
@@ -91,6 +94,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterAtm => 'ATM';
+
+  @override
+  String get filterPharmacy => '药店';
 
   @override
   String get statusLoadingMap => '地图加载中…';
@@ -412,7 +418,50 @@ class AppLocalizationsZh extends AppLocalizations {
   String get postActionCopy => '复制';
 
   @override
+  String get postActionLike => '点赞';
+
+  @override
+  String get postActionComment => '评论';
+
+  @override
+  String get postActionSave => '收藏';
+
+  @override
   String get postNoImage => '无图片';
+
+  @override
+  String get reviewsTitle => '评论';
+
+  @override
+  String reviewsCount(int count) {
+    return '$count条评论';
+  }
+
+  @override
+  String get reviewNoItems => '暂无评论，快来第一个吧！';
+
+  @override
+  String get reviewWriteHint => '写评论…';
+
+  @override
+  String get reviewSubmit => '提交';
+
+  @override
+  String get reviewSeeAll => '查看全部';
+
+  @override
+  String reviewTimeAgo(int n, String unit) {
+    return '$n$unit前';
+  }
+
+  @override
+  String get reviewTimeUnitMinute => '分钟';
+
+  @override
+  String get reviewTimeUnitHour => '小时';
+
+  @override
+  String get reviewTimeUnitDay => '天';
 
   @override
   String get authHeaderTitle => '你好，留学生！';
@@ -574,6 +623,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mapPinSaveButton => '保存地点';
 
   @override
+  String get mapPinEditTitle => '编辑地点';
+
+  @override
+  String get mapPinSaveChanges => '保存更改';
+
+  @override
+  String get mapPinDeleteConfirmTitle => '删除标记？';
+
+  @override
+  String get mapPinDeleteConfirmMessage => '此标记将从地图中永久删除。';
+
+  @override
+  String get mapPinDeletedToast => '已删除标记';
+
+  @override
+  String get mapPinUpdatedToast => '已更新标记';
+
+  @override
   String get mapPinSuccessTitle => '标记成功！';
 
   @override
@@ -616,6 +683,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get pinTypeUtility => '其他设施';
+
+  @override
+  String get pinTypePharmacy => '药店';
 
   @override
   String get partnerSearchTitle => '语言伙伴';

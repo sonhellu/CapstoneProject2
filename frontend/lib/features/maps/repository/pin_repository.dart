@@ -19,13 +19,6 @@ class PinRepository {
   /// ```
   static Future<bool> mockSavePin(UserPinModel pin) async {
     await Future<void>.delayed(const Duration(milliseconds: 1200));
-
-    // Simulate a rare network failure (10% chance) so we can test
-    // the error state during development.
-    // Remove this block before production.
-    // final random = Random();
-    // if (random.nextInt(10) == 0) return false;
-
     return true;
   }
 }

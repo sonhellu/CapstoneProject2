@@ -19,6 +19,8 @@
   "mapPinSpot": "Pin this spot",
   "mapGetDirections": "Get directions",
   "mapDirections": "Directions",
+  "mapPinSaved": "Saved",
+  "@mapPinSaved": { "description": "Save button: already saved state" },
 
   "btnConfirm": "Confirm",
   "btnCancel": "Cancel",
@@ -34,6 +36,7 @@
   "filterRealEstate": "Real Estate",
   "filterConvenience": "Convenience",
   "filterAtm": "ATMs",
+  "filterPharmacy": "Pharmacy",
 
   "statusLoadingMap": "Loading map…",
   "statusLocating": "Locating…",
@@ -268,8 +271,44 @@
   "@postFollowing": { "description": "Follow button: already following" },
   "postActionCopy": "Copy",
   "@postActionCopy": { "description": "Post detail action: copy text" },
+  "postActionLike": "Like",
+  "@postActionLike": { "description": "Post detail action: like" },
+  "postActionComment": "Comment",
+  "@postActionComment": { "description": "Post detail action: comment" },
+  "postActionSave": "Save",
+  "@postActionSave": { "description": "Post detail action: save/bookmark" },
   "postNoImage": "No image",
   "@postNoImage": { "description": "Post card image error placeholder" },
+
+  "reviewsTitle": "Reviews",
+  "@reviewsTitle": { "description": "Review modal title" },
+  "reviewsCount": "{count} reviews",
+  "@reviewsCount": {
+    "description": "Total review count label",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reviewNoItems": "No reviews yet. Be the first!",
+  "@reviewNoItems": { "description": "Empty state for review list" },
+  "reviewWriteHint": "Write a review…",
+  "@reviewWriteHint": { "description": "Review input placeholder" },
+  "reviewSubmit": "Submit",
+  "@reviewSubmit": { "description": "Submit review button" },
+  "reviewSeeAll": "See all",
+  "@reviewSeeAll": { "description": "See all reviews button" },
+  "reviewTimeAgo": "{n} {unit} ago",
+  "@reviewTimeAgo": {
+    "description": "Relative time label e.g. '2 hours ago'",
+    "placeholders": {
+      "n":    { "type": "int" },
+      "unit": { "type": "String" }
+    }
+  },
+  "reviewTimeUnitMinute": "min",
+  "@reviewTimeUnitMinute": { "description": "Time unit: minute(s)" },
+  "reviewTimeUnitHour": "hr",
+  "@reviewTimeUnitHour": { "description": "Time unit: hour(s)" },
+  "reviewTimeUnitDay": "day",
+  "@reviewTimeUnitDay": { "description": "Time unit: day(s)" },
 
   "@@section_auth": {},
 
@@ -328,6 +367,12 @@
   "mapPinSaveFail": "Save failed. Please try again.",
   "mapPinAddPhoto": "Add photo",
   "mapPinSaveButton": "Save place",
+  "mapPinEditTitle": "Edit place",
+  "mapPinSaveChanges": "Save changes",
+  "mapPinDeleteConfirmTitle": "Delete pin?",
+  "mapPinDeleteConfirmMessage": "This will permanently remove the pin from the map.",
+  "mapPinDeletedToast": "Pin deleted",
+  "mapPinUpdatedToast": "Pin updated",
   "mapPinSuccessTitle": "Pinned successfully!",
   "mapPinShareTitle": "Share this place?",
   "mapPinShareMessage": "Pin a great eatery, housing, or a handy spot near campus.",
@@ -345,6 +390,7 @@
   "pinTypeRestaurant": "Good eats",
   "pinTypeRealEstate": "Housing",
   "pinTypeUtility": "Other utilities",
+  "pinTypePharmacy": "Pharmacy",
 
   "partnerSearchTitle": "Language partners",
   "partnerGenderAny": "Any",

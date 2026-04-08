@@ -1,6 +1,10 @@
 # API Keys — never commit
 lib/core/config/api_keys.dart
 
+# Claude Code
+.claude/
+CLAUDE.md
+
 # Miscellaneous
 *.class
 *.log

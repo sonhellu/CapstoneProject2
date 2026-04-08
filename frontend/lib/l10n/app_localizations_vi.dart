@@ -54,6 +54,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get mapDirections => 'Chỉ đường';
 
   @override
+  String get mapPinSaved => 'Đã lưu';
+
+  @override
   String get btnConfirm => 'Xác nhận';
 
   @override
@@ -91,6 +94,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get filterAtm => 'ATM';
+
+  @override
+  String get filterPharmacy => 'Nhà thuốc';
 
   @override
   String get statusLoadingMap => 'Đang tải bản đồ…';
@@ -412,7 +418,50 @@ class AppLocalizationsVi extends AppLocalizations {
   String get postActionCopy => 'Sao chép';
 
   @override
+  String get postActionLike => 'Thích';
+
+  @override
+  String get postActionComment => 'Bình luận';
+
+  @override
+  String get postActionSave => 'Lưu';
+
+  @override
   String get postNoImage => 'Không có ảnh';
+
+  @override
+  String get reviewsTitle => 'Đánh giá';
+
+  @override
+  String reviewsCount(int count) {
+    return '$count đánh giá';
+  }
+
+  @override
+  String get reviewNoItems => 'Chưa có đánh giá nào. Hãy là người đầu tiên!';
+
+  @override
+  String get reviewWriteHint => 'Viết nhận xét…';
+
+  @override
+  String get reviewSubmit => 'Gửi';
+
+  @override
+  String get reviewSeeAll => 'Xem thêm';
+
+  @override
+  String reviewTimeAgo(int n, String unit) {
+    return '$n $unit trước';
+  }
+
+  @override
+  String get reviewTimeUnitMinute => 'phút';
+
+  @override
+  String get reviewTimeUnitHour => 'giờ';
+
+  @override
+  String get reviewTimeUnitDay => 'ngày';
 
   @override
   String get authHeaderTitle => 'Chào bạn, du học sinh!';
@@ -577,6 +626,25 @@ class AppLocalizationsVi extends AppLocalizations {
   String get mapPinSaveButton => 'Lưu địa điểm';
 
   @override
+  String get mapPinEditTitle => 'Sửa địa điểm';
+
+  @override
+  String get mapPinSaveChanges => 'Lưu thay đổi';
+
+  @override
+  String get mapPinDeleteConfirmTitle => 'Xóa ghim?';
+
+  @override
+  String get mapPinDeleteConfirmMessage =>
+      'Ghim này sẽ bị xóa vĩnh viễn khỏi bản đồ.';
+
+  @override
+  String get mapPinDeletedToast => 'Đã xóa ghim';
+
+  @override
+  String get mapPinUpdatedToast => 'Đã cập nhật ghim';
+
+  @override
   String get mapPinSuccessTitle => 'Đã ghim thành công!';
 
   @override
@@ -620,6 +688,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get pinTypeUtility => 'Tiện ích khác';
+
+  @override
+  String get pinTypePharmacy => 'Nhà thuốc';
 
   @override
   String get partnerSearchTitle => 'Tìm partner ngôn ngữ';

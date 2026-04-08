@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/shell_theme.dart';
@@ -54,7 +55,10 @@ class FloatingBottomNav extends StatelessWidget {
             return Expanded(
               child: InkWell(
                 borderRadius: BorderRadius.circular(8),
-                onTap: () => onTap(i),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  onTap(i);
+                },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Column(
