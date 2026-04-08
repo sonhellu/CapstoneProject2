@@ -49,7 +49,7 @@ class PlaceSearchService {
   static const _baseUrl =
       'https://openapi.naver.com/v1/search/local.json';
 
-  static const _headers = {
+  static final _headers = {
     'X-Naver-Client-Id': ApiKeys.naverMapClientId,
     'X-Naver-Client-Secret': ApiKeys.naverMapClientSecret,
   };

@@ -28,8 +28,10 @@ jobs:
           mkdir -p lib/core/config
           cat > lib/core/config/api_keys.dart << 'EOF'
           abstract final class ApiKeys {
-            static const naverClientId     = '';
-            static const naverClientSecret = '';
+            static const naverClientId        = '';
+            static const naverClientSecret    = '';
+            static const naverMapClientId     = '';
+            static const naverMapClientSecret = '';
           }
           EOF
       - run: flutter analyze
