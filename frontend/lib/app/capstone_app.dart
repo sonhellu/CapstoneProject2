@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../core/locale/locale_controller.dart';
 import '../core/widgets/locale_change_overlay.dart';
 import '../features/auth/presentation/auth_screen.dart';
+import '../features/auth/presentation/verify_email_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/auth/theme/auth_theme.dart';
 import '../features/shell/main_shell.dart';
@@ -80,10 +81,9 @@ class CapstoneApp extends StatelessWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {
-          if (auth.isAuthenticated) {
-            return MainShell(homeCarouselAutoPlay: homeCarouselAutoPlay);
-          }
-          return const AuthScreen();
+          if (!auth.isAuthenticated) return const AuthScreen();
+          if (!auth.isEmailVerified) return const VerifyEmailScreen();
+          return MainShell(homeCarouselAutoPlay: homeCarouselAutoPlay);
         },
       ),
     );

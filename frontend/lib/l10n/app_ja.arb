@@ -209,7 +209,9 @@
   "authValidationNameEmpty": "名前を入力してください",
   "authValidationNameShort": "名前が短すぎます",
   "authValidationConfirmEmpty": "パスワードを確認してください",
-  "authValidationConfirmMismatch": "パスワードが一致しません",
+  "authValidationUniversityEmail": "提携大学の .ac.kr メールアドレスを使用してください",
+  "authValidationLocalPart": "英字、数字、. _ - のみ使用できます",
+  "authValidationConfirmMismatch":"パスワードが一致しません",
   "authTooltipShowPassword": "パスワードを表示",
   "authTooltipHidePassword": "パスワードを隠す",
 
@@ -274,5 +276,40 @@
   "chatFilterTargetLanguage": "学びたい言語",
   "chatFilterFindPartners": "パートナーを探す",
   "chatRequestPending": "リクエスト保留中…",
-  "chatFilterLanguageAny": "指定なし"
+  "chatFilterLanguageAny": "指定なし",
+
+  "authSuccessLogin": "おかえりなさい！",
+  "authSuccessRegister": "登録完了！メールを確認してください。",
+  "authErrInvalidCredential": "メールアドレスまたはパスワードが正しくありません",
+  "authErrWrongPassword": "パスワードが正しくありません",
+  "authErrTooManyRequests": "試行回数が多すぎます。後でもう一度お試しください",
+  "authErrUserDisabled": "このアカウントは無効化されています",
+  "authErrEmailInUse": "このメールアドレスはすでに登録されています",
+  "authErrInvalidEmail": "無効なメールアドレスです",
+  "authErrWeakPassword": "パスワードが弱すぎます（最低6文字）",
+  "authErrDefault": "認証に失敗しました: {message}",
+  "@authErrDefault": {
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "verifyEmailTitle": "受信トレイを確認してください",
+  "verifyEmailSubtitle": "{email}に確認リンクを送信しました。リンクをクリックしてアカウントを有効にしてください。",
+  "@verifyEmailSubtitle": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "verifyEmailCheckButton": "確認済みです",
+  "verifyEmailResendButton": "メールを再送信",
+  "verifyEmailResendSent": "確認メールを送信しました！",
+  "verifyEmailResendCooldown": "{seconds}秒後に再送信",
+  "@verifyEmailResendCooldown": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "authUniEmailLabel": "大学メール",
+  "authUniEmailHint": "メールID",
+  "authUniSelectHint": "大学を選択",
+  "authUniPickerTitle": "大学を選択",
+  "authUniSearchHint": "大学またはドメインで検索…",
+  "verifyEmailSent": "確認メールを送信しました。受信トレイをご確認ください。",
+  "verifyEmailNotYet": "まだメールが確認されていません。受信トレイをご確認ください。",
+  "authSuccessVerified": "メール認証完了！ログインしてください。"
 }

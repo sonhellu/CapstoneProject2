@@ -574,6 +574,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get authValidationConfirmMismatch => 'Mật khẩu xác nhận không khớp';
 
   @override
+  String get authValidationUniversityEmail =>
+      'Vui lòng sử dụng email đuôi .ac.kr từ các trường đại học liên kết';
+
+  @override
+  String get authValidationLocalPart => 'Chỉ được dùng chữ cái, số, . _ -';
+
+  @override
   String get authTooltipShowPassword => 'Hiện mật khẩu';
 
   @override
@@ -751,4 +758,86 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get chatFilterLanguageAny => 'Tất cả';
+
+  @override
+  String get authSuccessLogin => 'Chào mừng trở lại!';
+
+  @override
+  String get authSuccessRegister =>
+      'Đăng ký thành công! Vui lòng xác thực email.';
+
+  @override
+  String get authErrInvalidCredential => 'Email hoặc mật khẩu không đúng';
+
+  @override
+  String get authErrWrongPassword => 'Mật khẩu không đúng';
+
+  @override
+  String get authErrTooManyRequests =>
+      'Quá nhiều lần thử, vui lòng thử lại sau';
+
+  @override
+  String get authErrUserDisabled => 'Tài khoản này đã bị khóa';
+
+  @override
+  String get authErrEmailInUse => 'Email này đã được đăng ký';
+
+  @override
+  String get authErrInvalidEmail => 'Email không hợp lệ';
+
+  @override
+  String get authErrWeakPassword => 'Mật khẩu quá yếu (tối thiểu 6 ký tự)';
+
+  @override
+  String authErrDefault(String message) {
+    return 'Xác thực thất bại: $message';
+  }
+
+  @override
+  String get verifyEmailTitle => 'Kiểm tra hòm thư của bạn';
+
+  @override
+  String verifyEmailSubtitle(String email) {
+    return 'Chúng tôi đã gửi link xác thực đến $email. Vui lòng nhấn vào link để kích hoạt tài khoản.';
+  }
+
+  @override
+  String get verifyEmailCheckButton => 'Tôi đã xác thực rồi';
+
+  @override
+  String get verifyEmailResendButton => 'Gửi lại email';
+
+  @override
+  String get verifyEmailResendSent => 'Đã gửi email xác thực!';
+
+  @override
+  String verifyEmailResendCooldown(int seconds) {
+    return 'Gửi lại sau ${seconds}s';
+  }
+
+  @override
+  String get authUniEmailLabel => 'Email trường đại học';
+
+  @override
+  String get authUniEmailHint => 'Email';
+
+  @override
+  String get authUniSelectHint => 'Chọn trường';
+
+  @override
+  String get authUniPickerTitle => 'Chọn trường đại học';
+
+  @override
+  String get authUniSearchHint => 'Tìm trường hoặc tên miền…';
+
+  @override
+  String get verifyEmailSent =>
+      'Email xác thực đã được gửi. Vui lòng kiểm tra hộp thư.';
+
+  @override
+  String get verifyEmailNotYet =>
+      'Email chưa được xác thực. Vui lòng kiểm tra hộp thư.';
+
+  @override
+  String get authSuccessVerified => 'Xác thực thành công! Vui lòng đăng nhập.';
 }

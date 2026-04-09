@@ -1144,6 +1144,18 @@ abstract class AppLocalizations {
   /// **'Passwords do not match'**
   String get authValidationConfirmMismatch;
 
+  /// No description provided for @authValidationUniversityEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please use a .ac.kr email from a supported Korean university'**
+  String get authValidationUniversityEmail;
+
+  /// No description provided for @authValidationLocalPart.
+  ///
+  /// In en, this message translates to:
+  /// **'Only letters, numbers, . _ - are allowed'**
+  String get authValidationLocalPart;
+
   /// No description provided for @authTooltipShowPassword.
   ///
   /// In en, this message translates to:
@@ -1491,6 +1503,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Any'**
   String get chatFilterLanguageAny;
+
+  /// No description provided for @authSuccessLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back!'**
+  String get authSuccessLogin;
+
+  /// No description provided for @authSuccessRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Account created! Please verify your email.'**
+  String get authSuccessRegister;
+
+  /// No description provided for @authErrInvalidCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password'**
+  String get authErrInvalidCredential;
+
+  /// No description provided for @authErrWrongPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect password'**
+  String get authErrWrongPassword;
+
+  /// No description provided for @authErrTooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts, please try again later'**
+  String get authErrTooManyRequests;
+
+  /// No description provided for @authErrUserDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been disabled'**
+  String get authErrUserDisabled;
+
+  /// No description provided for @authErrEmailInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered'**
+  String get authErrEmailInUse;
+
+  /// No description provided for @authErrInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email address'**
+  String get authErrInvalidEmail;
+
+  /// No description provided for @authErrWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is too weak (minimum 6 characters)'**
+  String get authErrWeakPassword;
+
+  /// No description provided for @authErrDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed: {message}'**
+  String authErrDefault(String message);
+
+  /// No description provided for @verifyEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your inbox'**
+  String get verifyEmailTitle;
+
+  /// No description provided for @verifyEmailSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a verification link to {email}. Please click the link to activate your account.'**
+  String verifyEmailSubtitle(String email);
+
+  /// No description provided for @verifyEmailCheckButton.
+  ///
+  /// In en, this message translates to:
+  /// **'I already verified'**
+  String get verifyEmailCheckButton;
+
+  /// No description provided for @verifyEmailResendButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend email'**
+  String get verifyEmailResendButton;
+
+  /// No description provided for @verifyEmailResendSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification email sent!'**
+  String get verifyEmailResendSent;
+
+  /// No description provided for @verifyEmailResendCooldown.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}s'**
+  String verifyEmailResendCooldown(int seconds);
+
+  /// No description provided for @authUniEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'University Email'**
+  String get authUniEmailLabel;
+
+  /// No description provided for @authUniEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'email'**
+  String get authUniEmailHint;
+
+  /// No description provided for @authUniSelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select university'**
+  String get authUniSelectHint;
+
+  /// No description provided for @authUniPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select University'**
+  String get authUniPickerTitle;
+
+  /// No description provided for @authUniSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search university or domain…'**
+  String get authUniSearchHint;
+
+  /// No description provided for @verifyEmailSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification email sent. Please check your inbox.'**
+  String get verifyEmailSent;
+
+  /// No description provided for @verifyEmailNotYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Email not verified yet. Please check your inbox.'**
+  String get verifyEmailNotYet;
+
+  /// No description provided for @authSuccessVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified! Please log in.'**
+  String get authSuccessVerified;
 }
 
 class _AppLocalizationsDelegate

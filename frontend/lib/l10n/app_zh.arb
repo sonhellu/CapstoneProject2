@@ -209,7 +209,9 @@
   "authValidationNameEmpty": "请输入姓名",
   "authValidationNameShort": "姓名过短",
   "authValidationConfirmEmpty": "请确认密码",
-  "authValidationConfirmMismatch": "两次密码不一致",
+  "authValidationUniversityEmail": "请使用合作大学的 .ac.kr 邮箱",
+  "authValidationLocalPart": "只能使用字母、数字、. _ -",
+  "authValidationConfirmMismatch":"两次密码不一致",
   "authTooltipShowPassword": "显示密码",
   "authTooltipHidePassword": "隐藏密码",
 
@@ -274,5 +276,40 @@
   "chatFilterTargetLanguage": "想学的语言",
   "chatFilterFindPartners": "查找伙伴",
   "chatRequestPending": "请求待处理…",
-  "chatFilterLanguageAny": "不限"
+  "chatFilterLanguageAny": "不限",
+
+  "authSuccessLogin": "欢迎回来！",
+  "authSuccessRegister": "注册成功！请验证您的电子邮件。",
+  "authErrInvalidCredential": "电子邮件或密码不正确",
+  "authErrWrongPassword": "密码不正确",
+  "authErrTooManyRequests": "尝试次数过多，请稍后再试",
+  "authErrUserDisabled": "该账户已被禁用",
+  "authErrEmailInUse": "该邮箱已被注册",
+  "authErrInvalidEmail": "无效的电子邮件地址",
+  "authErrWeakPassword": "密码太弱（最少6个字符）",
+  "authErrDefault": "验证失败：{message}",
+  "@authErrDefault": {
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "verifyEmailTitle": "请查看您的收件箱",
+  "verifyEmailSubtitle": "我们已向 {email} 发送了验证链接，请点击链接激活您的账户。",
+  "@verifyEmailSubtitle": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "verifyEmailCheckButton": "我已验证",
+  "verifyEmailResendButton": "重新发送邮件",
+  "verifyEmailResendSent": "验证邮件已发送！",
+  "verifyEmailResendCooldown": "{seconds}秒后重新发送",
+  "@verifyEmailResendCooldown": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "authUniEmailLabel": "学校邮箱",
+  "authUniEmailHint": "邮箱账号",
+  "authUniSelectHint": "选择学校",
+  "authUniPickerTitle": "选择学校",
+  "authUniSearchHint": "搜索学校或域名…",
+  "verifyEmailSent": "验证邮件已发送，请检查您的收件箱。",
+  "verifyEmailNotYet": "邮箱尚未验证，请检查您的收件箱。",
+  "authSuccessVerified": "邮箱验证成功！请登录。"
 }

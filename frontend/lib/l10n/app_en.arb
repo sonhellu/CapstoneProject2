@@ -348,6 +348,8 @@
   "authValidationNameShort": "Name is too short",
   "authValidationConfirmEmpty": "Please confirm password",
   "authValidationConfirmMismatch": "Passwords do not match",
+  "authValidationUniversityEmail": "Please use a .ac.kr email from a supported Korean university",
+  "authValidationLocalPart": "Only letters, numbers, . _ - are allowed",
   "authTooltipShowPassword": "Show password",
   "authTooltipHidePassword": "Hide password",
 
@@ -412,5 +414,40 @@
   "chatFilterTargetLanguage": "Target language to learn",
   "chatFilterFindPartners": "Find partners",
   "chatRequestPending": "Request pending…",
-  "chatFilterLanguageAny": "Any"
+  "chatFilterLanguageAny": "Any",
+
+  "authSuccessLogin": "Welcome back!",
+  "authSuccessRegister": "Account created! Please verify your email.",
+  "authErrInvalidCredential": "Incorrect email or password",
+  "authErrWrongPassword": "Incorrect password",
+  "authErrTooManyRequests": "Too many attempts, please try again later",
+  "authErrUserDisabled": "This account has been disabled",
+  "authErrEmailInUse": "This email is already registered",
+  "authErrInvalidEmail": "Invalid email address",
+  "authErrWeakPassword": "Password is too weak (minimum 6 characters)",
+  "authErrDefault": "Authentication failed: {message}",
+  "@authErrDefault": {
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "verifyEmailTitle": "Check your inbox",
+  "verifyEmailSubtitle": "We sent a verification link to {email}. Please click the link to activate your account.",
+  "@verifyEmailSubtitle": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "verifyEmailCheckButton": "I already verified",
+  "verifyEmailResendButton": "Resend email",
+  "verifyEmailResendSent": "Verification email sent!",
+  "verifyEmailResendCooldown": "Resend in {seconds}s",
+  "@verifyEmailResendCooldown": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "authUniEmailLabel": "University Email",
+  "authUniEmailHint": "email",
+  "authUniSelectHint": "Select university",
+  "authUniPickerTitle": "Select University",
+  "authUniSearchHint": "Search university or domain…",
+  "verifyEmailSent": "Verification email sent. Please check your inbox.",
+  "verifyEmailNotYet": "Email not verified yet. Please check your inbox.",
+  "authSuccessVerified": "Email verified! Please log in."
 }

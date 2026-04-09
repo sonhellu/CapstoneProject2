@@ -209,7 +209,9 @@
   "authValidationNameEmpty": "အမည်ထည့်ပါ",
   "authValidationNameShort": "အမည်တိုလွန်းသည်",
   "authValidationConfirmEmpty": "စကားဝှက်အတည်ပြုပါ",
-  "authValidationConfirmMismatch": "စကားဝှက်မတူညီပါ",
+  "authValidationUniversityEmail": "ပူးပေါင်းတက္ကသိုလ်၏ .ac.kr အီးမေးလ် သုံးပါ",
+  "authValidationLocalPart": "စာလုံး၊ ဂဏန်း၊ . _ - သာ အသုံးပြုနိုင်သည်",
+  "authValidationConfirmMismatch":"စကားဝှက်မတူညီပါ",
   "authTooltipShowPassword": "စကားဝှက်ပြမည်",
   "authTooltipHidePassword": "စကားဝှက်ဖျောက်မည်",
 
@@ -274,5 +276,40 @@
   "chatFilterTargetLanguage": "သင်ယူလိုသော ဘာသာ",
   "chatFilterFindPartners": "ဖော်ဖော်ရှာဖော်များ ရှာမည်",
   "chatRequestPending": "တောင်းဆိုမှု စောင့်ဆိုင်းနေသည်…",
-  "chatFilterLanguageAny": "အားလုံး"
+  "chatFilterLanguageAny": "အားလုံး",
+
+  "authSuccessLogin": "ကြိုဆိုပါသည်！",
+  "authSuccessRegister": "စာရင်းသွင်းပြီးပါပြီ！ အီးမေးလ် အတည်ပြုပါ။",
+  "authErrInvalidCredential": "အီးမေးလ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေသည်",
+  "authErrWrongPassword": "စကားဝှက် မှားယွင်းနေသည်",
+  "authErrTooManyRequests": "ကြိုးစားမှု များလွန်းသည်၊ နောက်မှ ထပ်ကြိုးစားပါ",
+  "authErrUserDisabled": "ဤအကောင့်ကို ပိတ်ထားသည်",
+  "authErrEmailInUse": "ဤအီးမေးလ်ကို မှတ်ပုံတင်ပြီးဖြစ်သည်",
+  "authErrInvalidEmail": "အီးမေးလ်လိပ်စာ မမှန်ကန်ပါ",
+  "authErrWeakPassword": "စကားဝှက် အားနည်းသည် (အနည်းဆုံး ၆ လုံး)",
+  "authErrDefault": "အတည်ပြုမှု မအောင်မြင်ပါ: {message}",
+  "@authErrDefault": {
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "verifyEmailTitle": "သင့် inbox ကို စစ်ဆေးပါ",
+  "verifyEmailSubtitle": "{email} သို့ အတည်ပြုလင့်ခ် ပို့ပြီးပါပြီ။ အကောင့် အသက်သွင်းရန် လင့်ခ်ကို နှိပ်ပါ။",
+  "@verifyEmailSubtitle": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "verifyEmailCheckButton": "ကျွန်ုပ် အတည်ပြုပြီးပါပြီ",
+  "verifyEmailResendButton": "အီးမေးလ် ပြန်ပို့မည်",
+  "verifyEmailResendSent": "အတည်ပြုအီးမေးလ် ပို့ပြီးပါပြီ！",
+  "verifyEmailResendCooldown": "{seconds} စက္ကန့်အကြာတွင် ပြန်ပို့မည်",
+  "@verifyEmailResendCooldown": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "authUniEmailLabel": "တက္ကသိုလ်အီးမေးလ်",
+  "authUniEmailHint": "အီးမေးလ် ID",
+  "authUniSelectHint": "တက္ကသိုလ်ရွေးပါ",
+  "authUniPickerTitle": "တက္ကသိုလ်ရွေးချယ်ပါ",
+  "authUniSearchHint": "တက္ကသိုလ် သို့မဟုတ် domain ရှာပါ…",
+  "verifyEmailSent": "အတည်ပြုအီးမေးလ် ပို့ပြီးပါပြီ။ သင့်ဝင်ခဲ့သောစာပုံး စစ်ဆေးပါ။",
+  "verifyEmailNotYet": "အီးမေးလ် မတည်ပြုရသေးပါ။ သင့်ဝင်ခဲ့သောစာပုံး စစ်ဆေးပါ။",
+  "authSuccessVerified": "အီးမေးလ် အတည်ပြုပြီးပါပြီ！ ဝင်ရောက်ပါ။"
 }

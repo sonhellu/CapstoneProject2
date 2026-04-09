@@ -209,7 +209,9 @@
   "authValidationNameEmpty": "Vui lòng nhập họ tên",
   "authValidationNameShort": "Họ tên quá ngắn",
   "authValidationConfirmEmpty": "Vui lòng xác nhận mật khẩu",
-  "authValidationConfirmMismatch": "Mật khẩu xác nhận không khớp",
+  "authValidationUniversityEmail": "Vui lòng sử dụng email đuôi .ac.kr từ các trường đại học liên kết",
+  "authValidationLocalPart": "Chỉ được dùng chữ cái, số, . _ -",
+  "authValidationConfirmMismatch":"Mật khẩu xác nhận không khớp",
   "authTooltipShowPassword": "Hiện mật khẩu",
   "authTooltipHidePassword": "Ẩn mật khẩu",
 
@@ -274,5 +276,40 @@
   "chatFilterTargetLanguage": "Ngôn ngữ muốn học",
   "chatFilterFindPartners": "Tìm partner",
   "chatRequestPending": "Đang chờ phản hồi…",
-  "chatFilterLanguageAny": "Tất cả"
+  "chatFilterLanguageAny": "Tất cả",
+
+  "authSuccessLogin": "Chào mừng trở lại!",
+  "authSuccessRegister": "Đăng ký thành công! Vui lòng xác thực email.",
+  "authErrInvalidCredential": "Email hoặc mật khẩu không đúng",
+  "authErrWrongPassword": "Mật khẩu không đúng",
+  "authErrTooManyRequests": "Quá nhiều lần thử, vui lòng thử lại sau",
+  "authErrUserDisabled": "Tài khoản này đã bị khóa",
+  "authErrEmailInUse": "Email này đã được đăng ký",
+  "authErrInvalidEmail": "Email không hợp lệ",
+  "authErrWeakPassword": "Mật khẩu quá yếu (tối thiểu 6 ký tự)",
+  "authErrDefault": "Xác thực thất bại: {message}",
+  "@authErrDefault": {
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "verifyEmailTitle": "Kiểm tra hòm thư của bạn",
+  "verifyEmailSubtitle": "Chúng tôi đã gửi link xác thực đến {email}. Vui lòng nhấn vào link để kích hoạt tài khoản.",
+  "@verifyEmailSubtitle": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "verifyEmailCheckButton": "Tôi đã xác thực rồi",
+  "verifyEmailResendButton": "Gửi lại email",
+  "verifyEmailResendSent": "Đã gửi email xác thực!",
+  "verifyEmailResendCooldown": "Gửi lại sau {seconds}s",
+  "@verifyEmailResendCooldown": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "authUniEmailLabel": "Email trường đại học",
+  "authUniEmailHint": "Email",
+  "authUniSelectHint": "Chọn trường",
+  "authUniPickerTitle": "Chọn trường đại học",
+  "authUniSearchHint": "Tìm trường hoặc tên miền…",
+  "verifyEmailSent": "Email xác thực đã được gửi. Vui lòng kiểm tra hộp thư.",
+  "verifyEmailNotYet": "Email chưa được xác thực. Vui lòng kiểm tra hộp thư.",
+  "authSuccessVerified": "Xác thực thành công! Vui lòng đăng nhập."
 }

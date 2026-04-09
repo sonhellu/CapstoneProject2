@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/providers/auth_provider.dart';
 
 // ─────────────────────────── Constants ───────────────────────────
 abstract final class _C {
@@ -181,7 +183,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
       ),
     );
     if (confirmed == true && mounted) {
-      // TODO: replace with real auth sign-out
+      await context.read<AuthProvider>().signOut();
     }
   }
 

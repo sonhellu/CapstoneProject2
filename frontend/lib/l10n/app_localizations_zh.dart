@@ -572,6 +572,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authValidationConfirmMismatch => '两次密码不一致';
 
   @override
+  String get authValidationUniversityEmail => '请使用合作大学的 .ac.kr 邮箱';
+
+  @override
+  String get authValidationLocalPart => '只能使用字母、数字、. _ -';
+
+  @override
   String get authTooltipShowPassword => '显示密码';
 
   @override
@@ -746,4 +752,82 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatFilterLanguageAny => '不限';
+
+  @override
+  String get authSuccessLogin => '欢迎回来！';
+
+  @override
+  String get authSuccessRegister => '注册成功！请验证您的电子邮件。';
+
+  @override
+  String get authErrInvalidCredential => '电子邮件或密码不正确';
+
+  @override
+  String get authErrWrongPassword => '密码不正确';
+
+  @override
+  String get authErrTooManyRequests => '尝试次数过多，请稍后再试';
+
+  @override
+  String get authErrUserDisabled => '该账户已被禁用';
+
+  @override
+  String get authErrEmailInUse => '该邮箱已被注册';
+
+  @override
+  String get authErrInvalidEmail => '无效的电子邮件地址';
+
+  @override
+  String get authErrWeakPassword => '密码太弱（最少6个字符）';
+
+  @override
+  String authErrDefault(String message) {
+    return '验证失败：$message';
+  }
+
+  @override
+  String get verifyEmailTitle => '请查看您的收件箱';
+
+  @override
+  String verifyEmailSubtitle(String email) {
+    return '我们已向 $email 发送了验证链接，请点击链接激活您的账户。';
+  }
+
+  @override
+  String get verifyEmailCheckButton => '我已验证';
+
+  @override
+  String get verifyEmailResendButton => '重新发送邮件';
+
+  @override
+  String get verifyEmailResendSent => '验证邮件已发送！';
+
+  @override
+  String verifyEmailResendCooldown(int seconds) {
+    return '$seconds秒后重新发送';
+  }
+
+  @override
+  String get authUniEmailLabel => '学校邮箱';
+
+  @override
+  String get authUniEmailHint => '邮箱账号';
+
+  @override
+  String get authUniSelectHint => '选择学校';
+
+  @override
+  String get authUniPickerTitle => '选择学校';
+
+  @override
+  String get authUniSearchHint => '搜索学校或域名…';
+
+  @override
+  String get verifyEmailSent => '验证邮件已发送，请检查您的收件箱。';
+
+  @override
+  String get verifyEmailNotYet => '邮箱尚未验证，请检查您的收件箱。';
+
+  @override
+  String get authSuccessVerified => '邮箱验证成功！请登录。';
 }
