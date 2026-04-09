@@ -572,6 +572,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get authValidationConfirmMismatch => 'パスワードが一致しません';
 
   @override
+  String get authValidationUniversityEmail => '提携大学の .ac.kr メールアドレスを使用してください';
+
+  @override
+  String get authValidationLocalPart => '英字、数字、. _ - のみ使用できます';
+
+  @override
   String get authTooltipShowPassword => 'パスワードを表示';
 
   @override
@@ -746,4 +752,82 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chatFilterLanguageAny => '指定なし';
+
+  @override
+  String get authSuccessLogin => 'おかえりなさい！';
+
+  @override
+  String get authSuccessRegister => '登録完了！メールを確認してください。';
+
+  @override
+  String get authErrInvalidCredential => 'メールアドレスまたはパスワードが正しくありません';
+
+  @override
+  String get authErrWrongPassword => 'パスワードが正しくありません';
+
+  @override
+  String get authErrTooManyRequests => '試行回数が多すぎます。後でもう一度お試しください';
+
+  @override
+  String get authErrUserDisabled => 'このアカウントは無効化されています';
+
+  @override
+  String get authErrEmailInUse => 'このメールアドレスはすでに登録されています';
+
+  @override
+  String get authErrInvalidEmail => '無効なメールアドレスです';
+
+  @override
+  String get authErrWeakPassword => 'パスワードが弱すぎます（最低6文字）';
+
+  @override
+  String authErrDefault(String message) {
+    return '認証に失敗しました: $message';
+  }
+
+  @override
+  String get verifyEmailTitle => '受信トレイを確認してください';
+
+  @override
+  String verifyEmailSubtitle(String email) {
+    return '$emailに確認リンクを送信しました。リンクをクリックしてアカウントを有効にしてください。';
+  }
+
+  @override
+  String get verifyEmailCheckButton => '確認済みです';
+
+  @override
+  String get verifyEmailResendButton => 'メールを再送信';
+
+  @override
+  String get verifyEmailResendSent => '確認メールを送信しました！';
+
+  @override
+  String verifyEmailResendCooldown(int seconds) {
+    return '$seconds秒後に再送信';
+  }
+
+  @override
+  String get authUniEmailLabel => '大学メール';
+
+  @override
+  String get authUniEmailHint => 'メールID';
+
+  @override
+  String get authUniSelectHint => '大学を選択';
+
+  @override
+  String get authUniPickerTitle => '大学を選択';
+
+  @override
+  String get authUniSearchHint => '大学またはドメインで検索…';
+
+  @override
+  String get verifyEmailSent => '確認メールを送信しました。受信トレイをご確認ください。';
+
+  @override
+  String get verifyEmailNotYet => 'まだメールが確認されていません。受信トレイをご確認ください。';
+
+  @override
+  String get authSuccessVerified => 'メール認証完了！ログインしてください。';
 }

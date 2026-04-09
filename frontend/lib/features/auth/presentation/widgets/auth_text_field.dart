@@ -18,6 +18,7 @@ class AuthTextField extends StatelessWidget {
     this.showObscureToggle = false,
     this.autofillHints,
     this.onSubmitted,
+    this.suffixWidget,
   });
 
   final TextEditingController controller;
@@ -32,6 +33,7 @@ class AuthTextField extends StatelessWidget {
   final bool showObscureToggle;
   final Iterable<String>? autofillHints;
   final ValueChanged<String>? onSubmitted;
+  final Widget? suffixWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +87,7 @@ class AuthTextField extends StatelessWidget {
                       color: AuthColors.textSecondary,
                     ),
                   )
-                : null,
+                : suffixWidget,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AuthRadii.sm),
               borderSide: BorderSide.none,

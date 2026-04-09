@@ -578,6 +578,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authValidationConfirmMismatch => 'Passwords do not match';
 
   @override
+  String get authValidationUniversityEmail =>
+      'Please use a .ac.kr email from a supported Korean university';
+
+  @override
+  String get authValidationLocalPart =>
+      'Only letters, numbers, . _ - are allowed';
+
+  @override
   String get authTooltipShowPassword => 'Show password';
 
   @override
@@ -755,4 +763,87 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatFilterLanguageAny => 'Any';
+
+  @override
+  String get authSuccessLogin => 'Welcome back!';
+
+  @override
+  String get authSuccessRegister =>
+      'Account created! Please verify your email.';
+
+  @override
+  String get authErrInvalidCredential => 'Incorrect email or password';
+
+  @override
+  String get authErrWrongPassword => 'Incorrect password';
+
+  @override
+  String get authErrTooManyRequests =>
+      'Too many attempts, please try again later';
+
+  @override
+  String get authErrUserDisabled => 'This account has been disabled';
+
+  @override
+  String get authErrEmailInUse => 'This email is already registered';
+
+  @override
+  String get authErrInvalidEmail => 'Invalid email address';
+
+  @override
+  String get authErrWeakPassword =>
+      'Password is too weak (minimum 6 characters)';
+
+  @override
+  String authErrDefault(String message) {
+    return 'Authentication failed: $message';
+  }
+
+  @override
+  String get verifyEmailTitle => 'Check your inbox';
+
+  @override
+  String verifyEmailSubtitle(String email) {
+    return 'We sent a verification link to $email. Please click the link to activate your account.';
+  }
+
+  @override
+  String get verifyEmailCheckButton => 'I already verified';
+
+  @override
+  String get verifyEmailResendButton => 'Resend email';
+
+  @override
+  String get verifyEmailResendSent => 'Verification email sent!';
+
+  @override
+  String verifyEmailResendCooldown(int seconds) {
+    return 'Resend in ${seconds}s';
+  }
+
+  @override
+  String get authUniEmailLabel => 'University Email';
+
+  @override
+  String get authUniEmailHint => 'email';
+
+  @override
+  String get authUniSelectHint => 'Select university';
+
+  @override
+  String get authUniPickerTitle => 'Select University';
+
+  @override
+  String get authUniSearchHint => 'Search university or domain…';
+
+  @override
+  String get verifyEmailSent =>
+      'Verification email sent. Please check your inbox.';
+
+  @override
+  String get verifyEmailNotYet =>
+      'Email not verified yet. Please check your inbox.';
+
+  @override
+  String get authSuccessVerified => 'Email verified! Please log in.';
 }

@@ -572,6 +572,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get authValidationConfirmMismatch => '비밀번호가 일치하지 않습니다';
 
   @override
+  String get authValidationUniversityEmail => '제휴 대학교의 .ac.kr 이메일을 사용해 주세요';
+
+  @override
+  String get authValidationLocalPart => '영문자, 숫자, . _ - 만 사용 가능합니다';
+
+  @override
   String get authTooltipShowPassword => '비밀번호 표시';
 
   @override
@@ -746,4 +752,82 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chatFilterLanguageAny => '전체';
+
+  @override
+  String get authSuccessLogin => '다시 오신 것을 환영합니다!';
+
+  @override
+  String get authSuccessRegister => '가입 완료! 이메일을 인증해 주세요.';
+
+  @override
+  String get authErrInvalidCredential => '이메일 또는 비밀번호가 올바르지 않습니다';
+
+  @override
+  String get authErrWrongPassword => '비밀번호가 올바르지 않습니다';
+
+  @override
+  String get authErrTooManyRequests => '시도 횟수가 너무 많습니다. 나중에 다시 시도하세요';
+
+  @override
+  String get authErrUserDisabled => '이 계정은 비활성화되었습니다';
+
+  @override
+  String get authErrEmailInUse => '이미 등록된 이메일입니다';
+
+  @override
+  String get authErrInvalidEmail => '유효하지 않은 이메일 주소입니다';
+
+  @override
+  String get authErrWeakPassword => '비밀번호가 너무 약합니다 (최소 6자)';
+
+  @override
+  String authErrDefault(String message) {
+    return '인증 실패: $message';
+  }
+
+  @override
+  String get verifyEmailTitle => '받은 편지함을 확인하세요';
+
+  @override
+  String verifyEmailSubtitle(String email) {
+    return '$email로 인증 링크를 보냈습니다. 링크를 클릭하여 계정을 활성화하세요.';
+  }
+
+  @override
+  String get verifyEmailCheckButton => '이미 인증했습니다';
+
+  @override
+  String get verifyEmailResendButton => '이메일 재전송';
+
+  @override
+  String get verifyEmailResendSent => '인증 이메일이 전송되었습니다!';
+
+  @override
+  String verifyEmailResendCooldown(int seconds) {
+    return '$seconds초 후 재전송';
+  }
+
+  @override
+  String get authUniEmailLabel => '학교 이메일';
+
+  @override
+  String get authUniEmailHint => '이메일 아이디';
+
+  @override
+  String get authUniSelectHint => '학교 선택';
+
+  @override
+  String get authUniPickerTitle => '학교 선택';
+
+  @override
+  String get authUniSearchHint => '학교 또는 도메인 검색…';
+
+  @override
+  String get verifyEmailSent => '인증 이메일이 전송되었습니다. 받은 편지함을 확인해 주세요.';
+
+  @override
+  String get verifyEmailNotYet => '아직 이메일이 인증되지 않았습니다. 받은 편지함을 확인해 주세요.';
+
+  @override
+  String get authSuccessVerified => '이메일 인증 완료! 로그인해 주세요.';
 }

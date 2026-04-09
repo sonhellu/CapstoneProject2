@@ -1,24 +1,30 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
-/// Trạng thái đăng nhập (mock — thay bằng API thật sau).
 class AuthProvider extends ChangeNotifier {
-  bool _isAuthenticated = false;
-  String? _userEmail;
-  String? _displayName;
+  final _auth = FirebaseAuth.instance;
 
-  bool get isAuthenticated => _isAuthenticated;
-  String? get userEmail => _userEmail;
-  String? get displayName => _displayName;
+  User? get firebaseUser => _auth.currentUser;
+  bool get isAuthenticated => firebaseUser != null;
+  bool get isEmailVerified => firebaseUser?.emailVerified ?? false;
+  String? get userEmail => firebaseUser?.email;
+  String? get displayName => firebaseUser?.displayName;
+  String? get uid => firebaseUser?.uid;
+
+  /// Returns the current Firebase ID token (for API calls).
+  Future<String?> getIdToken() =>
+      firebaseUser?.getIdToken() ?? Future.value(null);
+
+  AuthProvider() {
+    // Listen to sign-in / sign-out events
+    _auth.authStateChanges().listen((_) => notifyListeners());
+  }
 
   Future<void> signInWithEmail({
     required String email,
     required String password,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 500));
-    _userEmail = email;
-    _displayName = null;
-    _isAuthenticated = true;
-    notifyListeners();
+    await _auth.signInWithEmailAndPassword(email: email, password: password);
   }
 
   Future<void> registerWithEmail({
@@ -26,17 +32,31 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    _userEmail = email;
-    _displayName = name.isEmpty ? null : name;
-    _isAuthenticated = true;
+    final cred = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    if (name.isNotEmpty) {
+      await cred.user?.updateDisplayName(name);
+    }
+    // Send verification email immediately after registration
+    await cred.user?.sendEmailVerification();
     notifyListeners();
   }
 
-  void signOut() {
-    _isAuthenticated = false;
-    _userEmail = null;
-    _displayName = null;
+  /// Call this when user says they already clicked the link.
+  /// Reloads the Firebase user to get the latest emailVerified status.
+  Future<void> reloadUser() async {
+    await firebaseUser?.reload();
     notifyListeners();
+  }
+
+  /// Resend verification email (e.g. from VerifyEmailScreen).
+  Future<void> resendVerificationEmail() async {
+    await firebaseUser?.sendEmailVerification();
+  }
+
+  Future<void> signOut() async {
+    await _auth.signOut();
   }
 }

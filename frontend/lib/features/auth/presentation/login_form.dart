@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
+
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
@@ -7,14 +9,17 @@ import '../providers/auth_provider.dart';
 import '../utils/auth_validators.dart';
 import 'widgets/auth_primary_button.dart';
 import 'widgets/auth_text_field.dart';
-import 'widgets/social_auth_buttons.dart';
 
 class LoginForm extends HookWidget {
   const LoginForm({super.key});
 
-  void _snack(BuildContext context, String msg) {
+  void _snack(BuildContext context, String msg, {bool success = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text(msg, style: const TextStyle(color: Colors.white)),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: success ? const Color(0xFF2E7D32) : null,
+      ),
     );
   }
 
@@ -35,6 +40,20 @@ class LoginForm extends HookWidget {
               email: email.text.trim(),
               password: password.text,
             );
+        if (context.mounted) {
+          _snack(context, AppLocalizations.of(context)!.authSuccessLogin, success: true);
+        }
+      } on FirebaseAuthException catch (e) {
+        if (!context.mounted) return;
+        final l = AppLocalizations.of(context)!;
+        final msg = switch (e.code) {
+          'user-not-found' || 'invalid-credential' => l.authErrInvalidCredential,
+          'wrong-password' => l.authErrWrongPassword,
+          'too-many-requests' => l.authErrTooManyRequests,
+          'user-disabled' => l.authErrUserDisabled,
+          _ => l.authErrDefault(e.message ?? e.code),
+        };
+        _snack(context, msg);
       } finally {
         if (context.mounted) loading.value = false;
       }
@@ -77,11 +96,6 @@ class LoginForm extends HookWidget {
             label: l.authButtonLogin,
             isLoading: loading.value,
             onPressed: submit,
-          ),
-          const SizedBox(height: 24),
-          SocialAuthButtons(
-            onGoogle: () => _snack(context, l.authSocialGoogleLoginDemo),
-            onKakao: () => _snack(context, l.authSocialKakaoLoginDemo),
           ),
         ],
       ),

@@ -577,6 +577,14 @@ class AppLocalizationsMy extends AppLocalizations {
   String get authValidationConfirmMismatch => 'စကားဝှက်မတူညီပါ';
 
   @override
+  String get authValidationUniversityEmail =>
+      'ပူးပေါင်းတက္ကသိုလ်၏ .ac.kr အီးမေးလ် သုံးပါ';
+
+  @override
+  String get authValidationLocalPart =>
+      'စာလုံး၊ ဂဏန်း၊ . _ - သာ အသုံးပြုနိုင်သည်';
+
+  @override
   String get authTooltipShowPassword => 'စကားဝှက်ပြမည်';
 
   @override
@@ -756,4 +764,86 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get chatFilterLanguageAny => 'အားလုံး';
+
+  @override
+  String get authSuccessLogin => 'ကြိုဆိုပါသည်！';
+
+  @override
+  String get authSuccessRegister => 'စာရင်းသွင်းပြီးပါပြီ！ အီးမေးလ် အတည်ပြုပါ။';
+
+  @override
+  String get authErrInvalidCredential =>
+      'အီးမေးလ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေသည်';
+
+  @override
+  String get authErrWrongPassword => 'စကားဝှက် မှားယွင်းနေသည်';
+
+  @override
+  String get authErrTooManyRequests =>
+      'ကြိုးစားမှု များလွန်းသည်၊ နောက်မှ ထပ်ကြိုးစားပါ';
+
+  @override
+  String get authErrUserDisabled => 'ဤအကောင့်ကို ပိတ်ထားသည်';
+
+  @override
+  String get authErrEmailInUse => 'ဤအီးမေးလ်ကို မှတ်ပုံတင်ပြီးဖြစ်သည်';
+
+  @override
+  String get authErrInvalidEmail => 'အီးမေးလ်လိပ်စာ မမှန်ကန်ပါ';
+
+  @override
+  String get authErrWeakPassword => 'စကားဝှက် အားနည်းသည် (အနည်းဆုံး ၆ လုံး)';
+
+  @override
+  String authErrDefault(String message) {
+    return 'အတည်ပြုမှု မအောင်မြင်ပါ: $message';
+  }
+
+  @override
+  String get verifyEmailTitle => 'သင့် inbox ကို စစ်ဆေးပါ';
+
+  @override
+  String verifyEmailSubtitle(String email) {
+    return '$email သို့ အတည်ပြုလင့်ခ် ပို့ပြီးပါပြီ။ အကောင့် အသက်သွင်းရန် လင့်ခ်ကို နှိပ်ပါ။';
+  }
+
+  @override
+  String get verifyEmailCheckButton => 'ကျွန်ုပ် အတည်ပြုပြီးပါပြီ';
+
+  @override
+  String get verifyEmailResendButton => 'အီးမေးလ် ပြန်ပို့မည်';
+
+  @override
+  String get verifyEmailResendSent => 'အတည်ပြုအီးမေးလ် ပို့ပြီးပါပြီ！';
+
+  @override
+  String verifyEmailResendCooldown(int seconds) {
+    return '$seconds စက္ကန့်အကြာတွင် ပြန်ပို့မည်';
+  }
+
+  @override
+  String get authUniEmailLabel => 'တက္ကသိုလ်အီးမေးလ်';
+
+  @override
+  String get authUniEmailHint => 'အီးမေးလ် ID';
+
+  @override
+  String get authUniSelectHint => 'တက္ကသိုလ်ရွေးပါ';
+
+  @override
+  String get authUniPickerTitle => 'တက္ကသိုလ်ရွေးချယ်ပါ';
+
+  @override
+  String get authUniSearchHint => 'တက္ကသိုလ် သို့မဟုတ် domain ရှာပါ…';
+
+  @override
+  String get verifyEmailSent =>
+      'အတည်ပြုအီးမေးလ် ပို့ပြီးပါပြီ။ သင့်ဝင်ခဲ့သောစာပုံး စစ်ဆေးပါ။';
+
+  @override
+  String get verifyEmailNotYet =>
+      'အီးမေးလ် မတည်ပြုရသေးပါ။ သင့်ဝင်ခဲ့သောစာပုံး စစ်ဆေးပါ။';
+
+  @override
+  String get authSuccessVerified => 'အီးမေးလ် အတည်ပြုပြီးပါပြီ！ ဝင်ရောက်ပါ။';
 }
