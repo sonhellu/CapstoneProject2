@@ -1,1 +1,3 @@
-# CapstoneProject2
+# HiCampus — Backend Setup Guide
+
+## Prerequisites
