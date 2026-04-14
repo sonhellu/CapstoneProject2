@@ -730,6 +730,34 @@ class AppLocalizationsVi extends AppLocalizations {
   String get partnerAccepted => 'Đã chấp nhận!';
 
   @override
+  String get partnerRequestSentSuccess => 'Đã gửi lời mời.';
+
+  @override
+  String get partnerRequestNotSignedIn => 'Vui lòng đăng nhập để gửi lời mời.';
+
+  @override
+  String get partnerRequestProfileMissing => 'Người này chưa có hồ sơ.';
+
+  @override
+  String get partnerRequestAlreadyPending =>
+      'Bạn đã có lời mời đang chờ với người này.';
+
+  @override
+  String get partnerRequestIncomingPending =>
+      'Họ đã gửi lời mời cho bạn. Mở tab Chat để chấp nhận.';
+
+  @override
+  String get partnerRequestAlreadyAccepted => 'Hai bạn đã kết nối rồi.';
+
+  @override
+  String get partnerRequestPreviouslyDeclined =>
+      'Lời mời trước đã bị từ chối. Chưa thể gửi lại.';
+
+  @override
+  String get partnerRequestFailed =>
+      'Không gửi được lời mời. Vui lòng thử lại.';
+
+  @override
   String get chatSearchConversations => 'Tìm cuộc trò chuyện…';
 
   @override
@@ -757,7 +785,49 @@ class AppLocalizationsVi extends AppLocalizations {
   String get chatRequestPending => 'Đang chờ phản hồi…';
 
   @override
+  String get chatRequestsIncoming => 'Lời mời kết bạn';
+
+  @override
+  String get chatRequestBannerSubtitle => 'Muốn kết nối với bạn 👋';
+
+  @override
+  String get chatRequestAccept => 'Chấp nhận';
+
+  @override
+  String get chatRequestDecline => 'Từ chối';
+
+  @override
   String get chatFilterLanguageAny => 'Tất cả';
+
+  @override
+  String get chatDisconnectedListSubtitle =>
+      'Da tam ngat — mo chat de ket noi lai';
+
+  @override
+  String get chatDisconnectMenu => 'Tam ngat ket noi';
+
+  @override
+  String get chatDisconnectConfirmTitle => 'Tam ngat cuoc tro chuyen?';
+
+  @override
+  String get chatDisconnectConfirmBody =>
+      'Ban se khong gui tin duoc cho den khi ket noi lai. Luon co the mo lai cuoc tro chuyen va chon Ket noi lai.';
+
+  @override
+  String get chatReconnect => 'Ket noi lai';
+
+  @override
+  String get chatDisconnectedBanner =>
+      'Da tam ngat ket noi. Ket noi lai de nhan tin.';
+
+  @override
+  String get chatSendBlockedDisconnected => 'Hay ket noi lai de gui tin.';
+
+  @override
+  String get chatDisconnectSuccess => 'Da tam ngat chat.';
+
+  @override
+  String get chatReconnectSuccess => 'Da ket noi lai.';
 
   @override
   String get authSuccessLogin => 'Chào mừng trở lại!';
@@ -816,28 +886,92 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get authUniEmailLabel => 'Email trường đại học';
-
-  @override
-  String get authUniEmailHint => 'Email';
-
-  @override
-  String get authUniSelectHint => 'Chọn trường';
-
-  @override
-  String get authUniPickerTitle => 'Chọn trường đại học';
-
-  @override
-  String get authUniSearchHint => 'Tìm trường hoặc tên miền…';
-
-  @override
-  String get verifyEmailSent =>
-      'Email xác thực đã được gửi. Vui lòng kiểm tra hộp thư.';
+  String get authSuccessVerified => 'Email đã xác thực! Vui lòng đăng nhập.';
 
   @override
   String get verifyEmailNotYet =>
       'Email chưa được xác thực. Vui lòng kiểm tra hộp thư.';
 
   @override
-  String get authSuccessVerified => 'Xác thực thành công! Vui lòng đăng nhập.';
+  String get errorChatRequestNotFound => 'Lời mời này không còn tồn tại.';
+
+  @override
+  String get errorChatRequestNotPending => 'Lời mời này đã được xử lý.';
+
+  @override
+  String get errorTransactionAborted => 'Kết nối bận — vui lòng thử lại.';
+
+  @override
+  String get errorNetwork => 'Lỗi mạng. Kiểm tra kết nối của bạn.';
+
+  @override
+  String get errorPermissionDenied =>
+      'Bạn không có quyền thực hiện thao tác này.';
+
+  @override
+  String get errorNotFound => 'Không tìm thấy mục yêu cầu.';
+
+  @override
+  String get errorDataConflict =>
+      'Xung đột dữ liệu. Vui lòng làm mới và thử lại.';
+
+  @override
+  String get errorUnexpected =>
+      'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.';
+
+  @override
+  String mapDistanceFromYouMeters(int meters) {
+    return 'Cách bạn ${meters}m';
+  }
+
+  @override
+  String mapDistanceFromYouKilometers(String km) {
+    return 'Cách bạn ${km}km';
+  }
+
+  @override
+  String get postMenuEdit => 'Chỉnh sửa';
+
+  @override
+  String get postMenuDelete => 'Xóa';
+
+  @override
+  String get postUpdateSuccess => 'Bài viết đã được cập nhật';
+
+  @override
+  String get postEditSheetTitle => 'Chỉnh sửa bài viết';
+
+  @override
+  String get postEditTitleLabel => 'Tiêu đề';
+
+  @override
+  String get postEditContentLabel => 'Nội dung';
+
+  @override
+  String get postEditUpdateBtn => 'Cập nhật';
+
+  @override
+  String get postDeleteSuccess => 'Đã xóa bài viết';
+
+  @override
+  String get postDeleteTitle => 'Xóa bài viết';
+
+  @override
+  String get postDeleteMessage =>
+      'Bạn có chắc muốn xóa bài viết này? Hành động này không thể hoàn tác.';
+
+  @override
+  String get postDeleteCancel => 'Hủy';
+
+  @override
+  String get postDeleteConfirm => 'Xóa';
+
+  @override
+  String get postTranslating => 'Đang dịch…';
+
+  @override
+  String get postShowOriginal => 'Xem bản gốc';
+
+  @override
+  String get postTranslate => 'Dịch';
 }

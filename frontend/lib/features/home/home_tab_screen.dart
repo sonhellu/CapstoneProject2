@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/navigation/app_transitions.dart';
+import '../../core/theme/theme_ext.dart';
 import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
 import 'create_post_screen.dart';
@@ -15,13 +16,7 @@ import 'models/post.dart';
 import 'post_list_screen.dart';
 import 'widgets/post_card.dart';
 
-// ─────────────────────────── Design Tokens ───────────────────────────
-abstract final class _T {
-  static const primary = Color(0xFF003478);
-  static const background = Color(0xFFF5F7FA);
-  static const textGrey = Color(0xFF6A6A6A);
-  static const radius = 16.0;
-}
+const double _kBannerRadius = 16.0;
 
 // ─────────────────────────── Banner Data ───────────────────────────
 class _BannerItem {
@@ -119,7 +114,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     final fabBottomPadding = math.max(0.0, navBarHeight + 40.0);
 
     return Scaffold(
-      backgroundColor: _T.background,
+      backgroundColor: context.bg,
       floatingActionButton: Padding(
         padding: EdgeInsets.only(bottom: fabBottomPadding),
         child: AnimatedScale(
@@ -174,6 +169,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
   // ─── App Bar ───
   Widget _buildAppBar() {
+    final p = context.primary;
+    final gv = context.onSurfaceVar;
     return SafeArea(
       bottom: false,
       child: Padding(
@@ -188,7 +185,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   style: GoogleFonts.notoSansKr(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: _T.primary,
+                    color: p,
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -196,7 +193,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   'Keimyung University',
                   style: GoogleFonts.notoSansKr(
                     fontSize: 12,
-                    color: _T.textGrey,
+                    color: gv,
                   ),
                 ),
               ],
@@ -206,12 +203,12 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             IconButton(
               onPressed: () {},
               icon: const Icon(Icons.notifications_outlined),
-              color: _T.primary,
+              color: p,
             ),
             IconButton(
               onPressed: () {},
               icon: const Icon(Icons.search_rounded),
-              color: _T.primary,
+              color: p,
             ),
           ],
         ),
@@ -221,6 +218,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
   // ─── Banner ───
   Widget _buildBanner() {
+    final p = context.primary;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
@@ -249,8 +247,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 height: 6,
                 decoration: BoxDecoration(
                   color: _bannerIndex == i
-                      ? _T.primary
-                      : _T.primary.withValues(alpha: 0.25),
+                      ? p
+                      : p.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -286,8 +284,9 @@ class _BannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.primary;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(_T.radius),
+      borderRadius: BorderRadius.circular(_kBannerRadius),
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -295,10 +294,10 @@ class _BannerCard extends StatelessWidget {
             item.imageUrl,
             fit: BoxFit.cover,
             errorBuilder: (context, e, s) => Container(
-              color: _T.primary.withValues(alpha: 0.15),
-              child: const Icon(
+              color: p.withValues(alpha: 0.15),
+              child: Icon(
                 Icons.image_outlined,
-                color: _T.primary,
+                color: p,
                 size: 48,
               ),
             ),
@@ -359,13 +358,15 @@ class _EmptySection extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.article_outlined, size: 36, color: _T.primary.withValues(alpha: 0.25)),
+            Icon(Icons.article_outlined,
+                size: 36,
+                color: context.primary.withValues(alpha: 0.25)),
             const SizedBox(height: 8),
             Text(
               AppLocalizations.of(context)!.communityNoPosts,
               style: GoogleFonts.notoSansKr(
                 fontSize: 13,
-                color: _T.textGrey,
+                color: context.onSurfaceVar,
               ),
             ),
           ],
@@ -392,14 +393,14 @@ class _SectionHeader extends StatelessWidget {
             style: GoogleFonts.notoSansKr(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: _T.primary,
+              color: context.primary,
             ),
           ),
           const Spacer(),
           TextButton(
             onPressed: onViewAll,
             style: TextButton.styleFrom(
-              foregroundColor: _T.textGrey,
+              foregroundColor: context.onSurfaceVar,
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
             child: Text(
@@ -424,19 +425,21 @@ class _Fab extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 52,
-        height: 52,
+               height: 52,
         decoration: BoxDecoration(
-          color: _T.primary,
+          color: context.primary,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: _T.primary.withValues(alpha: 0.35),
+              color: context.primary.withValues(
+                  alpha: context.isDark ? 0.5 : 0.35),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+        child: Icon(Icons.add_rounded,
+            color: Theme.of(context).colorScheme.onPrimary, size: 28),
       ),
     );
   }

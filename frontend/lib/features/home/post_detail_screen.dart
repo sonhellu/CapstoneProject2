@@ -2,31 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
 import 'models/post.dart';
 import 'widgets/post_card.dart' show postImageHeroTag, postAvatarHeroTag;
-
-// ─────────────────────────── Design Tokens ───────────────────────────
-abstract final class _T {
-  static const primary = Color(0xFF003478);
-  static const background = Color(0xFFF5F7FA);
-  static const textDark = Color(0xFF1A1A1A);
-  static const textGrey = Color(0xFF6A6A6A);
-  static const textLight = Color(0xFFADB5BD);
-  static const surface = Colors.white;
-  static const divider = Color(0xFFF0F0F0);
-}
+import 'widgets/post_translator.dart';
 
 const _langConfig = <String, _LangChip>{
   'VN': _LangChip(Color(0xFFFFECEC), Color(0xFFD32F2F)),
-  'KR': _LangChip(Color(0xFFE8F0FE), Color(0xFF003478)),
+  'KR': _LangChip(Color(0xFFE8F0FE), Color(0xFF2563EB)),
   'EN': _LangChip(Color(0xFFE8F5E9), Color(0xFF2E7D32)),
   'JA': _LangChip(Color(0xFFFFF3E0), Color(0xFFE65100)),
   'ZH': _LangChip(Color(0xFFFFEBEE), Color(0xFFC62828)),
 };
 
 const _categoryColors = <String, Color>{
-  'International': Color(0xFF003478),
+  'International': Color(0xFF2563EB),
   'Scholarship': Color(0xFF7B1FA2),
   'Campus': Color(0xFF00695C),
   'Housing': Color(0xFFE65100),
@@ -91,14 +82,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final hasImages = post.images.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: _T.background,
+      backgroundColor: context.bg,
       body: CustomScrollView(
         slivers: [
           // ── App Bar ──
           SliverAppBar(
             expandedHeight: hasImages ? 300 : 0,
             pinned: true,
-            backgroundColor: _T.primary,
+            backgroundColor: context.primary,
             elevation: 0,
             leading: _CircleNavButton(
               icon: Icons.arrow_back_ios_new_rounded,
@@ -158,26 +149,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 : null,
           ),
 
-          // ── White card content ──
+          // ── Content card ──
           SliverToBoxAdapter(
             child: Container(
-              color: _T.surface,
+              color: context.cardFill,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildMetaRow(post),
+                    _buildMetaRow(context, post),
                     const SizedBox(height: 14),
-                    _buildTitle(post),
+                    _buildTitle(context, post),
                     const SizedBox(height: 20),
-                    _buildAuthorRow(post),
+                    _buildAuthorRow(context, post),
                     const SizedBox(height: 24),
-                    const Divider(height: 1, color: _T.divider),
+                    Divider(height: 1, color: Theme.of(context).dividerColor),
                     const SizedBox(height: 24),
-                    _buildBody(post.content),
+                    _buildBody(post.content, post.language),
                     const SizedBox(height: 32),
-                    const Divider(height: 1, color: _T.divider),
+                    Divider(height: 1, color: Theme.of(context).dividerColor),
                     const SizedBox(height: 20),
                     _buildActionBar(),
                     const SizedBox(height: 40),
@@ -192,10 +183,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   // ─── Meta Row: chips + time ───
-  Widget _buildMetaRow(Post post) {
-    final catColor = _categoryColors[post.category] ?? _T.primary;
-    final langCfg =
-        _langConfig[post.language] ?? const _LangChip(Color(0xFFF0F0F0), _T.textGrey);
+  Widget _buildMetaRow(BuildContext context, Post post) {
+    final catColor = _categoryColors[post.category] ?? context.primary;
+    final langCfg = _langConfig[post.language] ??
+        _LangChip(context.subtleFill, context.onSurfaceVar);
 
     return Row(
       children: [
@@ -203,24 +194,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         const SizedBox(width: 8),
         _Chip(label: post.language, bg: langCfg.bg, fg: langCfg.fg),
         const Spacer(),
-        Icon(Icons.access_time_rounded, size: 13, color: _T.textLight),
+        Icon(Icons.access_time_rounded, size: 13, color: context.hintColor),
         const SizedBox(width: 4),
         Text(
           post.time,
-          style: GoogleFonts.notoSansKr(fontSize: 12, color: _T.textLight),
+          style: GoogleFonts.notoSansKr(fontSize: 12, color: context.hintColor),
         ),
       ],
     );
   }
 
   // ─── Title ───
-  Widget _buildTitle(Post post) {
+  Widget _buildTitle(BuildContext context, Post post) {
     return Text(
       post.title,
       style: GoogleFonts.notoSansKr(
         fontSize: 26,
         fontWeight: FontWeight.w800,
-        color: _T.primary,
+        color: context.primary,
         height: 1.35,
         letterSpacing: -0.5,
       ),
@@ -228,7 +219,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   // ─── Author Row ───
-  Widget _buildAuthorRow(Post post) {
+  Widget _buildAuthorRow(BuildContext context, Post post) {
     return Row(
       children: [
         Hero(
@@ -245,7 +236,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: _T.textDark,
+                  color: context.onSurface,
                 ),
               ),
               const SizedBox(height: 3),
@@ -256,7 +247,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     child: Text(
                       post.author.school,
                       style: GoogleFonts.notoSansKr(
-                          fontSize: 11, color: _T.textGrey),
+                          fontSize: 11, color: context.onSurfaceVar),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -266,8 +257,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     child: Container(
                       width: 3,
                       height: 3,
-                      decoration: const BoxDecoration(
-                        color: _T.textLight,
+                      decoration: BoxDecoration(
+                        color: context.hintColor,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -276,7 +267,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     child: Text(
                       post.author.major,
                       style: GoogleFonts.notoSansKr(
-                          fontSize: 11, color: _T.textGrey),
+                          fontSize: 11, color: context.onSurfaceVar),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -296,16 +287,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   // ─── Body ───
-  Widget _buildBody(String content) {
+  Widget _buildBody(String content, String langTag) {
+    final deviceLang = Localizations.localeOf(context).languageCode;
     return GestureDetector(
       onLongPress: _copyContent,
-      child: Text(
-        content,
-        style: GoogleFonts.notoSansKr(
-          fontSize: 16,
-          color: _T.textDark,
-          height: 1.8,
-          letterSpacing: 0.1,
+      child: PostTranslator(
+        text: content,
+        postLangTag: langTag,
+        deviceLangCode: deviceLang,
+        textBuilder: (text) => Text(
+          text,
+          style: GoogleFonts.notoSansKr(
+            fontSize: 16,
+            color: Theme.of(context).colorScheme.onSurface,
+            height: 1.8,
+            letterSpacing: 0.1,
+          ),
         ),
       ),
     );
@@ -314,6 +311,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // ─── Action Bar ───
   Widget _buildActionBar() {
     final l10n = AppLocalizations.of(context)!;
+    final subtle = context.subtleFill;
+    final muted = context.onSurfaceVar;
     return Row(
       children: [
         // Like
@@ -321,8 +320,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           child: _ActionButton(
             icon: _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
             label: '$_likeCount',
-            color: _isLiked ? Colors.redAccent : _T.textGrey,
-            bg: _isLiked ? const Color(0xFFFFEEEE) : const Color(0xFFF5F5F5),
+            color: _isLiked ? Colors.redAccent : muted,
+            bg: _isLiked
+                ? Colors.redAccent.withValues(alpha: 0.12)
+                : subtle,
             onTap: () => setState(() {
               _isLiked = !_isLiked;
               _likeCount += _isLiked ? 1 : -1;
@@ -335,8 +336,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           child: _ActionButton(
             icon: Icons.chat_bubble_outline_rounded,
             label: '${widget.post.comments}',
-            color: _T.textGrey,
-            bg: const Color(0xFFF5F5F5),
+            color: muted,
+            bg: subtle,
             onTap: () {},
           ),
         ),
@@ -346,8 +347,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           child: _ActionButton(
             icon: Icons.bookmark_border_rounded,
             label: l10n.postActionSave,
-            color: _T.textGrey,
-            bg: const Color(0xFFF5F5F5),
+            color: muted,
+            bg: subtle,
             onTap: () {},
           ),
         ),
@@ -411,18 +412,18 @@ class _FollowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final p = context.primary;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isFollowing ? const Color(0xFFF5F7FA) : const Color(0xFF003478),
+          color: isFollowing ? context.subtleFill : p,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isFollowing
-                ? const Color(0xFFDDE3EA)
-                : const Color(0xFF003478),
+            color: isFollowing ? context.outline : p,
           ),
         ),
         child: Text(
@@ -432,7 +433,7 @@ class _FollowButton extends StatelessWidget {
           style: GoogleFonts.notoSansKr(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: isFollowing ? const Color(0xFF6A6A6A) : Colors.white,
+            color: isFollowing ? context.onSurfaceVar : cs.onPrimary,
           ),
         ),
       ),
@@ -484,14 +485,14 @@ class _ImagePageView extends StatelessWidget {
       controller: controller,
       itemCount: images.length,
       onPageChanged: onPageChanged,
-      itemBuilder: (context, i) => Image.network(
+      itemBuilder: (ctx, i) => Image.network(
         images[i],
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => Container(
-          color: const Color(0xFF003478).withValues(alpha: 0.08),
-          child: const Icon(
+          color: ctx.primary.withValues(alpha: 0.08),
+          child: Icon(
             Icons.image_not_supported_outlined,
-            color: Color(0xFFCDD3D8),
+            color: Theme.of(ctx).colorScheme.outline,
             size: 48,
           ),
         ),
@@ -563,18 +564,18 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
-          color: Color(0xFF003478), shape: BoxShape.circle),
+      decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: Text(
         initial.toUpperCase(),
         style: GoogleFonts.notoSansKr(
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
-            color: Colors.white),
+            color: cs.onPrimary),
       ),
     );
   }

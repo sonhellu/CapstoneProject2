@@ -2,21 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
 
-// ──────────────────────────── Design Tokens ────────────────────────────
-abstract final class _T {
-  static const primary    = Color(0xFF003478);
-  static const background = Color(0xFFF5F7FA);
-  static const surface    = Colors.white;
-  static const textDark   = Color(0xFF1A1A1A);
-  static const textGrey   = Color(0xFF6A6A6A);
-  static const textLight  = Color(0xFFADB5BD);
-  static const warning    = Color(0xFFE65100);
-  static const danger     = Color(0xFFD32F2F);
-  static const border     = Color(0xFFE4E8EF);
-  static const divider    = Color(0xFFF0F2F5);
-}
+const Color _kWarningOrange = Color(0xFFE65100);
 
 // ──────────────────────────── Config ────────────────────────────
 abstract final class _Cfg {
@@ -117,12 +106,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   void _openLanguagePicker() {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: _T.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
         final l = AppLocalizations.of(ctx)!;
+        final p = ctx.primary;
+        final onS = ctx.onSurface;
         return SafeArea(
           top: false,
           child: Column(
@@ -133,7 +124,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDDE3EA),
+                  color: ctx.outline.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -143,7 +134,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: _T.textDark,
+                  color: onS,
                 ),
               ),
               const SizedBox(height: 8),
@@ -166,11 +157,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         fontSize: 15,
                         fontWeight:
                             isSel ? FontWeight.w700 : FontWeight.w400,
-                        color: isSel ? _T.primary : _T.textDark,
+                        color: isSel ? p : onS,
                       ),
                     ),
                     trailing: isSel
-                        ? const Icon(Icons.check_rounded, color: _T.primary)
+                        ? Icon(Icons.check_rounded, color: p)
                         : null,
                     onTap: () {
                       setState(() => _language = lang);
@@ -193,14 +184,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: _T.background,
+      backgroundColor: context.bg,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: _T.surface,
+        backgroundColor: context.cardFill,
         elevation: 0,
         scrolledUnderElevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, size: 22, color: _T.textGrey),
+          icon: Icon(Icons.close_rounded,
+              size: 22, color: context.onSurfaceVar),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -208,7 +200,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           style: GoogleFonts.notoSansKr(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: _T.textDark,
+            color: context.onSurface,
           ),
         ),
         centerTitle: true,
@@ -259,13 +251,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 LengthLimitingTextInputFormatter(_Cfg.titleMax),
               ],
               style: GoogleFonts.notoSansKr(
-                  fontSize: 15, color: _T.textDark, height: 1.4),
+                  fontSize: 15, color: context.onSurface, height: 1.4),
               textInputAction: TextInputAction.next,
               onEditingComplete: _contentFocus.requestFocus,
               decoration: InputDecoration.collapsed(
                 hintText: l.createPostTitleHint,
                 hintStyle: GoogleFonts.notoSansKr(
-                    fontSize: 15, color: _T.textLight),
+                    fontSize: 15, color: context.hintColor),
               ),
             ),
           ),
@@ -298,11 +290,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   (_, {required currentLength, required isFocused, maxLength}) =>
                       null,
               style: GoogleFonts.notoSansKr(
-                  fontSize: 14, color: _T.textDark, height: 1.75),
+                  fontSize: 14, color: context.onSurface, height: 1.75),
               decoration: InputDecoration.collapsed(
                 hintText: l.createPostContentHint,
                 hintStyle: GoogleFonts.notoSansKr(
-                    fontSize: 14, color: _T.textLight),
+                    fontSize: 14, color: context.hintColor),
               ),
             ),
           ),
@@ -332,35 +324,36 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   Widget _buildLanguageTile() {
     final flag = _Cfg.langFlags[_language] ?? '🌐';
+    final p = context.primary;
     return ListTile(
       onTap: _openLanguagePicker,
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      tileColor: _T.surface,
+      tileColor: context.cardFill,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: _T.border),
+        side: BorderSide(color: context.outline),
       ),
-      leading:
-          const Icon(Icons.translate_rounded, color: _T.primary, size: 20),
+      leading: Icon(Icons.translate_rounded, color: p, size: 20),
       title: Text(
         '$flag  $_language',
         style: GoogleFonts.notoSansKr(
           fontSize: 15,
           fontWeight: FontWeight.w600,
-          color: _T.textDark,
+          color: context.onSurface,
         ),
       ),
       subtitle: Text(
         AppLocalizations.of(context)!.createPostLanguage,
-        style: GoogleFonts.notoSansKr(fontSize: 11, color: _T.primary),
+        style: GoogleFonts.notoSansKr(fontSize: 11, color: p),
       ),
-      trailing: const Icon(Icons.keyboard_arrow_down_rounded,
-          color: _T.textGrey),
+      trailing:
+          Icon(Icons.keyboard_arrow_down_rounded, color: context.onSurfaceVar),
     );
   }
 
   Widget _buildPhotoWrap() {
+    final p = context.primary;
     return Wrap(
       spacing: 10,
       runSpacing: 10,
@@ -372,10 +365,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: _T.surface,
+                color: context.cardFill,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: _T.primary.withValues(alpha: 0.35),
+                  color: p.withValues(alpha: 0.35),
                   width: 1.5,
                 ),
               ),
@@ -383,13 +376,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.add_photo_alternate_outlined,
-                      color: _T.primary, size: 26),
+                      color: p, size: 26),
                   const SizedBox(height: 4),
                   Text(
                     AppLocalizations.of(context)!.createPostAddPhoto,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 10,
-                      color: _T.primary,
+                      color: p,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -406,14 +399,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: _T.primary.withValues(alpha: 0.08),
+                  color: p.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: _T.primary.withValues(alpha: 0.15)),
+                      color: p.withValues(alpha: 0.15)),
                 ),
                 child: Icon(
                   Icons.image_rounded,
-                  color: _T.primary.withValues(alpha: 0.4),
+                  color: p.withValues(alpha: 0.4),
                   size: 32,
                 ),
               ),
@@ -425,12 +418,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   child: Container(
                     width: 22,
                     height: 22,
-                    decoration: const BoxDecoration(
-                      color: _T.danger,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.error,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.close_rounded,
-                        size: 13, color: Colors.white),
+                    child: Icon(Icons.close_rounded,
+                        size: 13,
+                        color: Theme.of(context).colorScheme.onError),
                   ),
                 ),
               ),
@@ -453,9 +447,9 @@ class _FieldBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: _T.surface,
+        color: context.cardFill,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _T.border),
+        border: Border.all(color: context.outline),
       ),
       child: child,
     );
@@ -476,9 +470,9 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: _T.surface,
-        border: Border(top: BorderSide(color: _T.divider)),
+      decoration: BoxDecoration(
+        color: context.cardFill,
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
       ),
       child: SafeArea(
         top: false,
@@ -524,14 +518,14 @@ class _BarBtn extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 22, color: _T.primary),
+            Icon(icon, size: 22, color: context.primary),
             const SizedBox(width: 6),
             Text(
               label,
               style: GoogleFonts.notoSansKr(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: _T.primary,
+                color: context.primary,
               ),
             ),
           ],
@@ -553,7 +547,7 @@ class _Label extends StatelessWidget {
       style: GoogleFonts.notoSansKr(
         fontSize: 12,
         fontWeight: FontWeight.w700,
-        color: _T.textGrey,
+        color: context.onSurfaceVar,
         letterSpacing: 0.4,
       ),
     );
@@ -575,10 +569,10 @@ class _CharCounter extends StatelessWidget {
         final len   = val.text.length;
         final ratio = len / max;
         final color = ratio >= 0.95
-            ? _T.danger
+            ? Theme.of(context).colorScheme.error
             : ratio >= 0.80
-                ? _T.warning
-                : _T.textLight;
+                ? _kWarningOrange
+                : context.hintColor;
         return Text(
           '$len / $max',
           style: GoogleFonts.notoSansKr(fontSize: 11, color: color),
@@ -601,26 +595,27 @@ class _PublishButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return SizedBox(
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
         onPressed: enabled ? onTap : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _T.primary,
-          disabledBackgroundColor: _T.primary.withValues(alpha: 0.45),
-          foregroundColor: Colors.white,
+          backgroundColor: context.primary,
+          disabledBackgroundColor: context.primary.withValues(alpha: 0.45),
+          foregroundColor: cs.onPrimary,
           shape: const StadiumBorder(),
           elevation: 0,
         ),
         child: isPublishing
-            ? const SizedBox(
+            ? SizedBox(
                 width: 22,
                 height: 22,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
                   valueColor:
-                      AlwaysStoppedAnimation<Color>(Colors.white),
+                      AlwaysStoppedAnimation<Color>(cs.onPrimary),
                 ),
               )
             : Text(
@@ -648,16 +643,17 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding:
             const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? _T.primary : _T.surface,
+          color: selected ? context.primary : context.cardFill,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? _T.primary : _T.border,
+            color: selected ? context.primary : context.outline,
           ),
         ),
         child: Text(
@@ -665,7 +661,7 @@ class _CategoryChip extends StatelessWidget {
           style: GoogleFonts.notoSansKr(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: selected ? Colors.white : _T.textGrey,
+            color: selected ? cs.onPrimary : context.onSurfaceVar,
           ),
         ),
       ),

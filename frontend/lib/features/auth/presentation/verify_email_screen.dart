@@ -4,9 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/feedback/app_snackbar.dart';
+import '../../../core/theme/theme_ext.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
-import '../theme/auth_theme.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({super.key});
@@ -31,15 +32,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     await auth.reloadUser();
     if (!mounted) return;
     if (auth.isEmailVerified) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.authSuccessVerified,
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: const Color(0xFF2E7D32),
-          behavior: SnackBarBehavior.floating,
-        ),
+      showSuccessSnackBar(
+        context,
+        AppLocalizations.of(context)!.authSuccessVerified,
       );
       await auth.signOut();
     } else {
@@ -58,21 +53,14 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       await context.read<AuthProvider>().resendVerificationEmail();
       _startCooldown();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.verifyEmailResendSent),
-            behavior: SnackBarBehavior.floating,
-          ),
+        showSuccessSnackBar(
+          context,
+          AppLocalizations.of(context)!.verifyEmailResendSent,
         );
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.message ?? 'Error'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        showErrorTextSnackBar(context, e.message ?? e.code);
       }
     }
   }
@@ -97,13 +85,15 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     final l = AppLocalizations.of(context)!;
     final email = context.read<AuthProvider>().userEmail ?? '';
 
+    final p = context.primary;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AuthColors.background,
+      backgroundColor: context.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.logout_rounded, color: AuthColors.textSecondary),
+          icon: Icon(Icons.logout_rounded, color: context.onSurfaceVar),
           tooltip: l.profileLogout,
           onPressed: () => context.read<AuthProvider>().signOut(),
         ),
@@ -119,13 +109,13 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 width: 96,
                 height: 96,
                 decoration: BoxDecoration(
-                  color: AuthColors.primary.withValues(alpha: 0.1),
+                  color: p.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.mark_email_unread_outlined,
                   size: 48,
-                  color: AuthColors.primary,
+                  color: p,
                 ),
               ),
               const SizedBox(height: 28),
@@ -135,7 +125,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 l.verifyEmailTitle,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: AuthColors.textPrimary,
+                      color: context.onSurface,
                     ),
                 textAlign: TextAlign.center,
               ),
@@ -145,7 +135,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               Text(
                 l.verifyEmailSubtitle(email),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AuthColors.textSecondary,
+                      color: context.onSurfaceVar,
                       height: 1.5,
                     ),
                 textAlign: TextAlign.center,
@@ -158,16 +148,17 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AuthColors.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: p,
+                    foregroundColor: cs.onPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AuthRadii.sm),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   onPressed: _checkVerified,
                   child: Text(
                     l.verifyEmailCheckButton,
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, color: cs.onPrimary),
                   ),
                 ),
               ),
@@ -179,10 +170,10 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 height: 50,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AuthColors.primary,
-                    side: const BorderSide(color: AuthColors.primary),
+                    foregroundColor: p,
+                    side: BorderSide(color: p),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AuthRadii.sm),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   onPressed: _resendCooldown ? null : _resend,

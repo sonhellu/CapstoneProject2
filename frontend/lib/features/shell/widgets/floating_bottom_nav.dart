@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../theme/shell_theme.dart';
+import '../../../core/theme/theme_ext.dart';
 
 class NavItemData {
   const NavItemData({
@@ -41,8 +41,9 @@ class FloatingBottomNav extends StatelessWidget {
       letterSpacing: -0.2,
     );
 
+       final cs = context.cs;
     return Material(
-      color: ShellColors.surface,
+      color: cs.surface,
       child: SizedBox(
         height: 55,
         child: Row(
@@ -71,8 +72,8 @@ class FloatingBottomNav extends StatelessWidget {
                             selected ? item.activeIcon : item.icon,
                             size: 26,
                             color: selected
-                                ? ShellColors.primaryBlue
-                                : ShellColors.navInactive,
+                                ? cs.primary
+                                : cs.onSurfaceVariant,
                           ),
                           if (isChat && (chatBadgeCount ?? 0) > 0)
                             Positioned(
@@ -84,10 +85,10 @@ class FloatingBottomNav extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: ShellColors.accentRed,
+                                  color: cs.error,
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: ShellColors.surface,
+                                    color: cs.surface,
                                     width: 1.5,
                                   ),
                                 ),
@@ -116,8 +117,8 @@ class FloatingBottomNav extends StatelessWidget {
                         duration: const Duration(milliseconds: 200),
                         style: textStyle.copyWith(
                           color: selected
-                              ? ShellColors.primaryBlue
-                              : ShellColors.navInactive,
+                              ? cs.primary
+                              : cs.onSurfaceVariant,
                           fontWeight: selected
                               ? FontWeight.w700
                               : FontWeight.w500,

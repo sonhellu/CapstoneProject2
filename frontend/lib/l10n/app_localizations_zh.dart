@@ -724,6 +724,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get partnerAccepted => '已接受！';
 
   @override
+  String get partnerRequestSentSuccess => '请求已发送。';
+
+  @override
+  String get partnerRequestNotSignedIn => '请先登录再发送请求。';
+
+  @override
+  String get partnerRequestProfileMissing => '该用户暂无资料。';
+
+  @override
+  String get partnerRequestAlreadyPending => '您已向此人发送待处理的请求。';
+
+  @override
+  String get partnerRequestIncomingPending => '对方已向您发送请求。请打开“聊天”标签接受。';
+
+  @override
+  String get partnerRequestAlreadyAccepted => '你们已连接。';
+
+  @override
+  String get partnerRequestPreviouslyDeclined => '之前的请求已被拒绝，暂时无法再次发送。';
+
+  @override
+  String get partnerRequestFailed => '无法发送请求，请重试。';
+
+  @override
   String get chatSearchConversations => '搜索会话…';
 
   @override
@@ -751,7 +775,48 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatRequestPending => '请求待处理…';
 
   @override
+  String get chatRequestsIncoming => '收到的请求';
+
+  @override
+  String get chatRequestBannerSubtitle => '想与你建立联系 👋';
+
+  @override
+  String get chatRequestAccept => '接受';
+
+  @override
+  String get chatRequestDecline => '拒绝';
+
+  @override
   String get chatFilterLanguageAny => '不限';
+
+  @override
+  String get chatDisconnectedListSubtitle => 'Paused — open chat to reconnect';
+
+  @override
+  String get chatDisconnectMenu => 'Pause connection';
+
+  @override
+  String get chatDisconnectConfirmTitle => 'Pause this chat?';
+
+  @override
+  String get chatDisconnectConfirmBody =>
+      'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.';
+
+  @override
+  String get chatReconnect => 'Reconnect';
+
+  @override
+  String get chatDisconnectedBanner =>
+      'Connection paused. Reconnect to send messages.';
+
+  @override
+  String get chatSendBlockedDisconnected => 'Reconnect to send messages.';
+
+  @override
+  String get chatDisconnectSuccess => 'Chat paused.';
+
+  @override
+  String get chatReconnectSuccess => 'Connection restored.';
 
   @override
   String get authSuccessLogin => '欢迎回来！';
@@ -808,26 +873,87 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get authUniEmailLabel => '学校邮箱';
-
-  @override
-  String get authUniEmailHint => '邮箱账号';
-
-  @override
-  String get authUniSelectHint => '选择学校';
-
-  @override
-  String get authUniPickerTitle => '选择学校';
-
-  @override
-  String get authUniSearchHint => '搜索学校或域名…';
-
-  @override
-  String get verifyEmailSent => '验证邮件已发送，请检查您的收件箱。';
+  String get authSuccessVerified => '邮箱已验证！请登录。';
 
   @override
   String get verifyEmailNotYet => '邮箱尚未验证，请检查您的收件箱。';
 
   @override
-  String get authSuccessVerified => '邮箱验证成功！请登录。';
+  String get errorChatRequestNotFound => '此请求已不存在。';
+
+  @override
+  String get errorChatRequestNotPending => '此请求已被处理。';
+
+  @override
+  String get errorTransactionAborted => '连接繁忙 — 请重试。';
+
+  @override
+  String get errorNetwork => '网络错误，请检查您的连接。';
+
+  @override
+  String get errorPermissionDenied => '您没有执行此操作的权限。';
+
+  @override
+  String get errorNotFound => '未找到请求的内容。';
+
+  @override
+  String get errorDataConflict => '数据冲突，请刷新后重试。';
+
+  @override
+  String get errorUnexpected => '发生意外错误，请重试。';
+
+  @override
+  String mapDistanceFromYouMeters(int meters) {
+    return '距您${meters}m';
+  }
+
+  @override
+  String mapDistanceFromYouKilometers(String km) {
+    return '距您${km}km';
+  }
+
+  @override
+  String get postMenuEdit => '编辑';
+
+  @override
+  String get postMenuDelete => '删除';
+
+  @override
+  String get postUpdateSuccess => '帖子已更新';
+
+  @override
+  String get postEditSheetTitle => '编辑帖子';
+
+  @override
+  String get postEditTitleLabel => '标题';
+
+  @override
+  String get postEditContentLabel => '内容';
+
+  @override
+  String get postEditUpdateBtn => '更新';
+
+  @override
+  String get postDeleteSuccess => '帖子已删除';
+
+  @override
+  String get postDeleteTitle => '删除帖子';
+
+  @override
+  String get postDeleteMessage => '您确定要删除这篇帖子吗？此操作无法撤销。';
+
+  @override
+  String get postDeleteCancel => '取消';
+
+  @override
+  String get postDeleteConfirm => '删除';
+
+  @override
+  String get postTranslating => '翻译中…';
+
+  @override
+  String get postShowOriginal => '显示原文';
+
+  @override
+  String get postTranslate => '翻译';
 }

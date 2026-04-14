@@ -5,27 +5,25 @@ import 'package:provider/provider.dart';
 import 'package:capstone_frontend/app/capstone_app.dart';
 import 'package:capstone_frontend/core/locale/locale_controller.dart';
 import 'package:capstone_frontend/core/naver_map/naver_map_sdk_controller.dart';
+import 'package:capstone_frontend/core/theme/theme_controller.dart';
 import 'package:capstone_frontend/features/auth/providers/auth_provider.dart';
-import 'package:capstone_frontend/features/chat/services/chat_service.dart';
+import 'package:capstone_frontend/features/chat/chat_controller.dart';
 import 'package:capstone_frontend/features/shell/main_shell.dart';
 import 'package:capstone_frontend/l10n/app_localizations.dart';
 
 void main() {
-  setUp(() {
-    chatServiceMockNetworkDelayEnabled = false;
-  });
-
-  tearDown(() {
-    chatServiceMockNetworkDelayEnabled = true;
-  });
-
   testWidgets('Đăng nhập vào màn shell chính', (WidgetTester tester) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => AuthProvider()),
           ChangeNotifierProvider(create: (_) => LocaleController()),
+          ChangeNotifierProvider(create: (_) => ThemeController()),
           ChangeNotifierProvider(create: (_) => NaverMapSdkController()),
+          ChangeNotifierProxyProvider<AuthProvider, ChatController>(
+            create: (ctx) => ChatController(ctx.read<AuthProvider>()),
+            update: (_, auth, prev) => prev ?? ChatController(auth),
+          ),
         ],
         // Production wiring: [CapstoneApp] → [MaterialApp] with
         // [AppLocalizations.localizationsDelegates] / [supportedLocales];

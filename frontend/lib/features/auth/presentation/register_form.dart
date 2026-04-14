@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/feedback/app_snackbar.dart';
+import '../../../core/theme/theme_ext.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/university_data.dart';
 import '../providers/auth_provider.dart';
@@ -10,18 +12,17 @@ import '../theme/auth_theme.dart';
 import '../utils/auth_validators.dart';
 import 'widgets/auth_primary_button.dart';
 import 'widgets/auth_text_field.dart';
+import 'widgets/social_auth_buttons.dart';
 
 class RegisterForm extends HookWidget {
   const RegisterForm({super.key});
 
   void _snack(BuildContext context, String msg, {bool success = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg, style: const TextStyle(color: Colors.white)),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: success ? const Color(0xFF2E7D32) : null,
-      ),
-    );
+    if (success) {
+      showSuccessSnackBar(context, msg);
+    } else {
+      showErrorTextSnackBar(context, msg);
+    }
   }
 
   @override
@@ -65,7 +66,7 @@ class RegisterForm extends HookWidget {
               password: password.text,
             );
         if (context.mounted) {
-          _snack(context, l.verifyEmailSent);
+          _snack(context, l.authSuccessRegister, success: true);
         }
       } on FirebaseAuthException catch (e) {
         if (!context.mounted) return;
@@ -138,7 +139,7 @@ class RegisterForm extends HookWidget {
             controller: confirm,
             label: l.authFieldPasswordConfirm,
             hint: l.authHintConfirmPassword,
-            prefixIcon: Icons.lock_outline_rounded,
+            prefixIcon: Icons.verified_user_outlined,
             obscureText: obscureConfirm.value,
             showObscureToggle: true,
             onToggleObscure: () => obscureConfirm.value = !obscureConfirm.value,
@@ -153,6 +154,11 @@ class RegisterForm extends HookWidget {
             label: l.authButtonRegister,
             isLoading: loading.value,
             onPressed: submit,
+          ),
+          const SizedBox(height: 24),
+          SocialAuthButtons(
+            onGoogle: () => _snack(context, l.authSocialGoogleRegisterDemo),
+            onKakao: () => _snack(context, l.authSocialKakaoRegisterDemo),
           ),
         ],
       ),
@@ -193,16 +199,16 @@ class _EmailComposer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
     final uniError = universityValidator();
+    final p = context.primary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          l.authUniEmailLabel,
+          'University Email',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: AuthColors.textPrimary,
+                color: context.onSurface,
                 fontWeight: FontWeight.w600,
               ),
         ),
@@ -219,19 +225,24 @@ class _EmailComposer extends StatelessWidget {
                 controller: idController,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
-                style: const TextStyle(
-                  color: AuthColors.textPrimary,
+                style: TextStyle(
+                  color: context.onSurface,
                   fontWeight: FontWeight.w500,
                 ),
                 validator: idValidator,
                 decoration: InputDecoration(
-                  hintText: l.authUniEmailHint,
+                  hintText: 'yourname',
                   hintStyle: TextStyle(
-                    color: AuthColors.textSecondary.withValues(alpha: 0.85),
+                    color: context.onSurfaceVar.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w400,
                   ),
                   filled: true,
-                  fillColor: AuthColors.background,
+                  fillColor: context.subtleFill,
+                  prefixIcon: Icon(
+                    Icons.alternate_email_rounded,
+                    color: p,
+                    size: 20,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AuthRadii.sm),
                     borderSide: BorderSide.none,
@@ -239,13 +250,13 @@ class _EmailComposer extends StatelessWidget {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AuthRadii.sm),
                     borderSide: BorderSide(
-                      color: AuthColors.border.withValues(alpha: 0.9),
+                      color: context.outline.withValues(alpha: 0.9),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AuthRadii.sm),
-                    borderSide: const BorderSide(
-                      color: AuthColors.primary,
+                    borderSide: BorderSide(
+                      color: p,
                       width: 1.5,
                     ),
                   ),
@@ -266,7 +277,7 @@ class _EmailComposer extends StatelessWidget {
                     ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
+                    horizontal: 4,
                     vertical: 16,
                   ),
                 ),
@@ -281,7 +292,7 @@ class _EmailComposer extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AuthColors.textSecondary.withValues(alpha: 0.6),
+                  color: context.onSurfaceVar.withValues(alpha: 0.6),
                 ),
               ),
             ),
@@ -294,11 +305,11 @@ class _EmailComposer extends StatelessWidget {
                 child: Container(
                   height: 54,
                   decoration: BoxDecoration(
-                    color: AuthColors.background,
+                    color: context.subtleFill,
                     border: Border.all(
                       color: uniError != null
                           ? Theme.of(context).colorScheme.error
-                          : AuthColors.border.withValues(alpha: 0.9),
+                          : context.outline.withValues(alpha: 0.9),
                     ),
                     borderRadius: BorderRadius.circular(AuthRadii.sm),
                   ),
@@ -306,15 +317,15 @@ class _EmailComposer extends StatelessWidget {
                   child: Row(
                     children: [
                       if (selectedUniversity != null) ...[
-                        const Icon(Icons.school_rounded,
-                            size: 18, color: AuthColors.primary),
+                        Text(selectedUniversity!.logo,
+                            style: const TextStyle(fontSize: 16)),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             selectedDomain ?? selectedUniversity!.defaultDomain,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AuthColors.primary,
+                              color: p,
                               fontWeight: FontWeight.w600,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -323,16 +334,16 @@ class _EmailComposer extends StatelessWidget {
                       ] else
                         Expanded(
                           child: Text(
-                            l.authUniSelectHint,
+                            'Select university',
                             style: TextStyle(
                               fontSize: 13,
                               color:
-                                  AuthColors.textSecondary.withValues(alpha: 0.7),
+                                  context.onSurfaceVar.withValues(alpha: 0.7),
                             ),
                           ),
                         ),
-                      const Icon(Icons.expand_more_rounded,
-                          size: 18, color: AuthColors.textSecondary),
+                      Icon(Icons.expand_more_rounded,
+                          size: 18, color: context.onSurfaceVar),
                     ],
                   ),
                 ),
@@ -380,6 +391,8 @@ class _DomainChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.primary;
+    final onP = Theme.of(context).colorScheme.onPrimary;
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Wrap(
@@ -392,16 +405,16 @@ class _DomainChips extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : AuthColors.primary,
+                color: isSelected ? onP : p,
               ),
             ),
             selected: isSelected,
             onSelected: (_) => onChanged(domain),
-            backgroundColor: AuthColors.primary.withValues(alpha: 0.06),
-            selectedColor: AuthColors.primary,
-            checkmarkColor: Colors.white,
+            backgroundColor: p.withValues(alpha: 0.06),
+            selectedColor: p,
+            checkmarkColor: onP,
             side: BorderSide(
-              color: AuthColors.primary.withValues(alpha: 0.4),
+              color: p.withValues(alpha: 0.4),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 4),
           );
@@ -430,9 +443,7 @@ class _UniversityPickerSheetState extends State<_UniversityPickerSheet> {
       expand: false,
       initialChildSize: 0.75,
       maxChildSize: 0.95,
-      builder: (context, scrollController) {
-        final l = AppLocalizations.of(context)!;
-        return Padding(
+      builder: (_, scrollController) => Padding(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
         child: Column(
           children: [
@@ -450,10 +461,10 @@ class _UniversityPickerSheetState extends State<_UniversityPickerSheet> {
             const SizedBox(height: 16),
 
             Text(
-              l.authUniPickerTitle,
+              'Select University',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: AuthColors.textPrimary,
+                    color: context.onSurface,
                   ),
             ),
             const SizedBox(height: 12),
@@ -462,7 +473,7 @@ class _UniversityPickerSheetState extends State<_UniversityPickerSheet> {
             TextField(
               autofocus: true,
               decoration: InputDecoration(
-                hintText: l.authUniSearchHint,
+                hintText: 'Search university or domain…',
                 prefixIcon:
                     const Icon(Icons.search_rounded, size: 20),
                 contentPadding:
@@ -483,23 +494,23 @@ class _UniversityPickerSheetState extends State<_UniversityPickerSheet> {
                 itemBuilder: (_, i) {
                   final uni = filtered[i];
                   return ListTile(
-                    leading: const Icon(
-                      Icons.school_rounded,
-                      color: AuthColors.primary,
+                    leading: Text(
+                      uni.logo,
+                      style: const TextStyle(fontSize: 22),
                     ),
                     title: Text(
                       uni.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AuthColors.textPrimary,
+                        color: context.onSurface,
                       ),
                     ),
                     subtitle: Text(
                       uni.domains.map((d) => '@$d').join('  ·  '),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: AuthColors.primary,
+                        color: context.primary,
                       ),
                     ),
                     dense: true,
@@ -510,8 +521,7 @@ class _UniversityPickerSheetState extends State<_UniversityPickerSheet> {
             ),
           ],
         ),
-      );
-      },
+      ),
     );
   }
 }

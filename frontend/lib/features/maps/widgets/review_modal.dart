@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/theme/theme_ext.dart';
 import '../../../l10n/app_localizations.dart';
 
 // ──────────────────────────── Model ────────────────────────────
@@ -102,6 +103,8 @@ class _ReviewSheetState extends State<_ReviewSheet> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final bottom = MediaQuery.of(context).viewInsets.bottom;
+    final p = context.primary;
+    final onP = context.cs.onPrimary;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.75,
@@ -109,9 +112,9 @@ class _ReviewSheetState extends State<_ReviewSheet> {
       maxChildSize: 0.95,
       expand: false,
       builder: (_, scrollCtrl) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: context.cardFill,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           children: [
@@ -122,7 +125,7 @@ class _ReviewSheetState extends State<_ReviewSheet> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDDE3EA),
+                  color: context.outline.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -142,14 +145,14 @@ class _ReviewSheetState extends State<_ReviewSheet> {
                         style: GoogleFonts.notoSansKr(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          color: const Color(0xFF1A1A1A),
+                          color: context.onSurface,
                         ),
                       ),
                       Text(
                         widget.pinName,
                         style: GoogleFonts.notoSansKr(
                           fontSize: 13,
-                          color: const Color(0xFF6A6A6A),
+                          color: context.onSurfaceVar,
                         ),
                       ),
                     ],
@@ -159,7 +162,7 @@ class _ReviewSheetState extends State<_ReviewSheet> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F4FF),
+                      color: context.cs.primaryContainer,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -167,7 +170,7 @@ class _ReviewSheetState extends State<_ReviewSheet> {
                       style: GoogleFonts.notoSansKr(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF003478),
+                        color: p,
                       ),
                     ),
                   ),
@@ -176,7 +179,7 @@ class _ReviewSheetState extends State<_ReviewSheet> {
             ),
 
             const SizedBox(height: 16),
-            const Divider(height: 1, color: Color(0xFFF0F0F0)),
+            Divider(height: 1, color: context.divider),
 
             // ── Review List ──
             Expanded(
@@ -185,14 +188,15 @@ class _ReviewSheetState extends State<_ReviewSheet> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.rate_review_outlined,
-                              size: 48, color: Color(0xFFCBD5E1)),
+                          Icon(Icons.rate_review_outlined,
+                              size: 48,
+                              color: context.outline.withValues(alpha: 0.5)),
                           const SizedBox(height: 12),
                           Text(
                             l.reviewNoItems,
                             style: GoogleFonts.notoSansKr(
                               fontSize: 14,
-                              color: const Color(0xFF94A3B8),
+                              color: context.hintColor,
                             ),
                           ),
                         ],
@@ -202,8 +206,8 @@ class _ReviewSheetState extends State<_ReviewSheet> {
                       controller: scrollCtrl,
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
                       itemCount: _mockReviews.length,
-                      separatorBuilder: (context, i) => const Divider(
-                          height: 24, color: Color(0xFFF0F0F0)),
+                      separatorBuilder: (ctx, i) => Divider(
+                          height: 24, color: ctx.divider),
                       itemBuilder: (_, i) {
                         final r = _mockReviews[i];
                         return _ReviewTile(
@@ -244,16 +248,19 @@ class _ReviewSheetState extends State<_ReviewSheet> {
                       Expanded(
                         child: TextField(
                           controller: _ctrl,
-                          style: GoogleFonts.notoSansKr(fontSize: 14),
+                          style: GoogleFonts.notoSansKr(
+                            fontSize: 14,
+                            color: context.onSurface,
+                          ),
                           maxLines: 1,
                           decoration: InputDecoration(
                             hintText: l.reviewWriteHint,
                             hintStyle: GoogleFonts.notoSansKr(
                               fontSize: 14,
-                              color: const Color(0xFFADB5BD),
+                              color: context.hintColor,
                             ),
                             filled: true,
-                            fillColor: const Color(0xFFF5F7FA),
+                            fillColor: context.surfaceVar,
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 12),
                             border: OutlineInputBorder(
@@ -278,7 +285,7 @@ class _ReviewSheetState extends State<_ReviewSheet> {
                           padding:
                               const EdgeInsets.symmetric(horizontal: 16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF003478),
+                            color: p,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           alignment: Alignment.center,
@@ -287,7 +294,7 @@ class _ReviewSheetState extends State<_ReviewSheet> {
                             style: GoogleFonts.notoSansKr(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                              color: onP,
                             ),
                           ),
                         ),
@@ -313,6 +320,7 @@ class _ReviewTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.primary;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -320,8 +328,8 @@ class _ReviewTile extends StatelessWidget {
         Container(
           width: 36,
           height: 36,
-          decoration: const BoxDecoration(
-            color: Color(0xFF003478),
+          decoration: BoxDecoration(
+            color: p,
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
@@ -330,7 +338,7 @@ class _ReviewTile extends StatelessWidget {
             style: GoogleFonts.notoSansKr(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: context.cs.onPrimary,
             ),
           ),
         ),
@@ -347,20 +355,19 @@ class _ReviewTile extends StatelessWidget {
                     style: GoogleFonts.notoSansKr(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1A1A1A),
+                      color: context.onSurface,
                     ),
                   ),
                   if (review.isVerified) ...[
                     const SizedBox(width: 4),
-                    const Icon(Icons.verified_rounded,
-                        size: 13, color: Color(0xFF003478)),
+                    Icon(Icons.verified_rounded, size: 13, color: p),
                   ],
                   const Spacer(),
                   Text(
                     timeAgo,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 11,
-                      color: const Color(0xFFADB5BD),
+                      color: context.hintColor,
                     ),
                   ),
                 ],
@@ -385,7 +392,7 @@ class _ReviewTile extends StatelessWidget {
                 review.body,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 14,
-                  color: const Color(0xFF1A1A1A),
+                  color: context.onSurface,
                   height: 1.6,
                 ),
               ),

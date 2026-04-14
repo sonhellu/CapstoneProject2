@@ -4,21 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../core/navigation/app_transitions.dart';
+import '../../../core/theme/theme_ext.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/post.dart';
 import '../post_detail_screen.dart';
-
-// ─────────────────────────── Design Tokens ───────────────────────────
-abstract final class _T {
-  static const primary = Color(0xFF003478);
-  static const textDark = Color(0xFF1A1A1A);
-  static const textGrey = Color(0xFF6A6A6A);
-  static const textLight = Color(0xFFADB5BD);
-  static const surface = Colors.white;
-  static const cardShadow = [
-    BoxShadow(color: Color(0x0D000000), blurRadius: 12, offset: Offset(0, 4)),
-  ];
-}
 
 // ─────────────────────────── Config Maps ───────────────────────────
 class _LangConfig {
@@ -29,14 +18,14 @@ class _LangConfig {
 
 const _langConfig = <String, _LangConfig>{
   'VN': _LangConfig(Color(0xFFFFECEC), Color(0xFFD32F2F)),
-  'KR': _LangConfig(Color(0xFFE8F0FE), Color(0xFF003478)),
+  'KR': _LangConfig(Color(0xFFE8F0FE), Color(0xFF2563EB)),
   'EN': _LangConfig(Color(0xFFE8F5E9), Color(0xFF2E7D32)),
   'JA': _LangConfig(Color(0xFFFFF3E0), Color(0xFFE65100)),
   'ZH': _LangConfig(Color(0xFFFFEBEE), Color(0xFFC62828)),
 };
 
 const _categoryColors = <String, Color>{
-  'International': Color(0xFF003478),
+  'International': Color(0xFF2563EB),
   'Scholarship': Color(0xFF7B1FA2),
   'Campus': Color(0xFF00695C),
   'Housing': Color(0xFFE65100),
@@ -100,18 +89,18 @@ class _HorizontalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final catColor = _categoryColors[post.category] ?? _T.primary;
-    final langCfg =
-        _langConfig[post.language] ?? const _LangConfig(Color(0xFFF0F0F0), _T.textGrey);
+    final catColor = _categoryColors[post.category] ?? context.primary;
+    final langCfg = _langConfig[post.language] ??
+        _LangConfig(context.subtleFill, context.onSurfaceVar);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 230,
         decoration: BoxDecoration(
-          color: _T.surface,
+          color: context.cardFill,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: _T.cardShadow,
+          boxShadow: context.cardElevationShadow,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,7 +157,7 @@ class _HorizontalCard extends StatelessWidget {
                       style: GoogleFonts.notoSansKr(
                         fontSize: _hasImage ? 13 : 14,
                         fontWeight: FontWeight.w700,
-                        color: _T.textDark,
+                        color: context.onSurface,
                         height: 1.4,
                       ),
                     ),
@@ -192,7 +181,7 @@ class _HorizontalCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.notoSansKr(
                               fontSize: 10,
-                              color: _T.textGrey,
+                              color: context.onSurfaceVar,
                             ),
                           ),
                         ),
@@ -200,7 +189,7 @@ class _HorizontalCard extends StatelessWidget {
                           post.time,
                           style: GoogleFonts.notoSansKr(
                             fontSize: 10,
-                            color: _T.textLight,
+                            color: context.hintColor,
                           ),
                         ),
                       ],
@@ -226,31 +215,35 @@ class _ListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final catColor = _categoryColors[post.category] ?? _T.primary;
-    final langCfg =
-        _langConfig[post.language] ?? const _LangConfig(Color(0xFFF0F0F0), _T.textGrey);
+    final catColor = _categoryColors[post.category] ?? context.primary;
+    final langCfg = _langConfig[post.language] ??
+        _LangConfig(context.subtleFill, context.onSurfaceVar);
+    final p = context.primary;
 
     return Material(
-      color: _T.surface,
+      color: context.cardFill,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        splashColor: _T.primary.withValues(alpha: 0.05),
-        highlightColor: _T.primary.withValues(alpha: 0.03),
+        splashColor: p.withValues(alpha: 0.05),
+        highlightColor: p.withValues(alpha: 0.03),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            boxShadow: _T.cardShadow,
+            boxShadow: context.cardElevationShadow,
           ),
-          child: _hasImage ? _withImage(catColor, langCfg) : _textOnly(catColor, langCfg),
+          child: _hasImage
+              ? _withImage(context, catColor, langCfg)
+              : _textOnly(context, catColor, langCfg),
         ),
       ),
     );
   }
 
   // ── Layout: has image — thumbnail left, content right ──
-  Widget _withImage(Color catColor, _LangConfig langCfg) {
+  Widget _withImage(
+      BuildContext context, Color catColor, _LangConfig langCfg) {
     return Padding(
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -265,14 +258,17 @@ class _ListCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 14),
-          Expanded(child: _contentColumn(catColor, langCfg, compact: true)),
+          Expanded(
+              child: _contentColumn(context, catColor, langCfg,
+                  compact: true)),
         ],
       ),
     );
   }
 
   // ── Layout: no image — full-width text + left blue border strip ──
-  Widget _textOnly(Color catColor, _LangConfig langCfg) {
+  Widget _textOnly(
+      BuildContext context, Color catColor, _LangConfig langCfg) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: IntrinsicHeight(
@@ -294,7 +290,8 @@ class _ListCard extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-                child: _contentColumn(catColor, langCfg, compact: false),
+                child: _contentColumn(context, catColor, langCfg,
+                    compact: false),
               ),
             ),
           ],
@@ -303,7 +300,8 @@ class _ListCard extends StatelessWidget {
     );
   }
 
-  Widget _contentColumn(Color catColor, _LangConfig langCfg,
+  Widget _contentColumn(
+      BuildContext context, Color catColor, _LangConfig langCfg,
       {required bool compact}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,7 +327,7 @@ class _ListCard extends StatelessWidget {
           style: GoogleFonts.notoSansKr(
             fontSize: compact ? 14 : 15,
             fontWeight: FontWeight.w700,
-            color: _T.textDark,
+            color: context.onSurface,
             height: 1.4,
           ),
         ),
@@ -351,7 +349,7 @@ class _ListCard extends StatelessWidget {
                 post.author.name,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 12,
-                  color: _T.textGrey,
+                  color: context.onSurfaceVar,
                   fontWeight: FontWeight.w500,
                 ),
                 maxLines: 1,
@@ -361,7 +359,7 @@ class _ListCard extends StatelessWidget {
             Text(
               post.time,
               style: GoogleFonts.notoSansKr(
-                  fontSize: 11, color: _T.textLight),
+                  fontSize: 11, color: context.hintColor),
             ),
           ],
         ),
@@ -369,19 +367,22 @@ class _ListCard extends StatelessWidget {
         // Stats
         Row(
           children: [
-            Icon(Icons.favorite_border_rounded, size: 13, color: _T.textLight),
+            Icon(Icons.favorite_border_rounded,
+                size: 13, color: context.hintColor),
             const SizedBox(width: 3),
             Text(
               '${post.likes}',
-              style: GoogleFonts.notoSansKr(fontSize: 11, color: _T.textLight),
+              style: GoogleFonts.notoSansKr(
+                  fontSize: 11, color: context.hintColor),
             ),
             const SizedBox(width: 10),
             Icon(Icons.chat_bubble_outline_rounded,
-                size: 13, color: _T.textLight),
+                size: 13, color: context.hintColor),
             const SizedBox(width: 3),
             Text(
               '${post.comments}',
-              style: GoogleFonts.notoSansKr(fontSize: 11, color: _T.textLight),
+              style: GoogleFonts.notoSansKr(
+                  fontSize: 11, color: context.hintColor),
             ),
           ],
         ),
@@ -412,42 +413,48 @@ class _NetImage extends StatelessWidget {
       // ── Shimmer while loading ──
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
+        final dark = Theme.of(context).brightness == Brightness.dark;
         return Shimmer.fromColors(
-          baseColor: const Color(0xFFE8ECF0),
-          highlightColor: const Color(0xFFF5F7FA),
+          baseColor: dark ? const Color(0xFF2A2A2A) : const Color(0xFFE8ECF0),
+          highlightColor:
+              dark ? const Color(0xFF3D3D3D) : const Color(0xFFF5F7FA),
           child: Container(
             width: width,
             height: height,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
         );
       },
       // ── Elegant error placeholder ──
-      errorBuilder: (context, error, stackTrace) => Container(
-        width: width,
-        height: height,
-        color: const Color(0xFFF0F2F5),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.image_not_supported_outlined,
-              size: (height ?? 84) * 0.35,
-              color: const Color(0xFFCDD3D8),
-            ),
-            if ((height ?? 0) > 60) ...[
-              const SizedBox(height: 4),
-              Text(
-                AppLocalizations.of(context)!.postNoImage,
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 10,
-                  color: const Color(0xFFCDD3D8),
-                ),
+      errorBuilder: (context, error, stackTrace) {
+        final muted = Theme.of(context).colorScheme.outline;
+        final fill = Theme.of(context).colorScheme.surfaceContainerHighest;
+        return Container(
+          width: width,
+          height: height,
+          color: fill,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.image_not_supported_outlined,
+                size: (height ?? 84) * 0.35,
+                color: muted,
               ),
+              if ((height ?? 0) > 60) ...[
+                const SizedBox(height: 4),
+                Text(
+                  AppLocalizations.of(context)!.postNoImage,
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 10,
+                    color: muted,
+                  ),
+                ),
+              ],
             ],
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -491,11 +498,12 @@ class _AvatarCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
-        color: Color(0xFF003478),
+      decoration: BoxDecoration(
+        color: cs.primary,
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
@@ -504,7 +512,7 @@ class _AvatarCircle extends StatelessWidget {
         style: GoogleFonts.notoSansKr(
           fontSize: fontSize,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: cs.onPrimary,
         ),
       ),
     );

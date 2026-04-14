@@ -2,25 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/theme/theme_controller.dart';
+import '../../core/theme/theme_ext.dart';
 import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/providers/auth_provider.dart';
 
-// ─────────────────────────── Constants ───────────────────────────
-abstract final class _C {
-  static const primary = Color(0xFF003478);
-  static const background = Color(0xFFF5F7FA);
-  static const textDark = Color(0xFF1A1A1A);
-  static const textGrey = Color(0xFF707070);
-  static const cardRadius = 16.0;
-  static const shadow = [
-    BoxShadow(
-      color: Colors.black12,
-      blurRadius: 10,
-      offset: Offset(0, 4),
-    ),
-  ];
-}
+const double _kCardRadius = 16.0;
+
+List<BoxShadow> _cardShadow(BuildContext context) => [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: context.isDark ? 0.35 : 0.08),
+        blurRadius: 10,
+        offset: const Offset(0, 4),
+      ),
+    ];
 
 // ─────────────────────────── Mock Data ───────────────────────────
 class _ProfileData {
@@ -154,6 +150,8 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
   Future<void> _confirmLogout() async {
     final l = AppLocalizations.of(context)!;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+    final onSurfaceVar = Theme.of(context).colorScheme.onSurfaceVariant;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -161,17 +159,17 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         title: Text(
           l.profileLogout,
           style: GoogleFonts.notoSansKr(
-              fontWeight: FontWeight.w700, color: _C.textDark),
+              fontWeight: FontWeight.w700, color: onSurface),
         ),
         content: Text(
           l.profileLogoutConfirm,
-          style: GoogleFonts.notoSansKr(fontSize: 14, color: _C.textGrey),
+          style: GoogleFonts.notoSansKr(fontSize: 14, color: onSurfaceVar),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(l.btnCancel,
-                style: GoogleFonts.notoSansKr(color: _C.textGrey)),
+                style: GoogleFonts.notoSansKr(color: onSurfaceVar)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -226,7 +224,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: _C.background,
+      backgroundColor: context.bg,
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(
@@ -322,34 +320,72 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   // ─── Header ───
   Widget _buildHeader(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final primary = context.primary;
     return Column(
       children: [
-        // ── Language button row ──
-        Align(
-          alignment: Alignment.centerRight,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () => LanguageBottomSheet.show(context),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.language_rounded,
-                      size: 18, color: _C.primary),
-                  const SizedBox(width: 4),
-                  Text(
-                    l.settingsLanguage,
-                    style: GoogleFonts.notoSansKr(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: _C.primary,
+        // ── Language + dark mode row ──
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Consumer<ThemeController>(
+              builder: (context, themeCtrl, _) {
+                final dark =
+                    Theme.of(context).brightness == Brightness.dark;
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      dark
+                          ? Icons.dark_mode_rounded
+                          : Icons.light_mode_rounded,
+                      size: 18,
+                      color: primary,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Text(
+                      l.settingsDarkMode,
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: primary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Switch.adaptive(
+                      value: dark,
+                      onChanged: (v) => themeCtrl.setMode(
+                        v ? ThemeMode.dark : ThemeMode.light,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+            InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => LanguageBottomSheet.show(context),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.language_rounded,
+                        size: 18, color: primary),
+                    const SizedBox(width: 4),
+                    Text(
+                      l.settingsLanguage,
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: primary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
         const SizedBox(height: 8),
         Stack(
@@ -359,12 +395,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: _C.primary, width: 2),
-                boxShadow: _C.shadow,
+                border: Border.all(color: primary, width: 2),
+                boxShadow: _cardShadow(context),
               ),
               child: CircleAvatar(
                 radius: 52,
-                backgroundColor: _C.primary.withValues(alpha: 0.1),
+                backgroundColor: primary.withValues(alpha: 0.1),
                 child: Text(
                   _profile.fullName.isNotEmpty
                       ? _profile.fullName[0].toUpperCase()
@@ -372,7 +408,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                   style: GoogleFonts.notoSansKr(
                     fontSize: 36,
                     fontWeight: FontWeight.w700,
-                    color: _C.primary,
+                    color: primary,
                   ),
                 ),
               ),
@@ -386,10 +422,13 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                   width: 34,
                   height: 34,
                   decoration: BoxDecoration(
-                    color: _C.primary,
+                    color: primary,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: _C.shadow,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.surface,
+                      width: 2,
+                    ),
+                    boxShadow: _cardShadow(context),
                   ),
                   child: const Icon(
                     Icons.edit_rounded,
@@ -407,7 +446,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           style: GoogleFonts.notoSansKr(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: _C.textDark,
+            color: context.onSurface,
           ),
         ),
         const SizedBox(height: 4),
@@ -415,7 +454,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           '@${_profile.username}',
           style: GoogleFonts.notoSansKr(
             fontSize: 14,
-            color: _C.textGrey,
+            color: context.onSurfaceVar,
           ),
         ),
       ],
@@ -442,7 +481,7 @@ class _DisplayCard extends StatelessWidget {
             label: l.profileNativeLang,
             value: profile.nativeLanguage,
           ),
-          _divider(),
+          _divider(context),
           _InfoRow(
             icon: Icons.school_outlined,
             label: l.profileUniversity,
@@ -451,19 +490,19 @@ class _DisplayCard extends StatelessWidget {
                 ? const _VerifiedBadge()
                 : null,
           ),
-          _divider(),
+          _divider(context),
           _InfoRow(
             icon: Icons.menu_book_outlined,
             label: l.profileMajor,
             value: profile.major,
           ),
-          _divider(),
+          _divider(context),
           _InfoRow(
             icon: Icons.flag_outlined,
             label: l.profileNationality,
             value: profile.nationality,
           ),
-          _divider(),
+          _divider(context),
           _InfoRow(
             icon: Icons.email_outlined,
             label: l.profileEmail,
@@ -474,7 +513,8 @@ class _DisplayCard extends StatelessWidget {
     );
   }
 
-  Widget _divider() => const Divider(height: 1, color: Color(0xFFF0F0F0));
+  Widget _divider(BuildContext context) =>
+      Divider(height: 1, color: Theme.of(context).dividerColor);
 }
 
 // ─────────────────────────── Edit Form ───────────────────────────
@@ -575,7 +615,7 @@ class _EditForm extends StatelessWidget {
           child: Text(
             l.btnCancel,
             style: GoogleFonts.notoSansKr(
-              color: _C.textGrey,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -597,9 +637,9 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(_C.cardRadius),
-        boxShadow: _C.shadow,
+        color: context.cardFill,
+        borderRadius: BorderRadius.circular(_kCardRadius),
+        boxShadow: _cardShadow(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,12 +651,12 @@ class _Card extends StatelessWidget {
               style: GoogleFonts.notoSansKr(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: _C.primary,
+                color: context.primary,
                 letterSpacing: 0.4,
               ),
             ),
           ),
-          const Divider(height: 1, color: Color(0xFFF0F0F0)),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
           Padding(
             padding: const EdgeInsets.all(16),
             child: child,
@@ -646,7 +686,7 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: _C.primary),
+          Icon(icon, size: 20, color: context.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -656,7 +696,7 @@ class _InfoRow extends StatelessWidget {
                   label,
                   style: GoogleFonts.notoSansKr(
                     fontSize: 11,
-                    color: _C.textGrey,
+                    color: context.onSurfaceVar,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -668,7 +708,7 @@ class _InfoRow extends StatelessWidget {
                         value,
                         style: GoogleFonts.notoSansKr(
                           fontSize: 14,
-                          color: _C.textDark,
+                          color: context.onSurface,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -693,23 +733,24 @@ class _VerifiedBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: _C.primary.withValues(alpha: 0.1),
+        color: p.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.verified_rounded, size: 12, color: _C.primary),
+          Icon(Icons.verified_rounded, size: 12, color: p),
           const SizedBox(width: 3),
           Text(
             AppLocalizations.of(context)!.profileVerified,
             style: GoogleFonts.notoSansKr(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: _C.primary,
+              color: p,
             ),
           ),
         ],
@@ -733,33 +774,34 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final outline = context.outline;
+    final p = context.primary;
     return TextField(
       controller: controller,
       readOnly: readOnly,
       style: GoogleFonts.notoSansKr(
         fontSize: 14,
-        color: readOnly ? _C.textGrey : _C.textDark,
+        color: readOnly ? context.onSurfaceVar : context.onSurface,
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: GoogleFonts.notoSansKr(fontSize: 13, color: _C.textGrey),
-        prefixIcon: Icon(icon, size: 20, color: _C.primary),
+        labelStyle:
+            GoogleFonts.notoSansKr(fontSize: 13, color: context.onSurfaceVar),
+        prefixIcon: Icon(icon, size: 20, color: p),
         filled: true,
-        fillColor: readOnly
-            ? const Color(0xFFF5F7FA)
-            : Colors.white,
+        fillColor: readOnly ? context.surfaceVar : context.cardFill,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+          borderSide: BorderSide(color: outline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _C.primary, width: 1.5),
+          borderSide: BorderSide(color: p, width: 1.5),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
+          borderSide: BorderSide(color: outline.withValues(alpha: 0.5)),
         ),
       ),
     );
@@ -786,13 +828,13 @@ class _TapField extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.cardFill,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+          border: Border.all(color: context.outline),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: _C.primary),
+            Icon(icon, size: 20, color: context.primary),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -802,7 +844,7 @@ class _TapField extends StatelessWidget {
                     label,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 11,
-                      color: _C.textGrey,
+                      color: context.onSurfaceVar,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -810,15 +852,15 @@ class _TapField extends StatelessWidget {
                     value,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 14,
-                      color: _C.textDark,
+                      color: context.onSurface,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded,
-                color: _C.textGrey, size: 20),
+            Icon(Icons.keyboard_arrow_down_rounded,
+                color: context.onSurfaceVar, size: 20),
           ],
         ),
       ),
@@ -839,8 +881,9 @@ class _SaveButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isSaving ? null : onSave,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _C.primary,
-          disabledBackgroundColor: _C.primary.withValues(alpha: 0.6),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          disabledBackgroundColor:
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
           foregroundColor: Colors.white,
           shape: const StadiumBorder(),
           elevation: 0,
@@ -912,9 +955,9 @@ class _PickerSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: context.cardFill,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.only(top: 12, bottom: 24),
       child: Column(
@@ -925,7 +968,7 @@ class _PickerSheet extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: const Color(0xFFE0E0E0),
+              color: context.outline,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -935,7 +978,7 @@ class _PickerSheet extends StatelessWidget {
             style: GoogleFonts.notoSansKr(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: _C.textDark,
+              color: context.onSurface,
             ),
           ),
           const SizedBox(height: 8),
@@ -955,11 +998,14 @@ class _PickerSheet extends StatelessWidget {
                     fontSize: 14,
                     fontWeight:
                         selected ? FontWeight.w700 : FontWeight.w400,
-                    color: selected ? _C.primary : _C.textDark,
+                    color: selected
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 trailing: selected
-                    ? const Icon(Icons.check_rounded, color: _C.primary)
+                    ? Icon(Icons.check_rounded,
+                        color: Theme.of(context).colorScheme.primary)
                     : null,
               );
             },

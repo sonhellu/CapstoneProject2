@@ -267,6 +267,15 @@
   "partnerPending": "대기 중…",
   "partnerAccepted": "수락됨!",
 
+  "partnerRequestSentSuccess": "요청을 보냈습니다.",
+  "partnerRequestNotSignedIn": "로그인한 후 요청을 보내세요.",
+  "partnerRequestProfileMissing": "이 사용자의 프로필이 없습니다.",
+  "partnerRequestAlreadyPending": "이미 이 사용자에게 보낸 대기 중인 요청이 있습니다.",
+  "partnerRequestIncomingPending": "상대방이 이미 요청을 보냈습니다. Chat 탭에서 수락하세요.",
+  "partnerRequestAlreadyAccepted": "이미 연결되어 있습니다.",
+  "partnerRequestPreviouslyDeclined": "이전 요청이 거절되었습니다. 아직 다시 보낼 수 없습니다.",
+  "partnerRequestFailed": "요청을 보낼 수 없습니다. 다시 시도하세요.",
+
   "chatSearchConversations": "대화 검색…",
   "chatEmptyTitle": "아직 대화가 없습니다",
   "chatEmptySubtitle": "언어 파트너를 찾아 대화를 시작하세요!",
@@ -276,7 +285,21 @@
   "chatFilterTargetLanguage": "배우고 싶은 언어",
   "chatFilterFindPartners": "파트너 찾기",
   "chatRequestPending": "요청 대기 중…",
+  "chatRequestsIncoming": "받은 요청",
+  "chatRequestBannerSubtitle": "연결 요청을 보냈습니다 👋",
+  "chatRequestAccept": "수락",
+  "chatRequestDecline": "거절",
   "chatFilterLanguageAny": "전체",
+  "chatDisconnectedListSubtitle": "Paused — open chat to reconnect",
+  "chatDisconnectMenu": "Pause connection",
+  "chatDisconnectConfirmTitle": "Pause this chat?",
+  "chatDisconnectConfirmBody": "You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.",
+  "chatReconnect": "Reconnect",
+  "chatDisconnectedBanner": "Connection paused. Reconnect to send messages.",
+  "chatSendBlockedDisconnected": "Reconnect to send messages.",
+  "chatDisconnectSuccess": "Chat paused.",
+  "chatReconnectSuccess": "Connection restored.",
+
 
   "authSuccessLogin": "다시 오신 것을 환영합니다!",
   "authSuccessRegister": "가입 완료! 이메일을 인증해 주세요.",
@@ -304,12 +327,41 @@
   "@verifyEmailResendCooldown": {
     "placeholders": { "seconds": { "type": "int" } }
   },
-  "authUniEmailLabel": "학교 이메일",
-  "authUniEmailHint": "이메일 아이디",
-  "authUniSelectHint": "학교 선택",
-  "authUniPickerTitle": "학교 선택",
-  "authUniSearchHint": "학교 또는 도메인 검색…",
-  "verifyEmailSent": "인증 이메일이 전송되었습니다. 받은 편지함을 확인해 주세요.",
-  "verifyEmailNotYet": "아직 이메일이 인증되지 않았습니다. 받은 편지함을 확인해 주세요.",
-  "authSuccessVerified": "이메일 인증 완료! 로그인해 주세요."
+
+  "authSuccessVerified": "이메일이 인증되었습니다! 로그인하세요.",
+  "verifyEmailNotYet": "아직 이메일이 인증되지 않았습니다. 받은 편지함을 확인하세요.",
+
+  "errorChatRequestNotFound": "이 요청이 더 이상 존재하지 않습니다.",
+  "errorChatRequestNotPending": "이 요청은 이미 처리되었습니다.",
+  "errorTransactionAborted": "연결이 바쁩니다 — 다시 시도해 주세요.",
+  "errorNetwork": "네트워크 오류. 연결을 확인하세요.",
+  "errorPermissionDenied": "이 작업을 수행할 권한이 없습니다.",
+  "errorNotFound": "요청한 항목을 찾을 수 없습니다.",
+  "errorDataConflict": "데이터 충돌. 새로고침 후 다시 시도해 주세요.",
+  "errorUnexpected": "예기치 않은 오류가 발생했습니다. 다시 시도해 주세요.",
+
+  "mapDistanceFromYouMeters": "내 위치에서 {meters}m",
+  "@mapDistanceFromYouMeters": {
+    "placeholders": { "meters": { "type": "int" } }
+  },
+  "mapDistanceFromYouKilometers": "내 위치에서 {km}km",
+  "@mapDistanceFromYouKilometers": {
+    "placeholders": { "km": { "type": "String" } }
+  },
+
+  "postMenuEdit": "수정",
+  "postMenuDelete": "삭제",
+  "postUpdateSuccess": "게시물이 수정되었습니다",
+  "postEditSheetTitle": "게시물 수정",
+  "postEditTitleLabel": "제목",
+  "postEditContentLabel": "내용",
+  "postEditUpdateBtn": "수정",
+  "postDeleteSuccess": "게시물이 삭제되었습니다",
+  "postDeleteTitle": "게시물 삭제",
+  "postDeleteMessage": "이 게시물을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+  "postDeleteCancel": "취소",
+  "postDeleteConfirm": "삭제",
+  "postTranslating": "번역 중…",
+  "postShowOriginal": "원문 보기",
+  "postTranslate": "번역"
 }

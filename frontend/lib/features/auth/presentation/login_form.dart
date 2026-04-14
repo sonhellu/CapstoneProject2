@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/feedback/app_snackbar.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../utils/auth_validators.dart';
@@ -14,13 +15,11 @@ class LoginForm extends HookWidget {
   const LoginForm({super.key});
 
   void _snack(BuildContext context, String msg, {bool success = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg, style: const TextStyle(color: Colors.white)),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: success ? const Color(0xFF2E7D32) : null,
-      ),
-    );
+    if (success) {
+      showSuccessSnackBar(context, msg);
+    } else {
+      showErrorTextSnackBar(context, msg);
+    }
   }
 
   @override

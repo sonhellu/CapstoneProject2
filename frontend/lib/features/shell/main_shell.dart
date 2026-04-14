@@ -1,13 +1,20 @@
+import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../core/services/notification_service.dart';
+import '../../../core/theme/theme_ext.dart';
+import '../../../core/widgets/in_app_notification_banner.dart';
 import '../../../l10n/app_localizations.dart';
+import '../chat/chat_controller.dart';
+import '../chat/repository/user_repository.dart';
 import '../chat/chat_tab_screen.dart';
 import '../home/home_tab_screen.dart';
 import '../maps/maps_tab_screen.dart';
 import '../profile/profile_tab_screen.dart';
-import 'theme/shell_theme.dart';
 import 'widgets/floating_bottom_nav.dart';
 import 'widgets/map_loading_overlay.dart';
 
@@ -36,7 +43,56 @@ class _MainShellState extends State<MainShell> {
   bool _isTabFading = false;
 
   final math.Random _random = math.Random();
+  StreamSubscription? _newRequestSub;
 
+  @override
+  void initState() {
+    super.initState();
+    if (!kIsWeb) _initNotifications();
+    _listenNewRequests();
+  }
+
+  void _listenNewRequests() {
+    final ctrl = context.read<ChatController>();
+    _newRequestSub = ctrl.newRequests.listen((req) {
+      if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
+      InAppNotificationBanner.show(
+        context: context,
+        title: req.sender.name,
+        subtitle: l.chatRequestBannerSubtitle,
+        avatarInitial: req.sender.avatarInitial,
+        onTap: () => setState(() => _selectedIndex = 1),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _newRequestSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initNotifications() async {
+    // Read uid synchronously before any await.
+    final uid = context.read<ChatController>().currentUid;
+
+    final ns = NotificationService.instance;
+    await ns.initialize(
+      onTap: (convId) {
+        if (mounted) setState(() => _selectedIndex = 1);
+      },
+    );
+
+    ns.listenTokenRefresh((newToken) {
+      if (uid.isNotEmpty) UserRepository.instance.saveFcmToken(uid, newToken);
+    });
+
+    final token = await ns.getToken();
+    if (token != null && uid.isNotEmpty) {
+      await UserRepository.instance.saveFcmToken(uid, token);
+    }
+  }
 
   late final List<Widget> _pages = [
     HomeTabScreen(bannerCarouselAutoPlay: widget.homeCarouselAutoPlay),
@@ -74,6 +130,8 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final ctrl = context.watch<ChatController>();
+
     final navItems = [
       NavItemData(
         icon: Icons.home_outlined,
@@ -98,7 +156,7 @@ class _MainShellState extends State<MainShell> {
     ];
 
     return Scaffold(
-      backgroundColor: ShellColors.background,
+      backgroundColor: context.bg,
       extendBody: true,
       body: Stack(
         fit: StackFit.expand,
@@ -124,19 +182,22 @@ class _MainShellState extends State<MainShell> {
         ],
       ),
       bottomNavigationBar: Container(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Thin divider — separates content from nav bar (Instagram style)
-            const Divider(height: 1, thickness: 0.5, color: Color(0xFFE0E0E0)),
+            Divider(
+              height: 1,
+              thickness: 0.5,
+              color: Theme.of(context).dividerColor,
+            ),
             SafeArea(
               top: false,
               child: FloatingBottomNav(
                 currentIndex: _selectedIndex,
                 onTap: _onNavTap,
                 items: navItems,
-                chatBadgeCount: 3,
+                chatBadgeCount: ctrl.totalUnread,
               ),
             ),
           ],

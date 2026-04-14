@@ -266,6 +266,14 @@
   "partnerSendRequest": "发送请求",
   "partnerPending": "等待中…",
   "partnerAccepted": "已接受！",
+  "partnerRequestSentSuccess": "请求已发送。",
+  "partnerRequestNotSignedIn": "请先登录再发送请求。",
+  "partnerRequestProfileMissing": "该用户暂无资料。",
+  "partnerRequestAlreadyPending": "您已向此人发送待处理的请求。",
+  "partnerRequestIncomingPending": "对方已向您发送请求。请打开“聊天”标签接受。",
+  "partnerRequestAlreadyAccepted": "你们已连接。",
+  "partnerRequestPreviouslyDeclined": "之前的请求已被拒绝，暂时无法再次发送。",
+  "partnerRequestFailed": "无法发送请求，请重试。",
 
   "chatSearchConversations": "搜索会话…",
   "chatEmptyTitle": "暂无会话",
@@ -276,7 +284,21 @@
   "chatFilterTargetLanguage": "想学的语言",
   "chatFilterFindPartners": "查找伙伴",
   "chatRequestPending": "请求待处理…",
+  "chatRequestsIncoming": "收到的请求",
+  "chatRequestBannerSubtitle": "想与你建立联系 👋",
+  "chatRequestAccept": "接受",
+  "chatRequestDecline": "拒绝",
   "chatFilterLanguageAny": "不限",
+  "chatDisconnectedListSubtitle": "Paused — open chat to reconnect",
+  "chatDisconnectMenu": "Pause connection",
+  "chatDisconnectConfirmTitle": "Pause this chat?",
+  "chatDisconnectConfirmBody": "You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.",
+  "chatReconnect": "Reconnect",
+  "chatDisconnectedBanner": "Connection paused. Reconnect to send messages.",
+  "chatSendBlockedDisconnected": "Reconnect to send messages.",
+  "chatDisconnectSuccess": "Chat paused.",
+  "chatReconnectSuccess": "Connection restored.",
+
 
   "authSuccessLogin": "欢迎回来！",
   "authSuccessRegister": "注册成功！请验证您的电子邮件。",
@@ -304,12 +326,41 @@
   "@verifyEmailResendCooldown": {
     "placeholders": { "seconds": { "type": "int" } }
   },
-  "authUniEmailLabel": "学校邮箱",
-  "authUniEmailHint": "邮箱账号",
-  "authUniSelectHint": "选择学校",
-  "authUniPickerTitle": "选择学校",
-  "authUniSearchHint": "搜索学校或域名…",
-  "verifyEmailSent": "验证邮件已发送，请检查您的收件箱。",
+
+  "authSuccessVerified": "邮箱已验证！请登录。",
   "verifyEmailNotYet": "邮箱尚未验证，请检查您的收件箱。",
-  "authSuccessVerified": "邮箱验证成功！请登录。"
+
+  "errorChatRequestNotFound": "此请求已不存在。",
+  "errorChatRequestNotPending": "此请求已被处理。",
+  "errorTransactionAborted": "连接繁忙 — 请重试。",
+  "errorNetwork": "网络错误，请检查您的连接。",
+  "errorPermissionDenied": "您没有执行此操作的权限。",
+  "errorNotFound": "未找到请求的内容。",
+  "errorDataConflict": "数据冲突，请刷新后重试。",
+  "errorUnexpected": "发生意外错误，请重试。",
+
+  "mapDistanceFromYouMeters": "距您{meters}m",
+  "@mapDistanceFromYouMeters": {
+    "placeholders": { "meters": { "type": "int" } }
+  },
+  "mapDistanceFromYouKilometers": "距您{km}km",
+  "@mapDistanceFromYouKilometers": {
+    "placeholders": { "km": { "type": "String" } }
+  },
+
+  "postMenuEdit": "编辑",
+  "postMenuDelete": "删除",
+  "postUpdateSuccess": "帖子已更新",
+  "postEditSheetTitle": "编辑帖子",
+  "postEditTitleLabel": "标题",
+  "postEditContentLabel": "内容",
+  "postEditUpdateBtn": "更新",
+  "postDeleteSuccess": "帖子已删除",
+  "postDeleteTitle": "删除帖子",
+  "postDeleteMessage": "您确定要删除这篇帖子吗？此操作无法撤销。",
+  "postDeleteCancel": "取消",
+  "postDeleteConfirm": "删除",
+  "postTranslating": "翻译中…",
+  "postShowOriginal": "显示原文",
+  "postTranslate": "翻译"
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import '../../../core/theme/theme_ext.dart';
 import '../../../core/widgets/language_picker_button.dart';
 import '../../../l10n/app_localizations.dart';
-import '../theme/auth_theme.dart';
 import 'login_form.dart';
 import 'register_form.dart';
 import 'widgets/auth_card.dart';
@@ -21,7 +21,7 @@ class AuthScreen extends HookWidget {
     final l = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AuthColors.background,
+      backgroundColor: context.bg,
       body: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -82,7 +82,7 @@ class AuthScreen extends HookWidget {
                                               .titleLarge
                                               ?.copyWith(
                                                 fontWeight: FontWeight.w800,
-                                                color: AuthColors.textPrimary,
+                                                color: context.onSurface,
                                               ),
                                         ),
                                         const SizedBox(height: 4),
@@ -92,7 +92,7 @@ class AuthScreen extends HookWidget {
                                               .textTheme
                                               .bodySmall
                                               ?.copyWith(
-                                                color: AuthColors.textSecondary,
+                                                color: context.onSurfaceVar,
                                               ),
                                         ),
                                         const SizedBox(height: 22),
@@ -111,7 +111,7 @@ class AuthScreen extends HookWidget {
                                               .titleLarge
                                               ?.copyWith(
                                                 fontWeight: FontWeight.w800,
-                                                color: AuthColors.textPrimary,
+                                                color: context.onSurface,
                                               ),
                                         ),
                                         const SizedBox(height: 4),
@@ -121,7 +121,7 @@ class AuthScreen extends HookWidget {
                                               .textTheme
                                               .bodySmall
                                               ?.copyWith(
-                                                color: AuthColors.textSecondary,
+                                                color: context.onSurfaceVar,
                                               ),
                                         ),
                                         const SizedBox(height: 22),
@@ -139,7 +139,7 @@ class AuthScreen extends HookWidget {
                                     ? l.authFooterNoAccount
                                     : l.authFooterHasAccount,
                                 style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(color: AuthColors.textSecondary),
+                                    ?.copyWith(color: context.onSurfaceVar),
                               ),
                               TextButton(
                                 onPressed: () {
@@ -148,7 +148,7 @@ class AuthScreen extends HookWidget {
                                       : AuthMode.login;
                                 },
                                 style: TextButton.styleFrom(
-                                  foregroundColor: AuthColors.primary,
+                                  foregroundColor: context.primary,
                                   textStyle: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                   ),

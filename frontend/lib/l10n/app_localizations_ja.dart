@@ -724,6 +724,31 @@ class AppLocalizationsJa extends AppLocalizations {
   String get partnerAccepted => '承認済み！';
 
   @override
+  String get partnerRequestSentSuccess => 'リクエストを送信しました。';
+
+  @override
+  String get partnerRequestNotSignedIn => 'ログインしてからリクエストを送信してください。';
+
+  @override
+  String get partnerRequestProfileMissing => 'このユーザーのプロフィールがありません。';
+
+  @override
+  String get partnerRequestAlreadyPending => 'この相手への保留中のリクエストがすでにあります。';
+
+  @override
+  String get partnerRequestIncomingPending =>
+      '相手からすでにリクエストが届いています。チャットタブで承認してください。';
+
+  @override
+  String get partnerRequestAlreadyAccepted => 'すでに接続済みです。';
+
+  @override
+  String get partnerRequestPreviouslyDeclined => '以前のリクエストは辞退されました。まだ再送信できません。';
+
+  @override
+  String get partnerRequestFailed => 'リクエストを送信できませんでした。もう一度お試しください。';
+
+  @override
   String get chatSearchConversations => '会話を検索…';
 
   @override
@@ -751,7 +776,48 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatRequestPending => 'リクエスト保留中…';
 
   @override
+  String get chatRequestsIncoming => '受信したリクエスト';
+
+  @override
+  String get chatRequestBannerSubtitle => 'つながりたいようです 👋';
+
+  @override
+  String get chatRequestAccept => '承認';
+
+  @override
+  String get chatRequestDecline => '辞退';
+
+  @override
   String get chatFilterLanguageAny => '指定なし';
+
+  @override
+  String get chatDisconnectedListSubtitle => 'Paused — open chat to reconnect';
+
+  @override
+  String get chatDisconnectMenu => 'Pause connection';
+
+  @override
+  String get chatDisconnectConfirmTitle => 'Pause this chat?';
+
+  @override
+  String get chatDisconnectConfirmBody =>
+      'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.';
+
+  @override
+  String get chatReconnect => 'Reconnect';
+
+  @override
+  String get chatDisconnectedBanner =>
+      'Connection paused. Reconnect to send messages.';
+
+  @override
+  String get chatSendBlockedDisconnected => 'Reconnect to send messages.';
+
+  @override
+  String get chatDisconnectSuccess => 'Chat paused.';
+
+  @override
+  String get chatReconnectSuccess => 'Connection restored.';
 
   @override
   String get authSuccessLogin => 'おかえりなさい！';
@@ -808,26 +874,87 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get authUniEmailLabel => '大学メール';
-
-  @override
-  String get authUniEmailHint => 'メールID';
-
-  @override
-  String get authUniSelectHint => '大学を選択';
-
-  @override
-  String get authUniPickerTitle => '大学を選択';
-
-  @override
-  String get authUniSearchHint => '大学またはドメインで検索…';
-
-  @override
-  String get verifyEmailSent => '確認メールを送信しました。受信トレイをご確認ください。';
+  String get authSuccessVerified => 'メールアドレスが確認されました！サインインしてください。';
 
   @override
   String get verifyEmailNotYet => 'まだメールが確認されていません。受信トレイをご確認ください。';
 
   @override
-  String get authSuccessVerified => 'メール認証完了！ログインしてください。';
+  String get errorChatRequestNotFound => 'このリクエストはもう存在しません。';
+
+  @override
+  String get errorChatRequestNotPending => 'このリクエストはすでに処理されました。';
+
+  @override
+  String get errorTransactionAborted => '接続が混み合っています — もう一度お試しください。';
+
+  @override
+  String get errorNetwork => 'ネットワークエラー。接続を確認してください。';
+
+  @override
+  String get errorPermissionDenied => 'この操作を行う権限がありません。';
+
+  @override
+  String get errorNotFound => 'リクエストされたアイテムが見つかりません。';
+
+  @override
+  String get errorDataConflict => 'データの競合。更新してからもう一度お試しください。';
+
+  @override
+  String get errorUnexpected => '予期しないエラーが発生しました。もう一度お試しください。';
+
+  @override
+  String mapDistanceFromYouMeters(int meters) {
+    return '現在地から${meters}m';
+  }
+
+  @override
+  String mapDistanceFromYouKilometers(String km) {
+    return '現在地から${km}km';
+  }
+
+  @override
+  String get postMenuEdit => '編集';
+
+  @override
+  String get postMenuDelete => '削除';
+
+  @override
+  String get postUpdateSuccess => '投稿を更新しました';
+
+  @override
+  String get postEditSheetTitle => '投稿を編集';
+
+  @override
+  String get postEditTitleLabel => 'タイトル';
+
+  @override
+  String get postEditContentLabel => '内容';
+
+  @override
+  String get postEditUpdateBtn => '更新';
+
+  @override
+  String get postDeleteSuccess => '投稿を削除しました';
+
+  @override
+  String get postDeleteTitle => '投稿を削除';
+
+  @override
+  String get postDeleteMessage => 'この投稿を削除しますか？この操作は元に戻せません。';
+
+  @override
+  String get postDeleteCancel => 'キャンセル';
+
+  @override
+  String get postDeleteConfirm => '削除';
+
+  @override
+  String get postTranslating => '翻訳中…';
+
+  @override
+  String get postShowOriginal => '原文を表示';
+
+  @override
+  String get postTranslate => '翻訳';
 }

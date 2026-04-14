@@ -9,6 +9,7 @@ class University {
 
   String get defaultDomain => domains.first;
   bool get hasMultipleDomains => domains.length > 1;
+  String get logo => '🎓';
 }
 
 /// Combines [localPart] and [domain] into a full email address.
