@@ -404,6 +404,14 @@
   "partnerSendRequest": "Send request",
   "partnerPending": "Pending…",
   "partnerAccepted": "Accepted!",
+  "partnerRequestSentSuccess": "Request sent.",
+  "partnerRequestNotSignedIn": "Please sign in to send a request.",
+  "partnerRequestProfileMissing": "This user has no profile yet.",
+  "partnerRequestAlreadyPending": "You already have a pending request with this person.",
+  "partnerRequestIncomingPending": "They already sent you a request. Open Chat to accept it.",
+  "partnerRequestAlreadyAccepted": "You are already connected with this person.",
+  "partnerRequestPreviouslyDeclined": "A previous request was declined. You cannot send again yet.",
+  "partnerRequestFailed": "Could not send the request. Please try again.",
 
   "chatSearchConversations": "Search conversations…",
   "chatEmptyTitle": "No conversations yet",
@@ -414,7 +422,20 @@
   "chatFilterTargetLanguage": "Target language to learn",
   "chatFilterFindPartners": "Find partners",
   "chatRequestPending": "Request pending…",
+  "chatRequestsIncoming": "Incoming requests",
+  "chatRequestBannerSubtitle": "Wants to connect with you 👋",
+  "chatRequestAccept": "Accept",
+  "chatRequestDecline": "Decline",
   "chatFilterLanguageAny": "Any",
+  "chatDisconnectedListSubtitle": "Paused — open chat to reconnect",
+  "chatDisconnectMenu": "Pause connection",
+  "chatDisconnectConfirmTitle": "Pause this chat?",
+  "chatDisconnectConfirmBody": "You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.",
+  "chatReconnect": "Reconnect",
+  "chatDisconnectedBanner": "Connection paused. Reconnect to send messages.",
+  "chatSendBlockedDisconnected": "Reconnect to send messages.",
+  "chatDisconnectSuccess": "Chat paused.",
+  "chatReconnectSuccess": "Connection restored.",
 
   "authSuccessLogin": "Welcome back!",
   "authSuccessRegister": "Account created! Please verify your email.",
@@ -442,12 +463,41 @@
   "@verifyEmailResendCooldown": {
     "placeholders": { "seconds": { "type": "int" } }
   },
-  "authUniEmailLabel": "University Email",
-  "authUniEmailHint": "email",
-  "authUniSelectHint": "Select university",
-  "authUniPickerTitle": "Select University",
-  "authUniSearchHint": "Search university or domain…",
-  "verifyEmailSent": "Verification email sent. Please check your inbox.",
-  "verifyEmailNotYet": "Email not verified yet. Please check your inbox.",
-  "authSuccessVerified": "Email verified! Please log in."
+
+  "authSuccessVerified": "Email verified! Please sign in.",
+  "verifyEmailNotYet": "Email not yet verified. Please check your inbox.",
+
+  "errorChatRequestNotFound": "This request no longer exists.",
+  "errorChatRequestNotPending": "This request has already been handled.",
+  "errorTransactionAborted": "Connection busy — please try again.",
+  "errorNetwork": "Network error. Check your connection.",
+  "errorPermissionDenied": "You don't have permission to do that.",
+  "errorNotFound": "The requested item was not found.",
+  "errorDataConflict": "Data conflict. Please refresh and try again.",
+  "errorUnexpected": "An unexpected error occurred. Please try again.",
+
+  "mapDistanceFromYouMeters": "{meters}m from you",
+  "@mapDistanceFromYouMeters": {
+    "placeholders": { "meters": { "type": "int" } }
+  },
+  "mapDistanceFromYouKilometers": "{km}km from you",
+  "@mapDistanceFromYouKilometers": {
+    "placeholders": { "km": { "type": "String" } }
+  },
+
+  "postMenuEdit": "Edit",
+  "postMenuDelete": "Delete",
+  "postUpdateSuccess": "Post updated successfully",
+  "postEditSheetTitle": "Edit Post",
+  "postEditTitleLabel": "Title",
+  "postEditContentLabel": "Content",
+  "postEditUpdateBtn": "Update",
+  "postDeleteSuccess": "Post deleted",
+  "postDeleteTitle": "Delete Post",
+  "postDeleteMessage": "Are you sure you want to delete this post? This action cannot be undone.",
+  "postDeleteCancel": "Cancel",
+  "postDeleteConfirm": "Delete",
+  "postTranslating": "Translating…",
+  "postShowOriginal": "Show original",
+  "postTranslate": "Translate"
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/theme_ext.dart';
 import '../../theme/auth_theme.dart';
 
 class AuthCard extends StatelessWidget {
@@ -13,10 +14,10 @@ class AuthCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
       decoration: BoxDecoration(
-        color: AuthColors.surface,
+        color: context.cardFill,
         borderRadius: BorderRadius.circular(AuthRadii.lg),
-        boxShadow: AuthColors.cardShadow,
-        border: Border.all(color: AuthColors.border.withValues(alpha: 0.6)),
+        boxShadow: context.cardElevationShadow,
+        border: Border.all(color: context.outline.withValues(alpha: 0.6)),
       ),
       child: child,
     );

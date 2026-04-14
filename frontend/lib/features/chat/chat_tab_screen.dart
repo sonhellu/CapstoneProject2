@@ -1,27 +1,17 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-
-import '../../core/navigation/app_transitions.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../l10n/app_localizations.dart';
+import 'package:capstone_frontend/l10n/app_localizations.dart';
+import '../../core/navigation/app_transitions.dart';
+import '../../core/theme/theme_ext.dart';
+import 'chat_controller.dart';
 import 'chat_detail_screen.dart';
 import 'models/chat_models.dart';
 import 'search_partner_screen.dart';
-import 'services/chat_service.dart';
-
-// ─────────────────────────── Design Tokens ───────────────────────────
-abstract final class _T {
-  static const primary = Color(0xFF003478);
-  static const background = Color(0xFFF5F7FA);
-  static const textDark = Color(0xFF1A1A1A);
-  static const textGrey = Color(0xFF6A6A6A);
-  static const textLight = Color(0xFFADB5BD);
-  static const surface = Colors.white;
-  static const divider = Color(0xFFF0F2F5);
-}
 
 // ─────────────────────────── Screen ───────────────────────────
 class ChatTabScreen extends StatefulWidget {
@@ -35,14 +25,6 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   final _searchCtrl = TextEditingController();
   String _query = '';
   bool _isSearchOpen = false;
-  List<ChatModel> _chats = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadChats();
-  }
 
   @override
   void dispose() {
@@ -50,20 +32,10 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
     super.dispose();
   }
 
-  Future<void> _loadChats() async {
-    setState(() => _isLoading = true);
-    final chats = await ChatService.instance.getChatList();
-    if (!mounted) return;
-    setState(() {
-      _chats = chats;
-      _isLoading = false;
-    });
-  }
-
-  List<ChatModel> get _filtered {
-    if (_query.isEmpty) return _chats;
+  List<ChatModel> _filtered(List<ChatModel> chats) {
+    if (_query.isEmpty) return chats;
     final q = _query.toLowerCase();
-    return _chats
+    return chats
         .where((c) =>
             c.partner.name.toLowerCase().contains(q) ||
             c.lastMessage.toLowerCase().contains(q))
@@ -105,17 +77,19 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
     final safeBottom = mq.viewPadding.bottom;
     final navBarHeight = kBottomNavigationBarHeight + safeBottom;
     final fabBottomPadding = math.max(0.0, navBarHeight + 40.0);
+    final ctrl = context.watch<ChatController>();
 
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: _T.background,
+      backgroundColor: context.bg,
       floatingActionButton: Padding(
         padding: EdgeInsets.only(bottom: fabBottomPadding),
         child: FloatingActionButton(
           onPressed: _openMatchFilter,
-          backgroundColor: _T.primary,
+          backgroundColor: context.primary,
           elevation: 4,
-          child: const Icon(Icons.person_search_rounded,
-              color: Colors.white, size: 26),
+          child: Icon(Icons.person_search_rounded,
+              color: cs.onPrimary, size: 26),
         ),
       ),
       body: SafeArea(
@@ -125,41 +99,64 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
             _buildHeader(),
             if (_isSearchOpen) _buildSearchBar(),
             Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 340),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: (child, animation) => FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
-                child: _isLoading
-                    ? _buildSkeleton()
-                    : _filtered.isEmpty
-                        ? _buildEmpty()
-                        : RefreshIndicator(
-                            key: const ValueKey('chat-list'),
-                            onRefresh: _loadChats,
-                            color: _T.primary,
-                            child: ListView.separated(
-                              padding:
-                                  EdgeInsets.only(bottom: navBarHeight + 16),
-                              itemCount: _filtered.length,
-                              separatorBuilder: (_, _) => const Divider(
-                                height: 1,
-                                indent: 80,
-                                color: _T.divider,
-                              ),
-                              itemBuilder: (context, i) => _ChatTile(
-                                chat: _filtered[i],
-                                onTap: () => Navigator.of(context).push(
-                                  AppTransitions.fadeSlide(
-                                    ChatDetailScreen(chat: _filtered[i]),
+              child: CustomScrollView(
+                slivers: [
+                  // ── Incoming requests section ──
+                  StreamBuilder<List<ChatRequestModel>>(
+                    stream: ctrl.incomingRequests,
+                    builder: (context, snap) {
+                      final requests = snap.data ?? [];
+                      if (requests.isEmpty) return const SliverToBoxAdapter();
+                      return SliverToBoxAdapter(
+                        child: _IncomingRequestsSection(
+                          requests: requests,
+                          ctrl: ctrl,
+                        ),
+                      );
+                    },
+                  ),
+                  // ── Chat list ──
+                  StreamBuilder<List<ChatModel>>(
+                    stream: ctrl.chats,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return SliverFillRemaining(child: _buildSkeleton());
+                      }
+                      final chats = _filtered(snapshot.data ?? []);
+                      if (chats.isEmpty) {
+                        return SliverFillRemaining(child: _buildEmpty());
+                      }
+                      return SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, i) {
+                            final chat = chats[i];
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _ChatTile(
+                                  chat: chat,
+                                  onTap: () => Navigator.of(context).push(
+                                    AppTransitions.fadeSlide(
+                                      ChatDetailScreen(chat: chat),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ),
+                                if (i < chats.length - 1)
+                                  Divider(
+                                      height: 1,
+                                      indent: 80,
+                                      color: Theme.of(context).dividerColor),
+                              ],
+                            );
+                          },
+                          childCount: chats.length,
+                        ),
+                      );
+                    },
+                  ),
+                  SliverToBoxAdapter(
+                      child: SizedBox(height: navBarHeight + 16)),
+                ],
               ),
             ),
           ],
@@ -170,8 +167,9 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
 
   Widget _buildHeader() {
     final l = AppLocalizations.of(context)!;
+    final onS = context.onSurface;
     return Container(
-      color: _T.surface,
+      color: context.cardFill,
       padding: const EdgeInsets.fromLTRB(20, 16, 8, 12),
       child: Row(
         children: [
@@ -181,7 +179,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
               style: GoogleFonts.notoSansKr(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: _T.primary,
+                color: context.primary,
                 letterSpacing: -0.5,
               ),
             ),
@@ -189,12 +187,12 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
           IconButton(
             icon: Icon(
               _isSearchOpen ? Icons.close_rounded : Icons.search_rounded,
-              color: _T.textDark,
+              color: onS,
             ),
             onPressed: () => _openSearch(!_isSearchOpen),
           ),
           IconButton(
-            icon: const Icon(Icons.more_vert_rounded, color: _T.textDark),
+            icon: Icon(Icons.more_vert_rounded, color: onS),
             onPressed: () {},
           ),
         ],
@@ -205,22 +203,22 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   Widget _buildSearchBar() {
     final l = AppLocalizations.of(context)!;
     return Container(
-      color: _T.surface,
+      color: context.cardFill,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: TextField(
         controller: _searchCtrl,
         autofocus: true,
         onChanged: (v) => setState(() => _query = v),
         style:
-            GoogleFonts.notoSansKr(fontSize: 14, color: _T.textDark),
+            GoogleFonts.notoSansKr(fontSize: 14, color: context.onSurface),
         decoration: InputDecoration(
           hintText: l.chatSearchConversations,
           hintStyle: GoogleFonts.notoSansKr(
-              fontSize: 14, color: _T.textLight),
-          prefixIcon: const Icon(Icons.search_rounded,
-              size: 20, color: _T.textGrey),
+              fontSize: 14, color: context.hintColor),
+          prefixIcon: Icon(Icons.search_rounded,
+              size: 20, color: context.onSurfaceVar),
           filled: true,
-          fillColor: _T.background,
+          fillColor: context.bg,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           border: OutlineInputBorder(
@@ -234,6 +232,8 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
 
   Widget _buildEmpty() {
     final l = AppLocalizations.of(context)!;
+    final p = context.primary;
+    final cs = Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -242,13 +242,13 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: _T.primary.withValues(alpha: 0.07),
+              color: p.withValues(alpha: 0.07),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.chat_bubble_outline_rounded,
               size: 48,
-              color: _T.primary.withValues(alpha: 0.4),
+              color: p.withValues(alpha: 0.4),
             ),
           ),
           const SizedBox(height: 20),
@@ -257,28 +257,28 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
             style: GoogleFonts.notoSansKr(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: _T.textDark,
+              color: context.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             l.chatEmptySubtitle,
             style: GoogleFonts.notoSansKr(
-                fontSize: 13, color: _T.textGrey),
+                fontSize: 13, color: context.onSurfaceVar),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _openMatchFilter,
-            icon: const Icon(Icons.person_search_rounded, size: 18),
+            icon: Icon(Icons.person_search_rounded, size: 18, color: cs.onPrimary),
             label: Text(
               l.chatFindPartnerButton,
               style: GoogleFonts.notoSansKr(
                   fontSize: 14, fontWeight: FontWeight.w700),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: _T.primary,
-              foregroundColor: Colors.white,
+              backgroundColor: p,
+              foregroundColor: cs.onPrimary,
               padding: const EdgeInsets.symmetric(
                   horizontal: 24, vertical: 12),
               shape: const StadiumBorder(),
@@ -291,17 +291,230 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
   }
 
   Widget _buildSkeleton() {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Shimmer.fromColors(
       key: const ValueKey('skeleton'),
-      baseColor: const Color(0xFFEEEFF1),
-      highlightColor: const Color(0xFFFAFAFB),
+      baseColor: dark ? const Color(0xFF2A2A2A) : const Color(0xFFEEEFF1),
+      highlightColor: dark ? const Color(0xFF3D3D3D) : const Color(0xFFFAFAFB),
       period: const Duration(milliseconds: 1200),
       child: ListView.separated(
         physics: const NeverScrollableScrollPhysics(),
         itemCount: 6,
-        separatorBuilder: (_, _) =>
-            const Divider(height: 1, indent: 80, color: _T.divider),
-        itemBuilder: (_, _) => const _SkeletonTile(),
+        separatorBuilder: (ctx, _) =>
+            Divider(height: 1, indent: 80, color: Theme.of(ctx).dividerColor),
+        itemBuilder: (_, __) => const _SkeletonTile(),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────── Incoming Requests Section ───────────────────────────
+class _IncomingRequestsSection extends StatelessWidget {
+  const _IncomingRequestsSection({
+    required this.requests,
+    required this.ctrl,
+  });
+
+  final List<ChatRequestModel> requests;
+  final ChatController ctrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Container(
+      color: context.cardFill,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF5722),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  l.chatRequestsIncoming,
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: context.onSurfaceVar,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF5722),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${requests.length}',
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ...requests.map((req) => _RequestTile(
+                request: req,
+                onAccept: () => ctrl.acceptRequest(req.id),
+                onDecline: () => ctrl.declineRequest(req.id),
+                onAccepted: (convId) {
+                  if (!context.mounted) return;
+                  Navigator.of(context).push(
+                    AppTransitions.fadeSlide(
+                      ChatDetailScreen(
+                        chat: ChatModel(
+                          id: convId,
+                          partner: req.sender,
+                          lastMessage: '',
+                          lastTime: '',
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              )),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
+        ],
+      ),
+    );
+  }
+}
+
+class _RequestTile extends StatefulWidget {
+  const _RequestTile({
+    required this.request,
+    required this.onAccept,
+    required this.onDecline,
+    required this.onAccepted,
+  });
+
+  final ChatRequestModel request;
+  final Future<String> Function() onAccept;
+  final Future<void> Function() onDecline;
+  /// Called with the new [convId] after [onAccept] completes successfully.
+  final void Function(String convId) onAccepted;
+
+  @override
+  State<_RequestTile> createState() => _RequestTileState();
+}
+
+class _RequestTileState extends State<_RequestTile> {
+  bool _loading = false;
+
+  Future<void> _handleAccept() async {
+    setState(() => _loading = true);
+    try {
+      final convId = await widget.onAccept();
+      if (mounted) widget.onAccepted(convId);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _handle(Future<void> Function() action) async {
+    setState(() => _loading = true);
+    try {
+      await action();
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final sender = widget.request.sender;
+    final p = context.primary;
+    final cs = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          _Avatar(
+              initial: sender.avatarInitial, size: 44, fontSize: 16),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  sender.name,
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: context.onSurface,
+                  ),
+                ),
+                Text(
+                  '${sender.nativeLanguage} → ${sender.learningLanguage}',
+                  style: GoogleFonts.notoSansKr(
+                      fontSize: 11, color: context.onSurfaceVar),
+                ),
+              ],
+            ),
+          ),
+          if (_loading)
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: p),
+            )
+          else ...[
+            // Decline
+            OutlinedButton(
+              onPressed: () => _handle(widget.onDecline),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 6),
+                minimumSize: Size.zero,
+                side: BorderSide(color: context.outline.withValues(alpha: 0.5)),
+                shape: const StadiumBorder(),
+              ),
+              child: Text(
+                l.chatRequestDecline,
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: context.onSurfaceVar),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Accept
+            ElevatedButton(
+              onPressed: _handleAccept,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: p,
+                foregroundColor: cs.onPrimary,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 6),
+                minimumSize: Size.zero,
+                elevation: 0,
+                shape: const StadiumBorder(),
+              ),
+              child: Text(
+                l.chatRequestAccept,
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -317,6 +530,8 @@ class _ChatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final hasUnread = chat.unreadCount > 0;
+    final p = context.primary;
+    final ring = Theme.of(context).colorScheme.surface;
 
     return InkWell(
       onTap: onTap,
@@ -343,7 +558,7 @@ class _ChatTile extends StatelessWidget {
                         color: const Color(0xFF4CAF50),
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: _T.surface, width: 2),
+                            color: ring, width: 2),
                       ),
                     ),
                   ),
@@ -365,7 +580,7 @@ class _ChatTile extends StatelessWidget {
                             fontWeight: hasUnread
                                 ? FontWeight.w700
                                 : FontWeight.w600,
-                            color: _T.textDark,
+                            color: context.onSurface,
                           ),
                         ),
                       ),
@@ -374,8 +589,8 @@ class _ChatTile extends StatelessWidget {
                         style: GoogleFonts.notoSansKr(
                           fontSize: 11,
                           color: hasUnread
-                              ? _T.primary
-                              : _T.textLight,
+                              ? p
+                              : context.hintColor,
                           fontWeight: hasUnread
                               ? FontWeight.w600
                               : FontWeight.w400,
@@ -388,16 +603,18 @@ class _ChatTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          chat.isActive
-                              ? chat.lastMessage
-                              : '⏳ ${l.chatRequestPending}',
+                          chat.isDisconnected
+                              ? l.chatDisconnectedListSubtitle
+                              : chat.isActive
+                                  ? chat.lastMessage
+                                  : '⏳ ${l.chatRequestPending}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.notoSansKr(
                             fontSize: 13,
                             color: hasUnread
-                                ? _T.textDark
-                                : _T.textGrey,
+                                ? context.onSurface
+                                : context.onSurfaceVar,
                             fontWeight: hasUnread
                                 ? FontWeight.w500
                                 : FontWeight.w400,
@@ -409,8 +626,8 @@ class _ChatTile extends StatelessWidget {
                           margin: const EdgeInsets.only(left: 8),
                           width: 20,
                           height: 20,
-                          decoration: const BoxDecoration(
-                            color: _T.primary,
+                          decoration: BoxDecoration(
+                            color: p,
                             shape: BoxShape.circle,
                           ),
                           alignment: Alignment.center,
@@ -419,7 +636,7 @@ class _ChatTile extends StatelessWidget {
                             style: GoogleFonts.notoSansKr(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onPrimary,
                             ),
                           ),
                         ),
@@ -456,11 +673,13 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final safeBottom = MediaQuery.of(context).padding.bottom;
+    final p = context.primary;
+    final cs = Theme.of(context).colorScheme;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: EdgeInsets.fromLTRB(20, 0, 20, safeBottom + 20),
       child: Column(
@@ -474,7 +693,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFFDDDDDD),
+                color: context.outline.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -486,11 +705,11 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: _T.primary.withValues(alpha: 0.08),
+                  color: p.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.person_search_rounded,
-                    color: _T.primary, size: 20),
+                child: Icon(Icons.person_search_rounded,
+                    color: p, size: 20),
               ),
               const SizedBox(width: 12),
               Text(
@@ -498,7 +717,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: _T.textDark,
+                  color: context.onSurface,
                 ),
               ),
             ],
@@ -510,7 +729,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
             style: GoogleFonts.notoSansKr(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: _T.textGrey,
+              color: context.onSurfaceVar,
             ),
           ),
           const SizedBox(height: 10),
@@ -531,13 +750,13 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: selected
-                          ? _T.primary
-                          : const Color(0xFFF5F7FA),
+                          ? p
+                          : context.subtleFill,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: selected
-                            ? _T.primary
-                            : const Color(0xFFE0E4EA),
+                            ? p
+                            : context.outline.withValues(alpha: 0.45),
                       ),
                     ),
                     alignment: Alignment.center,
@@ -547,7 +766,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color:
-                            selected ? Colors.white : _T.textGrey,
+                            selected ? cs.onPrimary : context.onSurfaceVar,
                       ),
                     ),
                   ),
@@ -562,7 +781,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
             style: GoogleFonts.notoSansKr(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: _T.textGrey,
+              color: context.onSurfaceVar,
             ),
           ),
           const SizedBox(height: 10),
@@ -581,13 +800,13 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                       horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: selected
-                        ? _T.primary
-                        : const Color(0xFFF5F7FA),
+                        ? p
+                        : context.subtleFill,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: selected
-                          ? _T.primary
-                          : const Color(0xFFE0E4EA),
+                          ? p
+                          : context.outline.withValues(alpha: 0.45),
                     ),
                   ),
                   child: Text(
@@ -596,7 +815,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color:
-                          selected ? Colors.white : _T.textGrey,
+                          selected ? cs.onPrimary : context.onSurfaceVar,
                     ),
                   ),
                 ),
@@ -609,7 +828,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () => widget.onFind(_gender, _language),
-              icon: const Icon(Icons.search_rounded, size: 18),
+              icon: Icon(Icons.search_rounded, size: 18, color: cs.onPrimary),
               label: Text(
                 l.chatFilterFindPartners,
                 style: GoogleFonts.notoSansKr(
@@ -618,8 +837,8 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _T.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: p,
+                foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: const StadiumBorder(),
                 elevation: 0,
@@ -634,16 +853,13 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
 
 // ─────────────────────────── Skeleton Tile ───────────────────────────
 /// Mirrors [_ChatTile] layout exactly so the shimmer transition feels natural.
-/// Shimmer colour is driven by the parent [Shimmer.fromColors] — these boxes
-/// must be white so the gradient shows through correctly.
+/// Shimmer colour is driven by the parent [Shimmer.fromColors].
 class _SkeletonTile extends StatelessWidget {
   const _SkeletonTile();
 
-  // White fill — Shimmer.fromColors paints over this with its gradient.
-  static const _fill = Colors.white;
-
   @override
   Widget build(BuildContext context) {
+    final fill = Theme.of(context).colorScheme.surface;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
@@ -653,8 +869,8 @@ class _SkeletonTile extends StatelessWidget {
           Container(
             width: 52,
             height: 52,
-            decoration: const BoxDecoration(
-              color: _fill,
+            decoration: BoxDecoration(
+              color: fill,
               shape: BoxShape.circle,
             ),
           ),
@@ -667,16 +883,16 @@ class _SkeletonTile extends StatelessWidget {
                 // Name row: name line + timestamp stub
                 Row(
                   children: [
-                    _box(h: 13, w: 130),
+                    _box(h: 13, w: 130, fill: fill),
                     const Spacer(),
-                    _box(h: 11, w: 36),
+                    _box(h: 11, w: 36, fill: fill),
                   ],
                 ),
                 const SizedBox(height: 8),
                 // Last message line — shorter than full width
-                _box(h: 11, w: double.infinity),
+                _box(h: 11, w: double.infinity, fill: fill),
                 const SizedBox(height: 4),
-                _box(h: 11, w: 140),
+                _box(h: 11, w: 140, fill: fill),
               ],
             ),
           ),
@@ -685,11 +901,12 @@ class _SkeletonTile extends StatelessWidget {
     );
   }
 
-  Widget _box({required double h, required double w}) => Container(
+  Widget _box({required double h, required double w, required Color fill}) =>
+      Container(
         width: w,
         height: h,
         decoration: BoxDecoration(
-          color: _fill,
+          color: fill,
           borderRadius: BorderRadius.circular(6),
         ),
       );
@@ -708,11 +925,12 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
-        color: Color(0xFF003478),
+      decoration: BoxDecoration(
+        color: cs.primary,
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
@@ -721,7 +939,7 @@ class _Avatar extends StatelessWidget {
         style: GoogleFonts.notoSansKr(
           fontSize: fontSize,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: cs.onPrimary,
         ),
       ),
     );

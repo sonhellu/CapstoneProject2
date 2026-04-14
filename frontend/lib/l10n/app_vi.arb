@@ -266,7 +266,14 @@
   "partnerSendRequest": "Gửi lời mời",
   "partnerPending": "Đang chờ…",
   "partnerAccepted": "Đã chấp nhận!",
-
+  "partnerRequestSentSuccess": "Đã gửi lời mời.",
+  "partnerRequestNotSignedIn": "Vui lòng đăng nhập để gửi lời mời.",
+  "partnerRequestProfileMissing": "Người này chưa có hồ sơ.",
+  "partnerRequestAlreadyPending": "Bạn đã có lời mời đang chờ với người này.",
+  "partnerRequestIncomingPending": "Họ đã gửi lời mời cho bạn. Mở tab Chat để chấp nhận.",
+  "partnerRequestAlreadyAccepted": "Hai bạn đã kết nối rồi.",
+  "partnerRequestPreviouslyDeclined": "Lời mời trước đã bị từ chối. Chưa thể gửi lại.",
+  "partnerRequestFailed": "Không gửi được lời mời. Vui lòng thử lại.",
   "chatSearchConversations": "Tìm cuộc trò chuyện…",
   "chatEmptyTitle": "Chưa có cuộc trò chuyện",
   "chatEmptySubtitle": "Tìm partner ngôn ngữ để bắt đầu chat!",
@@ -276,7 +283,20 @@
   "chatFilterTargetLanguage": "Ngôn ngữ muốn học",
   "chatFilterFindPartners": "Tìm partner",
   "chatRequestPending": "Đang chờ phản hồi…",
+  "chatRequestsIncoming": "Lời mời kết bạn",
+  "chatRequestBannerSubtitle": "Muốn kết nối với bạn 👋",
+  "chatRequestAccept": "Chấp nhận",
+  "chatRequestDecline": "Từ chối",
   "chatFilterLanguageAny": "Tất cả",
+  "chatDisconnectedListSubtitle": "Da tam ngat — mo chat de ket noi lai",
+  "chatDisconnectMenu": "Tam ngat ket noi",
+  "chatDisconnectConfirmTitle": "Tam ngat cuoc tro chuyen?",
+  "chatDisconnectConfirmBody": "Ban se khong gui tin duoc cho den khi ket noi lai. Luon co the mo lai cuoc tro chuyen va chon Ket noi lai.",
+  "chatReconnect": "Ket noi lai",
+  "chatDisconnectedBanner": "Da tam ngat ket noi. Ket noi lai de nhan tin.",
+  "chatSendBlockedDisconnected": "Hay ket noi lai de gui tin.",
+  "chatDisconnectSuccess": "Da tam ngat chat.",
+  "chatReconnectSuccess": "Da ket noi lai.",
 
   "authSuccessLogin": "Chào mừng trở lại!",
   "authSuccessRegister": "Đăng ký thành công! Vui lòng xác thực email.",
@@ -304,12 +324,41 @@
   "@verifyEmailResendCooldown": {
     "placeholders": { "seconds": { "type": "int" } }
   },
-  "authUniEmailLabel": "Email trường đại học",
-  "authUniEmailHint": "Email",
-  "authUniSelectHint": "Chọn trường",
-  "authUniPickerTitle": "Chọn trường đại học",
-  "authUniSearchHint": "Tìm trường hoặc tên miền…",
-  "verifyEmailSent": "Email xác thực đã được gửi. Vui lòng kiểm tra hộp thư.",
+
+  "authSuccessVerified": "Email đã xác thực! Vui lòng đăng nhập.",
   "verifyEmailNotYet": "Email chưa được xác thực. Vui lòng kiểm tra hộp thư.",
-  "authSuccessVerified": "Xác thực thành công! Vui lòng đăng nhập."
+
+  "errorChatRequestNotFound": "Lời mời này không còn tồn tại.",
+  "errorChatRequestNotPending": "Lời mời này đã được xử lý.",
+  "errorTransactionAborted": "Kết nối bận — vui lòng thử lại.",
+  "errorNetwork": "Lỗi mạng. Kiểm tra kết nối của bạn.",
+  "errorPermissionDenied": "Bạn không có quyền thực hiện thao tác này.",
+  "errorNotFound": "Không tìm thấy mục yêu cầu.",
+  "errorDataConflict": "Xung đột dữ liệu. Vui lòng làm mới và thử lại.",
+  "errorUnexpected": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.",
+
+  "mapDistanceFromYouMeters": "Cách bạn {meters}m",
+  "@mapDistanceFromYouMeters": {
+    "placeholders": { "meters": { "type": "int" } }
+  },
+  "mapDistanceFromYouKilometers": "Cách bạn {km}km",
+  "@mapDistanceFromYouKilometers": {
+    "placeholders": { "km": { "type": "String" } }
+  },
+
+  "postMenuEdit": "Chỉnh sửa",
+  "postMenuDelete": "Xóa",
+  "postUpdateSuccess": "Bài viết đã được cập nhật",
+  "postEditSheetTitle": "Chỉnh sửa bài viết",
+  "postEditTitleLabel": "Tiêu đề",
+  "postEditContentLabel": "Nội dung",
+  "postEditUpdateBtn": "Cập nhật",
+  "postDeleteSuccess": "Đã xóa bài viết",
+  "postDeleteTitle": "Xóa bài viết",
+  "postDeleteMessage": "Bạn có chắc muốn xóa bài viết này? Hành động này không thể hoàn tác.",
+  "postDeleteCancel": "Hủy",
+  "postDeleteConfirm": "Xóa",
+  "postTranslating": "Đang dịch…",
+  "postShowOriginal": "Xem bản gốc",
+  "postTranslate": "Dịch"
 }

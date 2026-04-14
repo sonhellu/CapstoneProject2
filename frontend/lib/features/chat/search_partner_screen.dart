@@ -1,24 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/errors/send_chat_request_result.dart';
+import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
 import 'models/chat_models.dart';
 import 'services/chat_service.dart';
 
-// ─────────────────────────── Design Tokens ───────────────────────────
-abstract final class _T {
-  static const primary = Color(0xFF003478);
-  static const background = Color(0xFFF5F7FA);
-  static const textDark = Color(0xFF1A1A1A);
-  static const textGrey = Color(0xFF6A6A6A);
-  static const textLight = Color(0xFFADB5BD);
-  static const surface = Colors.white;
-}
-
 // ─────────────────────────── Language Config ───────────────────────────
 const _langColors = <String, Color>{
   'Vietnamese': Color(0xFFD32F2F),
-  'Korean': Color(0xFF003478),
+  'Korean': Color(0xFF2563EB),
   'English': Color(0xFF2E7D32),
   'Japanese': Color(0xFFE65100),
   'Chinese': Color(0xFFC62828),
@@ -63,12 +55,35 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
   }
 
   Future<void> _sendRequest(PartnerModel partner) async {
-    setState(() =>
-        _requestStatuses[partner.id] = RequestStatus.pending);
-    await ChatService.instance.sendRequest(partner.id);
+    setState(() => _requestStatuses[partner.id] = RequestStatus.pending);
+    final result = await ChatService.instance.sendRequest(partner.id);
     if (!mounted) return;
-    // In production: backend sends push notification to partner
-    // For now stay as pending until partner accepts
+    final l = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    if (result != SendChatRequestResult.sent) {
+      setState(() => _requestStatuses.remove(partner.id));
+    }
+    final text = switch (result) {
+      SendChatRequestResult.sent => l.partnerRequestSentSuccess,
+      SendChatRequestResult.notSignedIn => l.partnerRequestNotSignedIn,
+      SendChatRequestResult.partnerProfileMissing =>
+        l.partnerRequestProfileMissing,
+      SendChatRequestResult.alreadyPending =>
+        l.partnerRequestAlreadyPending,
+      SendChatRequestResult.incomingPendingExists =>
+        l.partnerRequestIncomingPending,
+      SendChatRequestResult.alreadyAccepted =>
+        l.partnerRequestAlreadyAccepted,
+      SendChatRequestResult.previouslyDeclined =>
+        l.partnerRequestPreviouslyDeclined,
+      SendChatRequestResult.failed => l.partnerRequestFailed,
+    };
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(text, style: GoogleFonts.notoSansKr(fontSize: 14)),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -81,7 +96,7 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
     };
 
     return Scaffold(
-      backgroundColor: _T.background,
+      backgroundColor: context.bg,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -122,13 +137,13 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
     String genderLabel,
   ) {
     return Container(
-      color: _T.surface,
+      color: context.cardFill,
       padding: const EdgeInsets.fromLTRB(4, 4, 16, 12),
       child: Row(
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            color: _T.textDark,
+            color: context.onSurface,
             onPressed: () => Navigator.pop(context),
           ),
           Expanded(
@@ -140,13 +155,13 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
                   style: GoogleFonts.notoSansKr(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: _T.textDark,
+                    color: context.onSurface,
                   ),
                 ),
                 Text(
                   '$genderLabel · ${widget.language}',
                   style: GoogleFonts.notoSansKr(
-                      fontSize: 12, color: _T.textGrey),
+                      fontSize: 12, color: context.onSurfaceVar),
                 ),
               ],
             ),
@@ -172,21 +187,21 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.search_off_rounded, size: 64,
-              color: _T.primary.withValues(alpha: 0.25)),
+              color: context.primary.withValues(alpha: 0.25)),
           const SizedBox(height: 16),
           Text(
             l.partnerEmptyTitle,
             style: GoogleFonts.notoSansKr(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: _T.textDark,
+              color: context.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             l.partnerEmptySubtitle,
             style: GoogleFonts.notoSansKr(
-                fontSize: 13, color: _T.textGrey),
+                fontSize: 13, color: context.onSurfaceVar),
           ),
         ],
       ),
@@ -209,26 +224,22 @@ class _PartnerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final p = context.primary;
     final nativeFg =
-        _langColors[partner.nativeLanguage] ?? _T.primary;
+        _langColors[partner.nativeLanguage] ?? p;
     final nativeBg =
-        _langBg[partner.nativeLanguage] ?? const Color(0xFFF0F0F0);
+        _langBg[partner.nativeLanguage] ?? context.subtleFill;
     final learnFg =
-        _langColors[partner.learningLanguage] ?? _T.primary;
+        _langColors[partner.learningLanguage] ?? p;
     final learnBg =
-        _langBg[partner.learningLanguage] ?? const Color(0xFFF0F0F0);
+        _langBg[partner.learningLanguage] ?? context.subtleFill;
+    final ring = Theme.of(context).colorScheme.surface;
 
     return Container(
       decoration: BoxDecoration(
-        color: _T.surface,
+        color: context.cardFill,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: context.cardElevationShadow,
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -256,7 +267,7 @@ class _PartnerCard extends StatelessWidget {
                           color: const Color(0xFF4CAF50),
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: Colors.white, width: 2),
+                              color: ring, width: 2),
                         ),
                       ),
                     ),
@@ -272,14 +283,14 @@ class _PartnerCard extends StatelessWidget {
                       style: GoogleFonts.notoSansKr(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: _T.textDark,
+                        color: context.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       partner.school,
                       style: GoogleFonts.notoSansKr(
-                          fontSize: 11, color: _T.textGrey),
+                          fontSize: 11, color: context.onSurfaceVar),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -315,8 +326,8 @@ class _PartnerCard extends StatelessWidget {
                   bg: nativeBg,
                   fg: nativeFg),
               const SizedBox(width: 6),
-              const Icon(Icons.arrow_forward_rounded,
-                  size: 14, color: _T.textLight),
+              Icon(Icons.arrow_forward_rounded,
+                  size: 14, color: context.hintColor),
               const SizedBox(width: 6),
               _LangPill(
                   label: '📖 ${partner.learningLanguage}',
@@ -330,7 +341,7 @@ class _PartnerCard extends StatelessWidget {
             partner.bio,
             style: GoogleFonts.notoSansKr(
               fontSize: 13,
-              color: _T.textGrey,
+              color: context.onSurfaceVar,
               height: 1.5,
             ),
             maxLines: 2,
@@ -362,18 +373,20 @@ class _RequestButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.primary;
+    final cs = Theme.of(context).colorScheme;
     return switch (status) {
       RequestStatus.none => ElevatedButton.icon(
           onPressed: onTap,
-          icon: const Icon(Icons.send_rounded, size: 16),
+          icon: Icon(Icons.send_rounded, size: 16, color: cs.onPrimary),
           label: Text(
             l.partnerSendRequest,
             style: GoogleFonts.notoSansKr(
                 fontSize: 13, fontWeight: FontWeight.w700),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: _T.primary,
-            foregroundColor: Colors.white,
+            backgroundColor: p,
+            foregroundColor: cs.onPrimary,
             padding: const EdgeInsets.symmetric(vertical: 11),
             shape: const StadiumBorder(),
             elevation: 0,
@@ -381,13 +394,13 @@ class _RequestButton extends StatelessWidget {
         ),
       RequestStatus.pending => OutlinedButton.icon(
           onPressed: null,
-          icon: const SizedBox(
+          icon: SizedBox(
             width: 14,
             height: 14,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor:
-                  AlwaysStoppedAnimation<Color>(Color(0xFFADB5BD)),
+                  AlwaysStoppedAnimation<Color>(context.hintColor),
             ),
           ),
           label: Text(
@@ -395,13 +408,13 @@ class _RequestButton extends StatelessWidget {
             style: GoogleFonts.notoSansKr(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: _T.textLight,
+              color: context.hintColor,
             ),
           ),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 11),
             shape: const StadiumBorder(),
-            side: const BorderSide(color: Color(0xFFDDE3EA)),
+            side: BorderSide(color: context.outline.withValues(alpha: 0.5)),
           ),
         ),
       RequestStatus.accepted => ElevatedButton.icon(
@@ -431,10 +444,12 @@ class _SkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fill =
+        Theme.of(context).colorScheme.surfaceContainerHighest;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _T.surface,
+        color: context.cardFill,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -442,35 +457,37 @@ class _SkeletonCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              _box(50, 50, circle: true),
+              _box(50, 50, circle: true, fill: fill),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _box(14, 120),
+                  _box(14, 120, fill: fill),
                   const SizedBox(height: 6),
-                  _box(10, 160),
+                  _box(10, 160, fill: fill),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 12),
-          _box(10, 200),
+          _box(10, 200, fill: fill),
           const SizedBox(height: 8),
-          _box(10, double.infinity),
+          _box(10, double.infinity, fill: fill),
           const SizedBox(height: 8),
-          _box(10, 240),
+          _box(10, 240, fill: fill),
         ],
       ),
     );
   }
 
-  Widget _box(double h, double w, {bool circle = false}) => Container(
+  Widget _box(double h, double w,
+      {bool circle = false, required Color fill}) =>
+      Container(
         width: w,
         height: h,
         margin: const EdgeInsets.only(bottom: 2),
         decoration: BoxDecoration(
-          color: const Color(0xFFEEEEEE),
+          color: fill,
           shape: circle ? BoxShape.circle : BoxShape.rectangle,
           borderRadius: circle ? null : BorderRadius.circular(6),
         ),
@@ -509,18 +526,19 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
-          color: Color(0xFF003478), shape: BoxShape.circle),
+      decoration: BoxDecoration(
+          color: cs.primary, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: Text(
         initial.toUpperCase(),
         style: GoogleFonts.notoSansKr(
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
-            color: Colors.white),
+            color: cs.onPrimary),
       ),
     );
   }

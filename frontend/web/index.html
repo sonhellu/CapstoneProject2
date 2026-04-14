@@ -31,6 +31,66 @@
 
   <title>capstone_frontend</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Naver Maps Web JS SDK -->
+  <script type="text/javascript"
+    src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=8k0ihvfii8">
+  </script>
+  <script>
+    var _ncMaps = {};
+
+    window.initNaverMap = function (viewId, lat, lng, zoom) {
+      var el = document.getElementById('naver-map-' + viewId);
+      if (!el) {
+        setTimeout(function () { window.initNaverMap(viewId, lat, lng, zoom); }, 200);
+        return;
+      }
+      var map = new naver.maps.Map(el, {
+        center: new naver.maps.LatLng(lat, lng),
+        zoom: zoom,
+        mapTypeId: naver.maps.MapTypeId.NORMAL,
+      });
+      _ncMaps[viewId] = { map: map, markers: [] };
+    };
+
+    window.addNaverMarker = function (viewId, lat, lng, title, notes, emoji) {
+      var entry = _ncMaps[viewId];
+      if (!entry) {
+        setTimeout(function () { window.addNaverMarker(viewId, lat, lng, title, notes, emoji); }, 300);
+        return;
+      }
+      var marker = new naver.maps.Marker({
+        map: entry.map,
+        position: new naver.maps.LatLng(lat, lng),
+        icon: {
+          content:
+            '<div style="background:white;border:2px solid #1976D2;border-radius:50%;' +
+            'width:36px;height:36px;display:flex;align-items:center;justify-content:center;' +
+            'font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,.25)">' + emoji + '</div>',
+          anchor: new naver.maps.Point(18, 18),
+        },
+      });
+      var info = new naver.maps.InfoWindow({
+        content:
+          '<div style="padding:8px 12px;font-family:\'Noto Sans KR\',sans-serif;' +
+          'min-width:140px;max-width:220px">' +
+          '<b style="font-size:13px">' + title + '</b>' +
+          '<p style="margin:4px 0 0;font-size:11px;color:#666">' + notes + '</p></div>',
+        borderColor: '#1976D2',
+        borderWidth: 1,
+      });
+      naver.maps.Event.addListener(marker, 'click', function () {
+        info.getMap() ? info.close() : info.open(entry.map, marker);
+      });
+      entry.markers.push(marker);
+    };
+
+    window.moveNaverMap = function (viewId, lat, lng, zoom) {
+      var entry = _ncMaps[viewId];
+      if (!entry) return;
+      entry.map.morph(new naver.maps.LatLng(lat, lng), zoom);
+    };
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

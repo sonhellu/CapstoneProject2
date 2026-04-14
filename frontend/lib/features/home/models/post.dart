@@ -27,6 +27,7 @@ class Post {
     required this.language,
     this.likes = 0,
     this.comments = 0,
+    this.userId = '',
   });
 
   final String id;
@@ -47,6 +48,36 @@ class Post {
 
   final int likes;
   final int comments;
+
+  /// UID of the user who created this post.
+  final String userId;
+
+  Post copyWith({
+    String? id,
+    String? title,
+    String? content,
+    PostAuthor? author,
+    String? time,
+    String? category,
+    List<String>? images,
+    String? language,
+    int? likes,
+    int? comments,
+    String? userId,
+  }) =>
+      Post(
+        id: id ?? this.id,
+        title: title ?? this.title,
+        content: content ?? this.content,
+        author: author ?? this.author,
+        time: time ?? this.time,
+        category: category ?? this.category,
+        images: images ?? this.images,
+        language: language ?? this.language,
+        likes: likes ?? this.likes,
+        comments: comments ?? this.comments,
+        userId: userId ?? this.userId,
+      );
 }
 
 // ─────────────────────────── Mock Data ───────────────────────────

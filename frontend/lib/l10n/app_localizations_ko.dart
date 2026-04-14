@@ -724,6 +724,32 @@ class AppLocalizationsKo extends AppLocalizations {
   String get partnerAccepted => '수락됨!';
 
   @override
+  String get partnerRequestSentSuccess => '요청을 보냈습니다.';
+
+  @override
+  String get partnerRequestNotSignedIn => '로그인한 후 요청을 보내세요.';
+
+  @override
+  String get partnerRequestProfileMissing => '이 사용자의 프로필이 없습니다.';
+
+  @override
+  String get partnerRequestAlreadyPending => '이미 이 사용자에게 보낸 대기 중인 요청이 있습니다.';
+
+  @override
+  String get partnerRequestIncomingPending =>
+      '상대방이 이미 요청을 보냈습니다. Chat 탭에서 수락하세요.';
+
+  @override
+  String get partnerRequestAlreadyAccepted => '이미 연결되어 있습니다.';
+
+  @override
+  String get partnerRequestPreviouslyDeclined =>
+      '이전 요청이 거절되었습니다. 아직 다시 보낼 수 없습니다.';
+
+  @override
+  String get partnerRequestFailed => '요청을 보낼 수 없습니다. 다시 시도하세요.';
+
+  @override
   String get chatSearchConversations => '대화 검색…';
 
   @override
@@ -751,7 +777,48 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatRequestPending => '요청 대기 중…';
 
   @override
+  String get chatRequestsIncoming => '받은 요청';
+
+  @override
+  String get chatRequestBannerSubtitle => '연결 요청을 보냈습니다 👋';
+
+  @override
+  String get chatRequestAccept => '수락';
+
+  @override
+  String get chatRequestDecline => '거절';
+
+  @override
   String get chatFilterLanguageAny => '전체';
+
+  @override
+  String get chatDisconnectedListSubtitle => 'Paused — open chat to reconnect';
+
+  @override
+  String get chatDisconnectMenu => 'Pause connection';
+
+  @override
+  String get chatDisconnectConfirmTitle => 'Pause this chat?';
+
+  @override
+  String get chatDisconnectConfirmBody =>
+      'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.';
+
+  @override
+  String get chatReconnect => 'Reconnect';
+
+  @override
+  String get chatDisconnectedBanner =>
+      'Connection paused. Reconnect to send messages.';
+
+  @override
+  String get chatSendBlockedDisconnected => 'Reconnect to send messages.';
+
+  @override
+  String get chatDisconnectSuccess => 'Chat paused.';
+
+  @override
+  String get chatReconnectSuccess => 'Connection restored.';
 
   @override
   String get authSuccessLogin => '다시 오신 것을 환영합니다!';
@@ -808,26 +875,87 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get authUniEmailLabel => '학교 이메일';
+  String get authSuccessVerified => '이메일이 인증되었습니다! 로그인하세요.';
 
   @override
-  String get authUniEmailHint => '이메일 아이디';
+  String get verifyEmailNotYet => '아직 이메일이 인증되지 않았습니다. 받은 편지함을 확인하세요.';
 
   @override
-  String get authUniSelectHint => '학교 선택';
+  String get errorChatRequestNotFound => '이 요청이 더 이상 존재하지 않습니다.';
 
   @override
-  String get authUniPickerTitle => '학교 선택';
+  String get errorChatRequestNotPending => '이 요청은 이미 처리되었습니다.';
 
   @override
-  String get authUniSearchHint => '학교 또는 도메인 검색…';
+  String get errorTransactionAborted => '연결이 바쁩니다 — 다시 시도해 주세요.';
 
   @override
-  String get verifyEmailSent => '인증 이메일이 전송되었습니다. 받은 편지함을 확인해 주세요.';
+  String get errorNetwork => '네트워크 오류. 연결을 확인하세요.';
 
   @override
-  String get verifyEmailNotYet => '아직 이메일이 인증되지 않았습니다. 받은 편지함을 확인해 주세요.';
+  String get errorPermissionDenied => '이 작업을 수행할 권한이 없습니다.';
 
   @override
-  String get authSuccessVerified => '이메일 인증 완료! 로그인해 주세요.';
+  String get errorNotFound => '요청한 항목을 찾을 수 없습니다.';
+
+  @override
+  String get errorDataConflict => '데이터 충돌. 새로고침 후 다시 시도해 주세요.';
+
+  @override
+  String get errorUnexpected => '예기치 않은 오류가 발생했습니다. 다시 시도해 주세요.';
+
+  @override
+  String mapDistanceFromYouMeters(int meters) {
+    return '내 위치에서 ${meters}m';
+  }
+
+  @override
+  String mapDistanceFromYouKilometers(String km) {
+    return '내 위치에서 ${km}km';
+  }
+
+  @override
+  String get postMenuEdit => '수정';
+
+  @override
+  String get postMenuDelete => '삭제';
+
+  @override
+  String get postUpdateSuccess => '게시물이 수정되었습니다';
+
+  @override
+  String get postEditSheetTitle => '게시물 수정';
+
+  @override
+  String get postEditTitleLabel => '제목';
+
+  @override
+  String get postEditContentLabel => '내용';
+
+  @override
+  String get postEditUpdateBtn => '수정';
+
+  @override
+  String get postDeleteSuccess => '게시물이 삭제되었습니다';
+
+  @override
+  String get postDeleteTitle => '게시물 삭제';
+
+  @override
+  String get postDeleteMessage => '이 게시물을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.';
+
+  @override
+  String get postDeleteCancel => '취소';
+
+  @override
+  String get postDeleteConfirm => '삭제';
+
+  @override
+  String get postTranslating => '번역 중…';
+
+  @override
+  String get postShowOriginal => '원문 보기';
+
+  @override
+  String get postTranslate => '번역';
 }

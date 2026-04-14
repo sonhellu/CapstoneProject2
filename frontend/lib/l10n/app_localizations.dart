@@ -1444,6 +1444,54 @@ abstract class AppLocalizations {
   /// **'Accepted!'**
   String get partnerAccepted;
 
+  /// No description provided for @partnerRequestSentSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent.'**
+  String get partnerRequestSentSuccess;
+
+  /// No description provided for @partnerRequestNotSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in to send a request.'**
+  String get partnerRequestNotSignedIn;
+
+  /// No description provided for @partnerRequestProfileMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'This user has no profile yet.'**
+  String get partnerRequestProfileMissing;
+
+  /// No description provided for @partnerRequestAlreadyPending.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a pending request with this person.'**
+  String get partnerRequestAlreadyPending;
+
+  /// No description provided for @partnerRequestIncomingPending.
+  ///
+  /// In en, this message translates to:
+  /// **'They already sent you a request. Open Chat to accept it.'**
+  String get partnerRequestIncomingPending;
+
+  /// No description provided for @partnerRequestAlreadyAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'You are already connected with this person.'**
+  String get partnerRequestAlreadyAccepted;
+
+  /// No description provided for @partnerRequestPreviouslyDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'A previous request was declined. You cannot send again yet.'**
+  String get partnerRequestPreviouslyDeclined;
+
+  /// No description provided for @partnerRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the request. Please try again.'**
+  String get partnerRequestFailed;
+
   /// No description provided for @chatSearchConversations.
   ///
   /// In en, this message translates to:
@@ -1498,11 +1546,89 @@ abstract class AppLocalizations {
   /// **'Request pending…'**
   String get chatRequestPending;
 
+  /// No description provided for @chatRequestsIncoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming requests'**
+  String get chatRequestsIncoming;
+
+  /// No description provided for @chatRequestBannerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wants to connect with you 👋'**
+  String get chatRequestBannerSubtitle;
+
+  /// No description provided for @chatRequestAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get chatRequestAccept;
+
+  /// No description provided for @chatRequestDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get chatRequestDecline;
+
   /// No description provided for @chatFilterLanguageAny.
   ///
   /// In en, this message translates to:
   /// **'Any'**
   String get chatFilterLanguageAny;
+
+  /// No description provided for @chatDisconnectedListSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused — open chat to reconnect'**
+  String get chatDisconnectedListSubtitle;
+
+  /// No description provided for @chatDisconnectMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause connection'**
+  String get chatDisconnectMenu;
+
+  /// No description provided for @chatDisconnectConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause this chat?'**
+  String get chatDisconnectConfirmTitle;
+
+  /// No description provided for @chatDisconnectConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.'**
+  String get chatDisconnectConfirmBody;
+
+  /// No description provided for @chatReconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect'**
+  String get chatReconnect;
+
+  /// No description provided for @chatDisconnectedBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection paused. Reconnect to send messages.'**
+  String get chatDisconnectedBanner;
+
+  /// No description provided for @chatSendBlockedDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect to send messages.'**
+  String get chatSendBlockedDisconnected;
+
+  /// No description provided for @chatDisconnectSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat paused.'**
+  String get chatDisconnectSuccess;
+
+  /// No description provided for @chatReconnectSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection restored.'**
+  String get chatReconnectSuccess;
 
   /// No description provided for @authSuccessLogin.
   ///
@@ -1600,53 +1726,167 @@ abstract class AppLocalizations {
   /// **'Resend in {seconds}s'**
   String verifyEmailResendCooldown(int seconds);
 
-  /// No description provided for @authUniEmailLabel.
+  /// No description provided for @authSuccessVerified.
   ///
   /// In en, this message translates to:
-  /// **'University Email'**
-  String get authUniEmailLabel;
-
-  /// No description provided for @authUniEmailHint.
-  ///
-  /// In en, this message translates to:
-  /// **'email'**
-  String get authUniEmailHint;
-
-  /// No description provided for @authUniSelectHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Select university'**
-  String get authUniSelectHint;
-
-  /// No description provided for @authUniPickerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Select University'**
-  String get authUniPickerTitle;
-
-  /// No description provided for @authUniSearchHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search university or domain…'**
-  String get authUniSearchHint;
-
-  /// No description provided for @verifyEmailSent.
-  ///
-  /// In en, this message translates to:
-  /// **'Verification email sent. Please check your inbox.'**
-  String get verifyEmailSent;
+  /// **'Email verified! Please sign in.'**
+  String get authSuccessVerified;
 
   /// No description provided for @verifyEmailNotYet.
   ///
   /// In en, this message translates to:
-  /// **'Email not verified yet. Please check your inbox.'**
+  /// **'Email not yet verified. Please check your inbox.'**
   String get verifyEmailNotYet;
 
-  /// No description provided for @authSuccessVerified.
+  /// No description provided for @errorChatRequestNotFound.
   ///
   /// In en, this message translates to:
-  /// **'Email verified! Please log in.'**
-  String get authSuccessVerified;
+  /// **'This request no longer exists.'**
+  String get errorChatRequestNotFound;
+
+  /// No description provided for @errorChatRequestNotPending.
+  ///
+  /// In en, this message translates to:
+  /// **'This request has already been handled.'**
+  String get errorChatRequestNotPending;
+
+  /// No description provided for @errorTransactionAborted.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection busy — please try again.'**
+  String get errorTransactionAborted;
+
+  /// No description provided for @errorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Check your connection.'**
+  String get errorNetwork;
+
+  /// No description provided for @errorPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have permission to do that.'**
+  String get errorPermissionDenied;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The requested item was not found.'**
+  String get errorNotFound;
+
+  /// No description provided for @errorDataConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'Data conflict. Please refresh and try again.'**
+  String get errorDataConflict;
+
+  /// No description provided for @errorUnexpected.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred. Please try again.'**
+  String get errorUnexpected;
+
+  /// No description provided for @mapDistanceFromYouMeters.
+  ///
+  /// In en, this message translates to:
+  /// **'{meters}m from you'**
+  String mapDistanceFromYouMeters(int meters);
+
+  /// No description provided for @mapDistanceFromYouKilometers.
+  ///
+  /// In en, this message translates to:
+  /// **'{km}km from you'**
+  String mapDistanceFromYouKilometers(String km);
+
+  /// No description provided for @postMenuEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get postMenuEdit;
+
+  /// No description provided for @postMenuDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get postMenuDelete;
+
+  /// No description provided for @postUpdateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Post updated successfully'**
+  String get postUpdateSuccess;
+
+  /// No description provided for @postEditSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Post'**
+  String get postEditSheetTitle;
+
+  /// No description provided for @postEditTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get postEditTitleLabel;
+
+  /// No description provided for @postEditContentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get postEditContentLabel;
+
+  /// No description provided for @postEditUpdateBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get postEditUpdateBtn;
+
+  /// No description provided for @postDeleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Post deleted'**
+  String get postDeleteSuccess;
+
+  /// No description provided for @postDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Post'**
+  String get postDeleteTitle;
+
+  /// No description provided for @postDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this post? This action cannot be undone.'**
+  String get postDeleteMessage;
+
+  /// No description provided for @postDeleteCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get postDeleteCancel;
+
+  /// No description provided for @postDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get postDeleteConfirm;
+
+  /// No description provided for @postTranslating.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating…'**
+  String get postTranslating;
+
+  /// No description provided for @postShowOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Show original'**
+  String get postShowOriginal;
+
+  /// No description provided for @postTranslate.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get postTranslate;
 }
 
 class _AppLocalizationsDelegate

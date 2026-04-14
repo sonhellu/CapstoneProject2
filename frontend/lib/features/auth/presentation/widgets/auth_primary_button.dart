@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/theme_ext.dart';
 import '../../theme/auth_theme.dart';
 
 class AuthPrimaryButton extends StatelessWidget {
@@ -16,17 +17,19 @@ class AuthPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final p = context.primary;
     return FilledButton(
       onPressed: isLoading ? null : onPressed,
       style: FilledButton.styleFrom(
-        backgroundColor: AuthColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: p,
+        foregroundColor: cs.onPrimary,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AuthRadii.md),
         ),
         elevation: 0,
-        shadowColor: AuthColors.primary.withValues(alpha: 0.35),
+        shadowColor: p.withValues(alpha: 0.35),
       ).copyWith(
         elevation: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.disabled)) return 0;
@@ -34,19 +37,19 @@ class AuthPrimaryButton extends StatelessWidget {
         }),
       ),
       child: isLoading
-          ? const SizedBox(
+          ? SizedBox(
               height: 22,
               width: 22,
               child: CircularProgressIndicator(
                 strokeWidth: 2.2,
-                color: Colors.white,
+                color: cs.onPrimary,
               ),
             )
           : Text(
               label,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: cs.onPrimary,
                     letterSpacing: 0.2,
                   ),
             ),

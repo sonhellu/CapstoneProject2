@@ -1,0 +1,224 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────── Shared helpers ──────────────────────────────
+
+    function signedIn()         { return request.auth != null; }
+    function uid()              { return request.auth.uid; }
+    function isOwner(userId)    { return signedIn() && uid() == userId; }
+
+    /// Deterministic conversation / request ID: sorted(a, b) = "min_max".
+    /// Must stay in sync with ChatService._sortedId().
+    function sortedId(a, b) {
+      return a < b ? a + '_' + b : b + '_' + a;
+    }
+
+    /// True when convId equals the sorted pair derived from [parts].
+    function validConversationId(cid, parts) {
+      return parts is list
+        && parts.size() == 2
+        && cid == sortedId(parts[0], parts[1]);
+    }
+
+    /// True when requestId equals the sorted pair of sender + receiver.
+    function validChatRequestId(rid, senderId, receiverId) {
+      return rid == sortedId(senderId, receiverId);
+    }
+
+    /// Checks that senderId / receiverId are not changed on an update.
+    function requestIdsUnchanged() {
+      return request.resource.data.senderId == resource.data.senderId
+          && request.resource.data.receiverId == resource.data.receiverId;
+    }
+
+    /// Checks that [uid] is a participant in [convPath].
+    /// Used by /messages rules — called after the conversation doc exists.
+    function isParticipant(convPath) {
+      return signedIn()
+          && exists(/databases/$(database)/documents/$(convPath))
+          && uid() in get(/databases/$(database)/documents/$(convPath)).data.participants;
+    }
+
+    /// Messaging allowed when conversation is active (or legacy docs without status).
+    function conversationAllowsUserMessages(convId) {
+      let conv = get(/databases/$(database)/documents/conversations/$(convId)).data;
+      return !('status' in conv) || conv.status == 'active';
+    }
+
+    /// After update, status — if present — must be active or disconnected.
+    function conversationStatusValid(data) {
+      return !('status' in data)
+          || data.status == 'active'
+          || data.status == 'disconnected';
+    }
+
+    /// Once a conversation has [status], it cannot be removed (prevents bypassing message lock).
+    function conversationStatusNotRemoved() {
+      return !('status' in resource.data)
+          || 'status' in request.resource.data;
+    }
+
+    // ─────────────────────────── /users ──────────────────────────────────────
+
+    match /users/{userId} {
+      // Any signed-in user can read profiles (needed for partner search).
+      allow get:    if signedIn();
+      allow list:   if signedIn();
+
+      // Only the owner can create or update their own profile / FCM token.
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    // ─────────────────────────── /chat_requests ──────────────────────────────
+
+    match /chat_requests/{requestId} {
+
+      // get: participants + missing-doc reads (used in sendRequest transaction).
+      allow get: if signedIn()
+          && (
+            !exists(/databases/$(database)/documents/chat_requests/$(requestId))
+            || resource.data.senderId == uid()
+            || resource.data.receiverId == uid()
+          );
+
+      // list: used by incomingRequestsStream — every returned doc has
+      // receiverId == uid (Firestore validates the query constraint matches the rule).
+      allow list: if signedIn()
+          && (
+            resource.data.senderId   == uid()
+            || resource.data.receiverId == uid()
+          );
+
+      // create: sender sets up a pending request with deterministic ID.
+      allow create: if signedIn()
+          && request.resource.data.senderId  == uid()
+          && request.resource.data.status    == 'pending'
+          && request.resource.data.keys().hasAll([
+               'senderId', 'receiverId', 'senderInfo',
+               'receiverInfo', 'status', 'createdAt'
+             ])
+          && validChatRequestId(
+               requestId,
+               request.resource.data.senderId,
+               request.resource.data.receiverId
+             );
+
+      allow update: if signedIn()
+          && requestIdsUnchanged()
+          && (
+            // Receiver accepts a pending request.
+            (
+              resource.data.receiverId == uid()
+              && resource.data.status  == 'pending'
+              && request.resource.data.status == 'accepted'
+              && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['status', 'acceptedAt'])
+            )
+            // Sender or receiver declines.
+            || (
+              (resource.data.senderId == uid() || resource.data.receiverId == uid())
+              && resource.data.status  == 'pending'
+              && request.resource.data.status == 'declined'
+              && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['status'])
+            )
+          );
+
+      allow delete: if false;
+    }
+
+    // ─────────────────────────── /conversations ──────────────────────────────
+
+    match /conversations/{convId} {
+
+      // get: only participants. (resource != null guards against missing docs.)
+      allow get: if signedIn()
+          && resource != null
+          && uid() in resource.data.participants;
+
+      // list: used by chatListStream — query is participants arrayContains uid.
+      allow list: if signedIn()
+          && uid() in resource.data.participants;
+
+      // create: only through acceptRequest transaction.
+      allow create: if signedIn()
+          && validConversationId(convId, request.resource.data.participants)
+          && uid() in request.resource.data.participants
+          && request.resource.data.participants.size() == 2
+          && request.resource.data.keys().hasAll([
+               'participants', 'participantInfo', 'lastMessage',
+               'lastMessageAt', 'unreadCounts', 'status',
+               'requestedBy', 'createdAt'
+             ])
+          && request.resource.data.status       == 'active'
+          && request.resource.data.lastMessage  == ''
+          && request.resource.data.requestedBy  is string
+          && request.resource.data.requestedBy  in request.resource.data.participants
+          // Both unreadCounts start at 0.
+          && request.resource.data.unreadCounts[request.resource.data.participants[0]] == 0
+          && request.resource.data.unreadCounts[request.resource.data.participants[1]] == 0
+          && request.resource.data.unreadCounts.keys().hasOnly([
+               request.resource.data.participants[0],
+               request.resource.data.participants[1]
+             ])
+          // participantInfo must have a map for each participant.
+          && request.resource.data.participantInfo[request.resource.data.participants[0]] is map
+          && request.resource.data.participantInfo[request.resource.data.participants[1]] is map;
+
+      // update: any participant can update metadata (lastMessage, unreadCounts, …).
+      // participants array itself must never change.
+      allow update: if signedIn()
+          && uid() in resource.data.participants
+          && request.resource.data.participants == resource.data.participants
+          && conversationStatusNotRemoved()
+          && conversationStatusValid(request.resource.data);
+
+      allow delete: if signedIn()
+          && uid() in resource.data.participants;
+
+      // ───────────────────── /conversations/{convId}/messages ─────────────────
+
+      match /messages/{msgId} {
+
+        allow read: if isParticipant(/conversations/$(convId));
+
+        allow create: if signedIn()
+            && request.resource.data.keys().hasAll([
+                 'senderId', 'content', 'timestamp', 'isRead'
+               ])
+            && (
+              // Normal text / location message from a participant.
+              (
+                request.resource.data.senderId == uid()
+                && isParticipant(/conversations/$(convId))
+                && conversationAllowsUserMessages(convId)
+              )
+              // System welcome message written atomically with the conversation.
+              // The receiver of the original chat_request is the one running the
+              // acceptRequest transaction, so we verify that here.
+              || (
+                request.resource.data.senderId == 'system'
+                && request.resource.data.type   == 'system'
+                && exists(/databases/$(database)/documents/chat_requests/$(convId))
+                && get(/databases/$(database)/documents/chat_requests/$(convId))
+                     .data.receiverId == uid()
+              )
+            );
+
+        // Allow participants to mark messages as read.
+        allow update: if isParticipant(/conversations/$(convId));
+
+        allow delete: if false;
+      }
+    }
+
+    // ─────────────────────────── Catch-all deny ──────────────────────────────
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

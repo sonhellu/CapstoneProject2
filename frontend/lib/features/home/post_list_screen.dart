@@ -2,19 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
 import 'models/post.dart';
 import 'widgets/post_card.dart';
-
-// ─────────────────────────── Design Tokens ───────────────────────────
-abstract final class _T {
-  static const primary = Color(0xFF003478);
-  static const background = Color(0xFFF5F7FA);
-  static const textDark = Color(0xFF1A1A1A);
-  static const textGrey = Color(0xFF6A6A6A);
-  static const textLight = Color(0xFFADB5BD);
-  static const surface = Colors.white;
-}
 
 // ─────────────────────────── Screen ───────────────────────────
 class PostListScreen extends StatefulWidget {
@@ -66,7 +57,7 @@ class _PostListScreenState extends State<PostListScreen> {
     final posts = _filtered;
 
     return Scaffold(
-      backgroundColor: _T.background,
+      backgroundColor: context.bg,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -96,15 +87,16 @@ class _PostListScreenState extends State<PostListScreen> {
   // ─── Header ───
   Widget _buildHeader(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final onSurf = context.onSurface;
     return Container(
-      color: _T.surface,
+      color: context.cardFill,
       padding: const EdgeInsets.fromLTRB(4, 4, 8, 4),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            color: _T.textDark,
+            color: onSurf,
           ),
           Expanded(
             child: Text(
@@ -112,7 +104,7 @@ class _PostListScreenState extends State<PostListScreen> {
               style: GoogleFonts.notoSansKr(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: _T.textDark,
+                color: onSurf,
               ),
             ),
           ),
@@ -126,7 +118,7 @@ class _PostListScreenState extends State<PostListScreen> {
             }),
             icon: Icon(
               _isSearchOpen ? Icons.close_rounded : Icons.search_rounded,
-              color: _T.textDark,
+              color: onSurf,
             ),
           ),
         ],
@@ -137,23 +129,23 @@ class _PostListScreenState extends State<PostListScreen> {
   // ─── Search Bar ───
   Widget _buildSearchBar() {
     return Container(
-      color: _T.surface,
+      color: context.cardFill,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: TextField(
         controller: _searchCtrl,
         autofocus: true,
-        style: GoogleFonts.notoSansKr(fontSize: 14, color: _T.textDark),
+        style: GoogleFonts.notoSansKr(fontSize: 14, color: context.onSurface),
         onChanged: (v) => setState(() => _query = v),
         decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.communitySearchHint,
           hintStyle: GoogleFonts.notoSansKr(
             fontSize: 14,
-            color: _T.textLight,
+            color: context.hintColor,
           ),
-          prefixIcon: const Icon(Icons.search_rounded,
-              size: 20, color: _T.textGrey),
+          prefixIcon: Icon(Icons.search_rounded,
+              size: 20, color: context.onSurfaceVar),
           filled: true,
-          fillColor: _T.background,
+          fillColor: context.bg,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           border: OutlineInputBorder(
@@ -169,7 +161,7 @@ class _PostListScreenState extends State<PostListScreen> {
   Widget _buildSortRow() {
     final l = AppLocalizations.of(context)!;
     return Container(
-      color: _T.surface,
+      color: context.cardFill,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: Row(
         children: [
@@ -177,7 +169,7 @@ class _PostListScreenState extends State<PostListScreen> {
             l.communityPostCount(_filtered.length),
             style: GoogleFonts.notoSansKr(
               fontSize: 12,
-              color: _T.textLight,
+              color: context.hintColor,
             ),
           ),
           const Spacer(),
@@ -203,13 +195,13 @@ class _PostListScreenState extends State<PostListScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_off_rounded, size: 56, color: _T.textLight),
+          Icon(Icons.search_off_rounded, size: 56, color: context.hintColor),
           const SizedBox(height: 12),
           Text(
             AppLocalizations.of(context)!.communityNoPosts,
             style: GoogleFonts.notoSansKr(
               fontSize: 15,
-              color: _T.textGrey,
+              color: context.onSurfaceVar,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -235,6 +227,8 @@ class _SortChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final fg = selected ? cs.onPrimary : context.onSurfaceVar;
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
@@ -244,7 +238,7 @@ class _SortChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? _T.primary : const Color(0xFFF0F4F8),
+          color: selected ? context.primary : context.subtleFill,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -253,7 +247,7 @@ class _SortChip extends StatelessWidget {
             if (icon != null) ...[
               Icon(icon,
                   size: 13,
-                  color: selected ? Colors.white : _T.textGrey),
+                  color: fg),
               const SizedBox(width: 4),
             ],
             Text(
@@ -261,7 +255,7 @@ class _SortChip extends StatelessWidget {
               style: GoogleFonts.notoSansKr(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : _T.textGrey,
+                color: fg,
               ),
             ),
           ],

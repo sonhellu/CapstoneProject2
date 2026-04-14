@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/theme_ext.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../theme/auth_theme.dart';
 
@@ -20,34 +21,38 @@ class SocialAuthButtons extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: Divider(color: AuthColors.border.withValues(alpha: 0.9))),
+            Expanded(
+                child: Divider(
+                    color: context.outline.withValues(alpha: 0.9))),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
                 l.authSocialOr,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AuthColors.textSecondary,
+                      color: context.onSurfaceVar,
                       fontWeight: FontWeight.w500,
                     ),
               ),
             ),
-            Expanded(child: Divider(color: AuthColors.border.withValues(alpha: 0.9))),
+            Expanded(
+                child: Divider(
+                    color: context.outline.withValues(alpha: 0.9))),
           ],
         ),
         const SizedBox(height: 18),
         _OutlineSocialButton(
           onPressed: onGoogle,
-          borderColor: AuthColors.border,
+          borderColor: context.outline,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const _GoogleMark(),
+              _GoogleMark(outline: context.outline),
               const SizedBox(width: 12),
               Text(
                 l.authSocialContinueGoogle,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AuthColors.textPrimary,
+                      color: context.onSurface,
                     ),
               ),
             ],
@@ -79,7 +84,8 @@ class SocialAuthButtons extends StatelessWidget {
 }
 
 class _GoogleMark extends StatelessWidget {
-  const _GoogleMark();
+  const _GoogleMark({required this.outline});
+  final Color outline;
 
   @override
   Widget build(BuildContext context) {
@@ -89,8 +95,8 @@ class _GoogleMark extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white,
-        border: Border.all(color: AuthColors.border),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: outline),
       ),
       child: const Text(
         'G',

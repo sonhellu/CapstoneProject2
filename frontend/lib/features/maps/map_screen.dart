@@ -15,8 +15,8 @@ import '../../core/naver_map/naver_map_sdk_controller.dart';
 import '../../core/services/geocoding_service.dart';
 import '../../core/services/place_search_service.dart';
 import '../../core/services/translation_service.dart';
+import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
-import '../shell/theme/shell_theme.dart';
 import 'models/user_pin_model.dart';
 import 'widgets/pin_bottom_sheet.dart';
 import 'widgets/review_modal.dart';
@@ -209,6 +209,9 @@ class _MapScreenState extends State<MapScreen>
     final ctrl = _mapCtrl;
     if (ctrl == null) return;
 
+    final captionPrimary = Theme.of(context).colorScheme.primary;
+    final captionHalo = Theme.of(context).colorScheme.surface;
+
     // Remove previous search-result marker if any.
     if (_searchMarker != null) {
       await ctrl.deleteOverlay(
@@ -231,8 +234,8 @@ class _MapScreenState extends State<MapScreen>
       NOverlayCaption(
         text: place.name,
         textSize: 13,
-        color: const Color(0xFF003478),
-        haloColor: Colors.white,
+        color: captionPrimary,
+        haloColor: captionHalo,
       ),
     );
     await ctrl.addOverlay(marker);
@@ -678,7 +681,7 @@ class _MapScreenState extends State<MapScreen>
     final fabBottom = MediaQuery.of(context).padding.bottom + 30.0;
 
     return Scaffold(
-      backgroundColor: ShellColors.background,
+      backgroundColor: context.bg,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: _isMapReady
           ? Padding(
@@ -907,22 +910,25 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
     final lng = widget.symbol.position.longitude.toStringAsFixed(6);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: context.cardFill,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       child: SafeArea(
         top: false,
         child: FutureBuilder<String>(
           future: _translationFuture,
-          builder: (context, snapshot) {
+          builder: (sheetContext, snapshot) {
             final isLoading =
                 snapshot.connectionState == ConnectionState.waiting;
             final translated = snapshot.data;
             final hasTranslation = translated != null &&
                 translated != widget.symbol.caption &&
                 translated.isNotEmpty;
+            final p = sheetContext.primary;
+            final onSurf = sheetContext.onSurface;
+            final hint = sheetContext.hintColor;
 
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -934,7 +940,7 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFDDE3EA),
+                      color: sheetContext.outline.withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -949,13 +955,11 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
+                        color: sheetContext.cs.primaryContainer,
                         shape: BoxShape.circle,
-                        border: Border.all(
-                            color: const Color(0xFF003478), width: 1.5),
+                        border: Border.all(color: p, width: 1.5),
                       ),
-                      child: const Icon(Icons.place_rounded,
-                          color: Color(0xFF003478), size: 20),
+                      child: Icon(Icons.place_rounded, color: p, size: 20),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -964,12 +968,12 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                         children: [
                           // Loading spinner while translation resolves
                           if (isLoading)
-                            const SizedBox(
+                            SizedBox(
                               height: 10,
                               width: 10,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Color(0xFF003478),
+                                color: p,
                               ),
                             )
                           else
@@ -981,7 +985,7 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                               style: GoogleFonts.notoSansKr(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xFF1A1A1A),
+                                color: onSurf,
                               ),
                             ),
 
@@ -993,7 +997,7 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                                 'Original: ${widget.symbol.caption}',
                                 style: GoogleFonts.notoSansKr(
                                   fontSize: 12,
-                                  color: const Color(0xFF94A3B8),
+                                  color: hint,
                                 ),
                               ),
                             ),
@@ -1007,14 +1011,13 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                 // ── Coordinates ──────────────────────────────────────
                 Row(
                   children: [
-                    const Icon(Icons.my_location_rounded,
-                        size: 14, color: Color(0xFF94A3B8)),
+                    Icon(Icons.my_location_rounded, size: 14, color: hint),
                     const SizedBox(width: 6),
                     Text(
                       '$lat, $lng',
                       style: GoogleFonts.notoSansKr(
                         fontSize: 12,
-                        color: const Color(0xFF94A3B8),
+                        color: hint,
                       ),
                     ),
                   ],
@@ -1035,8 +1038,8 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF003478),
-                      foregroundColor: Colors.white,
+                      backgroundColor: p,
+                      foregroundColor: sheetContext.cs.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -1085,6 +1088,11 @@ class _MapFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final p = context.primary;
+    final onP = context.cs.onPrimary;
+    final chipBg = context.cardFill;
+    final onSurf = context.onSurface;
+    final onVar = context.onSurfaceVar;
     return SizedBox(
       height: 38,
       child: ListView.separated(
@@ -1102,15 +1110,9 @@ class _MapFilterBar extends StatelessWidget {
               curve: Curves.easeOut,
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: selected ? const Color(0xFF003478) : Colors.white,
+                color: selected ? p : chipBg,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x20000000),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                boxShadow: context.cardElevationShadow,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -1118,7 +1120,7 @@ class _MapFilterBar extends StatelessWidget {
                   Icon(
                     icon,
                     size: 15,
-                    color: selected ? Colors.white : const Color(0xFF64748B),
+                    color: selected ? onP : onVar,
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -1126,7 +1128,7 @@ class _MapFilterBar extends StatelessWidget {
                     style: GoogleFonts.notoSansKr(
                       fontSize: 13,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                      color: selected ? Colors.white : const Color(0xFF1A1A1A),
+                      color: selected ? onP : onSurf,
                     ),
                   ),
                 ],
@@ -1159,28 +1161,22 @@ class _PlaceResultsDropdown extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardFill,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x26000000),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: context.cardElevationShadow,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: isLoading && items.isEmpty
-            ? const Padding(
-                padding: EdgeInsets.symmetric(vertical: 18),
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 18),
                 child: Center(
                   child: SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: Color(0xFF003478),
+                      color: context.primary,
                     ),
                   ),
                 ),
@@ -1190,11 +1186,11 @@ class _PlaceResultsDropdown extends StatelessWidget {
                 children: [
                   for (int i = 0; i < items.length; i++) ...[
                     if (i > 0)
-                      const Divider(
+                      Divider(
                         height: 1,
                         indent: 16,
                         endIndent: 16,
-                        color: Color(0xFFF0F0F0),
+                        color: context.divider,
                       ),
                     _PlaceTile(
                       place: items[i],
@@ -1215,6 +1211,7 @@ class _PlaceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.primary;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -1225,13 +1222,13 @@ class _PlaceTile extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFFEEF2FF),
+                color: context.cs.primaryContainer,
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF003478), width: 1.5),
+                border: Border.all(color: p, width: 1.5),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.place_rounded,
-                color: Color(0xFF003478),
+                color: p,
                 size: 18,
               ),
             ),
@@ -1245,7 +1242,7 @@ class _PlaceTile extends StatelessWidget {
                     style: GoogleFonts.notoSansKr(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1A1A1A),
+                      color: context.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1257,7 +1254,7 @@ class _PlaceTile extends StatelessWidget {
                           .join(' · '),
                       style: GoogleFonts.notoSansKr(
                         fontSize: 12,
-                        color: const Color(0xFF94A3B8),
+                        color: context.hintColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1265,10 +1262,10 @@ class _PlaceTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.arrow_forward_ios_rounded,
               size: 13,
-              color: Color(0xFFCBD5E1),
+              color: context.outline.withValues(alpha: 0.6),
             ),
           ],
         ),
@@ -1292,15 +1289,9 @@ class _SearchResultsDropdown extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardFill,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x26000000),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: context.cardElevationShadow,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -1309,11 +1300,11 @@ class _SearchResultsDropdown extends StatelessWidget {
           children: [
             for (int i = 0; i < items.length; i++) ...[
               if (i > 0)
-                const Divider(
+                Divider(
                   height: 1,
                   indent: 16,
                   endIndent: 16,
-                  color: Color(0xFFF0F0F0),
+                  color: context.divider,
                 ),
               _ResultTile(pin: items[i], onTap: () => onSelect(items[i])),
             ],
@@ -1362,7 +1353,7 @@ class _ResultTile extends StatelessWidget {
                     style: GoogleFonts.notoSansKr(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1A1A1A),
+                      color: context.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1372,7 +1363,7 @@ class _ResultTile extends StatelessWidget {
                       pin.notes,
                       style: GoogleFonts.notoSansKr(
                         fontSize: 12,
-                        color: const Color(0xFF94A3B8),
+                        color: context.hintColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1380,10 +1371,10 @@ class _ResultTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.arrow_forward_ios_rounded,
               size: 13,
-              color: Color(0xFFCBD5E1),
+              color: context.outline.withValues(alpha: 0.6),
             ),
           ],
         ),
@@ -1412,24 +1403,18 @@ class _MapSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final hint = context.hintColor;
     return Container(
       height: 52,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardFill,
         borderRadius: BorderRadius.circular(30),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x26000000),
-            blurRadius: 16,
-            spreadRadius: 0,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: context.cardElevationShadow,
       ),
       child: Row(
         children: [
           const SizedBox(width: 16),
-          const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 22),
+          Icon(Icons.search_rounded, color: hint, size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
@@ -1440,7 +1425,7 @@ class _MapSearchBar extends StatelessWidget {
               onSubmitted: onChanged,
               style: GoogleFonts.notoSansKr(
                 fontSize: 14,
-                color: const Color(0xFF1A1A1A),
+                color: context.onSurface,
               ),
               decoration: InputDecoration(
                 isCollapsed: true,
@@ -1448,7 +1433,7 @@ class _MapSearchBar extends StatelessWidget {
                 hintText: l.mapSearchHere,
                 hintStyle: GoogleFonts.notoSansKr(
                   fontSize: 14,
-                  color: const Color(0xFFADB5BD),
+                  color: hint,
                 ),
               ),
             ),
@@ -1459,21 +1444,21 @@ class _MapSearchBar extends StatelessWidget {
                 ? GestureDetector(
                     key: const ValueKey('clear'),
                     onTap: onClear,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 14),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: Icon(
                         Icons.close_rounded,
-                        color: Color(0xFF94A3B8),
+                        color: hint,
                         size: 20,
                       ),
                     ),
                   )
-                : const Padding(
-                    key: ValueKey('mic'),
-                    padding: EdgeInsets.symmetric(horizontal: 14),
+                : Padding(
+                    key: const ValueKey('mic'),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
                     child: Icon(
                       Icons.tune_rounded,
-                      color: Color(0xFF003478),
+                      color: context.primary,
                       size: 20,
                     ),
                   ),
@@ -1659,9 +1644,9 @@ class _PinInfoSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: context.cardFill,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
         top: false,
@@ -1677,7 +1662,7 @@ class _PinInfoSheet extends StatelessWidget {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDDE3EA),
+                    color: context.outline.withValues(alpha: 0.35),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1740,8 +1725,8 @@ class _OwnerView extends StatelessWidget {
               child: _InfoSheetButton(
                 label: l.btnEdit,
                 icon: Icons.edit_rounded,
-                backgroundColor: const Color(0xFF003478),
-                foregroundColor: Colors.white,
+                backgroundColor: context.primary,
+                foregroundColor: context.cs.onPrimary,
                 onTap: onEditTap,
               ),
             ),
@@ -1780,18 +1765,20 @@ class _PublicView extends StatelessWidget {
   final VoidCallback onReport;
   final VoidCallback onDirections;
 
-  // Category chip colours
-  static const _categoryColors = <PinType, Color>{
-    PinType.restaurant: Color(0xFFE65100),
-    PinType.realEstate: Color(0xFF003478),
-    PinType.utility: Color(0xFF7B1FA2),
-    PinType.pharmacy: Color(0xFF2E7D32),
-  };
+  Color _categoryAccent(BuildContext context, PinType type) {
+    final primary = context.primary;
+    return switch (type) {
+      PinType.restaurant => const Color(0xFFE65100),
+      PinType.realEstate => primary,
+      PinType.utility => const Color(0xFF7B1FA2),
+      PinType.pharmacy => const Color(0xFF2E7D32),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final catColor = _categoryColors[pin.type] ?? const Color(0xFF003478);
+    final catColor = _categoryAccent(context, pin.type);
     final initial = pin.authorName.isNotEmpty
         ? pin.authorName[0].toUpperCase()
         : '?';
@@ -1807,8 +1794,8 @@ class _PublicView extends StatelessWidget {
             Container(
               width: 38,
               height: 38,
-              decoration: const BoxDecoration(
-                color: Color(0xFF003478),
+              decoration: BoxDecoration(
+                color: context.primary,
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
@@ -1817,7 +1804,7 @@ class _PublicView extends StatelessWidget {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: context.cs.onPrimary,
                 ),
               ),
             ),
@@ -1835,7 +1822,7 @@ class _PublicView extends StatelessWidget {
                         style: GoogleFonts.notoSansKr(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1A1A1A),
+                          color: context.onSurface,
                         ),
                       ),
                       if (pin.isVerified) ...[
@@ -1846,7 +1833,7 @@ class _PublicView extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF003478),
+                            color: context.primary,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Row(
@@ -1876,7 +1863,7 @@ class _PublicView extends StatelessWidget {
                     'Posted by',
                     style: GoogleFonts.notoSansKr(
                       fontSize: 11,
-                      color: const Color(0xFFADB5BD),
+                      color: context.hintColor,
                     ),
                   ),
                 ],
@@ -1902,7 +1889,7 @@ class _PublicView extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-        const Divider(height: 1, color: Color(0xFFF0F0F0)),
+        Divider(height: 1, color: context.divider),
         const SizedBox(height: 14),
 
         // ── Name + category chip ──
@@ -1920,7 +1907,7 @@ class _PublicView extends StatelessWidget {
                     style: GoogleFonts.notoSansKr(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1A1A1A),
+                      color: context.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -1971,7 +1958,7 @@ class _PublicView extends StatelessWidget {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A1A),
+                  color: context.onSurface,
                 ),
               ),
               const SizedBox(width: 4),
@@ -1979,15 +1966,15 @@ class _PublicView extends StatelessWidget {
                 AppLocalizations.of(context)!.reviewsCount(pin.reviewCount),
                 style: GoogleFonts.notoSansKr(
                   fontSize: 12,
-                  color: const Color(0xFF003478),
+                  color: context.primary,
                   decoration: TextDecoration.underline,
                 ),
               ),
               const SizedBox(width: 2),
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
                 size: 14,
-                color: Color(0xFF003478),
+                color: context.primary,
               ),
             ],
           ),
@@ -2004,32 +1991,31 @@ class _PublicView extends StatelessWidget {
 
         // ── Secondary action bar: Save · Share ──
         Builder(
-          builder: (context) {
-            final l = AppLocalizations.of(context)!;
+          builder: (ctx) {
+            final loc = AppLocalizations.of(ctx)!;
+            final cs = ctx.cs;
             return Row(
               children: [
                 Expanded(
                   child: _InfoSheetButton(
-                    label: isSaved ? l.mapPinSaved : l.btnSave,
+                    label: isSaved ? loc.mapPinSaved : loc.btnSave,
                     icon: isSaved
                         ? Icons.bookmark_rounded
                         : Icons.bookmark_border_rounded,
-                    backgroundColor: isSaved
-                        ? const Color(0xFF003478)
-                        : const Color(0xFFF0F4FF),
-                    foregroundColor: isSaved
-                        ? Colors.white
-                        : const Color(0xFF003478),
+                    backgroundColor:
+                        isSaved ? ctx.primary : cs.primaryContainer,
+                    foregroundColor:
+                        isSaved ? cs.onPrimary : ctx.primary,
                     onTap: onSave,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _InfoSheetButton(
-                    label: l.actionShare,
+                    label: loc.actionShare,
                     icon: Icons.share_rounded,
-                    backgroundColor: const Color(0xFFF5F7FA),
-                    foregroundColor: const Color(0xFF6A6A6A),
+                    backgroundColor: ctx.surfaceVar,
+                    foregroundColor: ctx.onSurfaceVar,
                     onTap: onShare,
                   ),
                 ),
@@ -2042,13 +2028,13 @@ class _PublicView extends StatelessWidget {
 
         // ── Primary CTA: Directions ──
         Builder(
-          builder: (context) {
-            final l = AppLocalizations.of(context)!;
+          builder: (ctx) {
+            final loc = AppLocalizations.of(ctx)!;
             return _InfoSheetButton(
-              label: l.mapDirections,
+              label: loc.mapDirections,
               icon: Icons.directions_rounded,
-              backgroundColor: const Color(0xFF003478),
-              foregroundColor: Colors.white,
+              backgroundColor: ctx.primary,
+              foregroundColor: ctx.cs.onPrimary,
               onTap: onDirections,
               fullWidth: true,
             );
@@ -2081,14 +2067,14 @@ class _PinHeader extends StatelessWidget {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A1A),
+                  color: context.onSurface,
                 ),
               ),
               Text(
                 pin.type.localizedLabel(l),
                 style: GoogleFonts.notoSansKr(
                   fontSize: 12,
-                  color: const Color(0xFF6A6A6A),
+                  color: context.onSurfaceVar,
                 ),
               ),
             ],
@@ -2119,14 +2105,14 @@ class _NotesBox extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F7FA),
+        color: context.surfaceVar,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         notes,
         style: GoogleFonts.notoSansKr(
           fontSize: 14,
-          color: const Color(0xFF1A1A1A),
+          color: context.onSurface,
           height: 1.6,
         ),
       ),
@@ -2146,14 +2132,14 @@ class _CoordRow extends StatelessWidget {
         Icon(
           pin.isPublic ? Icons.public_rounded : Icons.lock_outline_rounded,
           size: 14,
-          color: const Color(0xFFADB5BD),
+          color: context.hintColor,
         ),
         const SizedBox(width: 4),
         Text(
           pin.isPublic ? l.mapPinInfoPublicShort : l.mapPinVisibilityPrivate,
           style: GoogleFonts.notoSansKr(
             fontSize: 11,
-            color: const Color(0xFFADB5BD),
+            color: context.hintColor,
           ),
         ),
         const Spacer(),
@@ -2162,7 +2148,7 @@ class _CoordRow extends StatelessWidget {
           '${pin.latLng.longitude.toStringAsFixed(5)}',
           style: GoogleFonts.notoSansKr(
             fontSize: 11,
-            color: const Color(0xFFADB5BD),
+            color: context.hintColor,
           ),
         ),
       ],
@@ -2239,23 +2225,17 @@ class _LocationFab extends StatelessWidget {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.cardFill,
           shape: BoxShape.circle,
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x26000000),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
+          boxShadow: context.cardElevationShadow,
         ),
         child: isLocating
-            ? const Padding(
-                padding: EdgeInsets.all(13),
+            ? Padding(
+                padding: const EdgeInsets.all(13),
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    ShellColors.primaryBlue,
+                    context.primary,
                   ),
                 ),
               )
@@ -2263,7 +2243,7 @@ class _LocationFab extends StatelessWidget {
                 isCentred
                     ? Icons.my_location_rounded
                     : Icons.location_searching_rounded,
-                color: ShellColors.primaryBlue,
+                color: context.primary,
                 size: 24,
               ),
       ),
@@ -2279,8 +2259,9 @@ class _LoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final p = context.primary;
     return ColoredBox(
-      color: Colors.white,
+      color: context.bg,
       child: Center(
         child: TweenAnimationBuilder<double>(
           tween: Tween(begin: 0.88, end: 1.0),
@@ -2291,15 +2272,13 @@ class _LoadingOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 52,
                 height: 52,
                 child: CircularProgressIndicator(
                   strokeWidth: 3.2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    ShellColors.primaryBlue,
-                  ),
-                  backgroundColor: Color(0x1F003478),
+                  valueColor: AlwaysStoppedAnimation<Color>(p),
+                  backgroundColor: p.withValues(alpha: 0.12),
                 ),
               ),
               const SizedBox(height: 20),
@@ -2308,7 +2287,7 @@ class _LoadingOverlay extends StatelessWidget {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: ShellColors.primaryBlue,
+                  color: p,
                 ),
               ),
               const SizedBox(height: 6),
@@ -2316,7 +2295,7 @@ class _LoadingOverlay extends StatelessWidget {
                 l.statusFetchingLocation,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 12,
-                  color: Color(0xFF94A3B8),
+                  color: context.hintColor,
                 ),
               ),
             ],
@@ -2337,7 +2316,7 @@ class _SdkErrorBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: ShellColors.background,
+      backgroundColor: context.bg,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -2347,7 +2326,7 @@ class _SdkErrorBody extends StatelessWidget {
               Icon(
                 Icons.map_outlined,
                 size: 56,
-                color: ShellColors.primaryBlue.withValues(alpha: 0.4),
+                color: context.primary.withValues(alpha: 0.4),
               ),
               const SizedBox(height: 16),
               Text(
@@ -2355,7 +2334,7 @@ class _SdkErrorBody extends StatelessWidget {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A1A),
+                  color: context.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
@@ -2366,7 +2345,7 @@ class _SdkErrorBody extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 13,
-                  color: const Color(0xFF6A6A6A),
+                  color: context.onSurfaceVar,
                   height: 1.5,
                 ),
               ),

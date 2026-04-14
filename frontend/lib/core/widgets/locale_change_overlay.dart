@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ─────────────────────────── Design Tokens ───────────────────────────
-const _kPrimary = Color(0xFF003478);
-
 /// Fixed determinate progress while switching locale. Indeterminate mode would
 /// spin forever while the overlay remains in the tree under [AnimatedOpacity]
 /// (opacity 0), which breaks [WidgetTester.pumpAndSettle] in tests.
@@ -40,39 +37,41 @@ class LocaleChangeOverlay extends StatelessWidget {
   String get _message =>
       _kMessages[targetLocale?.languageCode] ?? 'Changing language…';
 
-  // Myanmar needs a Unicode-compliant font; all others use NotoSansKr.
-  TextStyle get _textStyle {
+  TextStyle _textStyle(BuildContext context) {
+    final p = Theme.of(context).colorScheme.primary;
     if (targetLocale?.languageCode == 'my') {
       return GoogleFonts.notoSansMyanmar(
         fontSize: 15,
         fontWeight: FontWeight.w600,
-        color: _kPrimary,
+        color: p,
       );
     }
     return GoogleFonts.notoSansKr(
       fontSize: 15,
       fontWeight: FontWeight.w600,
-      color: _kPrimary,
+      color: p,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final p = cs.primary;
     return AbsorbPointer(
       child: Material(
-        color: Colors.white.withValues(alpha: 0.94),
+        color: cs.surface.withValues(alpha: 0.94),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 52,
                 height: 52,
                 child: CircularProgressIndicator(
                   strokeWidth: 3.2,
                   value: _kLocaleOverlayProgress,
-                  valueColor: AlwaysStoppedAnimation<Color>(_kPrimary),
-                  backgroundColor: Color(0x1F003478),
+                  valueColor: AlwaysStoppedAnimation<Color>(p),
+                  backgroundColor: p.withValues(alpha: 0.12),
                 ),
               ),
               const SizedBox(height: 20),
@@ -82,7 +81,7 @@ class LocaleChangeOverlay extends StatelessWidget {
                 child: Text(
                   _message,
                   key: ValueKey(targetLocale?.languageCode),
-                  style: _textStyle,
+                  style: _textStyle(context),
                 ),
               ),
             ],

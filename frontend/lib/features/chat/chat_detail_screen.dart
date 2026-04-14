@@ -1,25 +1,19 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/feedback/app_snackbar.dart';
+import '../../core/theme/theme_ext.dart';
+import '../../l10n/app_localizations.dart';
+import '../maps/services/mock_pin_service.dart';
 import 'models/chat_models.dart';
 import 'services/chat_service.dart';
 
-// ─────────────────────────── Design Tokens ───────────────────────────
-abstract final class _T {
-  static const primary = Color(0xFF003478);
-  static const background = Color(0xFFF0F2F5);
-  static const surface = Colors.white;
-  static const textDark = Color(0xFF1A1A1A);
-  static const textGrey = Color(0xFF6A6A6A);
-  static const textLight = Color(0xFFADB5BD);
-  static const myBubble = Color(0xFF003478);
-  static const partnerBubble = Color(0xFFFFFFFF);
-  static const inputBg = Color(0xFFF5F7FA);
-  static const onlineGreen = Color(0xFF4CAF50);
-}
+const Color _kOnlineGreen = Color(0xFF4CAF50);
 
 // ─────────────────────────── Screen ───────────────────────────
 class ChatDetailScreen extends StatefulWidget {
@@ -41,30 +35,52 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   final _focusNode = FocusNode();
   final _messages = <MessageModel>[];
 
+  /// Tracks all IDs already present in [_messages] to prevent duplicates.
+  final _addedIds = <String>{};
+
+  /// Maps temp pending IDs → index in [_messages].
+  /// When Firestore confirms a message we replace the pending entry in-place.
+  final _pendingMsgIds = <String>{};
+
   bool _isLoadingInitial = true;
   bool _isLoadingOlder = false;
   bool _hasMoreOlder = true;
   int _currentPage = 1;
   bool _canSend = false;
+  bool _isDisconnected = false;
 
   StreamSubscription<MessageModel>? _messageSub;
+  StreamSubscription<bool>? _convStatusSub;
   late final AnimationController _sendBtnCtrl;
 
   @override
   void initState() {
     super.initState();
+    _isDisconnected = widget.chat.isDisconnected;
     _sendBtnCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
     _loadInitialMessages();
-    _messageSub =
-        ChatService.instance.incomingMessages.listen(_onIncomingMessage);
+    _messageSub = ChatService.instance
+        .incomingMessagesStream(widget.chat.id)
+        .listen(_onIncomingMessage);
+    _convStatusSub = ChatService.instance
+        .conversationDisconnectedStream(widget.chat.id)
+        .listen((disconnected) {
+      if (!mounted) return;
+      setState(() => _isDisconnected = disconnected);
+      if (disconnected) {
+        _sendBtnCtrl.reverse();
+      } else if (_inputCtrl.text.trim().isNotEmpty) {
+        _sendBtnCtrl.forward();
+      }
+    });
     _inputCtrl.addListener(() {
       final canSend = _inputCtrl.text.trim().isNotEmpty;
       if (canSend != _canSend) {
         setState(() => _canSend = canSend);
-        if (canSend) {
+        if (canSend && !_isDisconnected) {
           _sendBtnCtrl.forward();
         } else {
           _sendBtnCtrl.reverse();
@@ -77,6 +93,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   @override
   void dispose() {
     _messageSub?.cancel();
+    _convStatusSub?.cancel();
     _sendBtnCtrl.dispose();
     _scrollCtrl.dispose();
     _inputCtrl.dispose();
@@ -96,9 +113,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
 
   Future<void> _loadInitialMessages() async {
     final msgs = await ChatService.instance.getMessages(widget.chat.id);
+    // Reset unread badge when opening chat.
+    ChatService.instance.resetUnreadCount(widget.chat.id);
     if (!mounted) return;
     setState(() {
-      _messages.addAll(msgs);
+      for (final m in msgs) {
+        if (_addedIds.add(m.id)) _messages.add(m);
+      }
       _isLoadingInitial = false;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
@@ -121,7 +142,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     }
     final prevExtent = _scrollCtrl.position.maxScrollExtent;
     setState(() {
-      _messages.insertAll(0, older);
+      // Insert only messages not already shown (dedup by ID).
+      final newOlder = older.where((m) => _addedIds.add(m.id)).toList();
+      _messages.insertAll(0, newOlder);
       _currentPage++;
       _isLoadingOlder = false;
     });
@@ -133,6 +156,28 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
 
   void _onIncomingMessage(MessageModel msg) {
     if (!mounted) return;
+
+    // Check if this Firestore message corresponds to a pending optimistic one.
+    // We match by content + senderId because the temp ID differs from Firestore ID.
+    final pendingIdx = _pendingMsgIds.isNotEmpty
+        ? _messages.indexWhere((m) =>
+            m.isPending &&
+            m.senderId == msg.senderId &&
+            m.content == msg.content)
+        : -1;
+
+    if (pendingIdx != -1) {
+      // Replace the pending bubble in-place with the confirmed message.
+      final tempId = _messages[pendingIdx].id;
+      _pendingMsgIds.remove(tempId);
+      _addedIds.remove(tempId);
+      _addedIds.add(msg.id);
+      setState(() => _messages[pendingIdx] = msg);
+      return;
+    }
+
+    // Regular incoming message — skip if already shown.
+    if (!_addedIds.add(msg.id)) return;
     setState(() => _messages.add(msg));
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }
@@ -150,7 +195,92 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     }
   }
 
+  // ── Location sharing ──────────────────────────────────────────────────────
+
+  void _showAttachSheet() {
+    if (_isDisconnected) {
+      final l = AppLocalizations.of(context)!;
+      showErrorTextSnackBar(context, l.chatSendBlockedDisconnected);
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _AttachSheet(onShareLocation: _showLocationPicker),
+    );
+  }
+
+  Future<void> _showLocationPicker() async {
+    if (mounted) Navigator.pop(context);
+    final locations = MockPinService.instance.allPins.map((pin) => LocationData(
+          name: pin.name,
+          lat: pin.latLng.latitude,
+          lng: pin.latLng.longitude,
+          address: pin.notes,
+          typeEmoji: pin.type.emoji,
+        )).toList();
+    if (!mounted) return;
+    final picked = await showModalBottomSheet<LocationData>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _LocationPickerSheet(locations: locations),
+    );
+    if (picked == null || !mounted) return;
+    await _sendLocation(picked);
+  }
+
+  Future<void> _sendLocation(LocationData location) async {
+    if (_isDisconnected) {
+      final l = AppLocalizations.of(context)!;
+      showErrorTextSnackBar(context, l.chatSendBlockedDisconnected);
+      return;
+    }
+    HapticFeedback.lightImpact();
+    final tempId =
+        'pending_loc_${DateTime.now().microsecondsSinceEpoch}';
+    final tempMsg = MessageModel(
+      id: tempId,
+      senderId: _myUid(),
+      content: '${location.typeEmoji} ${location.name}',
+      timestamp: DateTime.now(),
+      type: MessageType.location,
+      locationData: location,
+      isPending: true,
+    );
+    _pendingMsgIds.add(tempId);
+    _addedIds.add(tempId);
+    setState(() => _messages.add(tempMsg));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+
+    try {
+      final confirmed = await ChatService.instance.sendLocationMessage(
+        widget.chat.id,
+        location,
+        partnerId: widget.chat.partner.id,
+      );
+      if (!mounted) return;
+      _pendingMsgIds.remove(tempId);
+      _addedIds
+        ..remove(tempId)
+        ..add(confirmed.id);
+      setState(() {
+        final idx = _messages.indexWhere((m) => m.id == tempId);
+        if (idx != -1) _messages[idx] = confirmed;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      _pendingMsgIds.remove(tempId);
+      _addedIds.remove(tempId);
+      setState(() => _messages.removeWhere((m) => m.id == tempId));
+    }
+  }
+
   Future<void> _send() async {
+    if (_isDisconnected) {
+      final l = AppLocalizations.of(context)!;
+      showErrorTextSnackBar(context, l.chatSendBlockedDisconnected);
+      return;
+    }
     final text = _inputCtrl.text.trim();
     if (text.isEmpty) return;
     _inputCtrl.clear();
@@ -158,21 +288,106 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     _sendBtnCtrl.reverse();
     HapticFeedback.lightImpact();
 
-    final msg =
-        await ChatService.instance.sendMessage(widget.chat.id, text);
-    if (!mounted) return;
-    setState(() => _messages.add(msg));
+    // ── Optimistic insert ────────────────────────────────────────────────────
+    final tempId = 'pending_${DateTime.now().microsecondsSinceEpoch}';
+    final tempMsg = MessageModel(
+      id: tempId,
+      senderId: _myUid(),
+      content: text,
+      timestamp: DateTime.now(),
+      isPending: true,
+    );
+    _pendingMsgIds.add(tempId);
+    _addedIds.add(tempId);
+    setState(() => _messages.add(tempMsg));
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+
+    // ── Firestore write ──────────────────────────────────────────────────────
+    try {
+      final confirmed = await ChatService.instance.sendMessage(
+        widget.chat.id,
+        text,
+        partnerId: widget.chat.partner.id,
+      );
+      if (!mounted) return;
+      // Replace pending bubble with confirmed message in-place.
+      _pendingMsgIds.remove(tempId);
+      _addedIds
+        ..remove(tempId)
+        ..add(confirmed.id);
+      setState(() {
+        final idx = _messages.indexWhere((m) => m.id == tempId);
+        if (idx != -1) _messages[idx] = confirmed;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      // Remove the pending bubble on failure.
+      _pendingMsgIds.remove(tempId);
+      _addedIds.remove(tempId);
+      setState(() => _messages.removeWhere((m) => m.id == tempId));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to send — please try again.',
+            style: GoogleFonts.notoSansKr(fontSize: 13),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  /// Current user's UID — safe fallback to 'me'.
+  String _myUid() {
+    // ignore: unnecessary_import — firebase_auth is a transitive dep already
+    return (FirebaseAuth.instance.currentUser?.uid) ?? 'me';
+  }
+
+  Future<void> _confirmDisconnect() async {
+    final l = AppLocalizations.of(context)!;
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.chatDisconnectConfirmTitle),
+        content: Text(l.chatDisconnectConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.btnCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l.chatDisconnectMenu),
+          ),
+        ],
+      ),
+    );
+    if (go != true || !mounted) return;
+    await ChatService.instance.disconnectConversation(widget.chat.id);
+    if (mounted) showSuccessSnackBar(context, l.chatDisconnectSuccess);
+  }
+
+  Future<void> _onReconnect() async {
+    final l = AppLocalizations.of(context)!;
+    await ChatService.instance.reconnectConversation(widget.chat.id);
+    if (mounted) showSuccessSnackBar(context, l.chatReconnectSuccess);
   }
 
   @override
   Widget build(BuildContext context) {
     final partner = widget.chat.partner;
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: _T.background,
+      backgroundColor: context.bg,
       appBar: _buildAppBar(partner),
       body: Column(
         children: [
+          if (_isDisconnected)
+            _DisconnectBanner(
+              message: l.chatDisconnectedBanner,
+              reconnectLabel: l.chatReconnect,
+              onReconnect: _onReconnect,
+            ),
           Expanded(
             child: _isLoadingInitial
                 ? _buildSkeleton()
@@ -185,15 +400,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   }
 
   PreferredSizeWidget _buildAppBar(PartnerModel partner) {
+    final onS = context.onSurface;
+    final ring = Theme.of(context).colorScheme.surface;
     return AppBar(
-      backgroundColor: _T.surface,
+      backgroundColor: context.cardFill,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       shadowColor: const Color(0x14000000),
       titleSpacing: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded,
-            size: 20, color: _T.textDark),
+        icon: Icon(Icons.arrow_back_ios_new_rounded,
+            size: 20, color: onS),
         onPressed: () => Navigator.pop(context),
       ),
       title: Row(
@@ -209,9 +426,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                     width: 10,
                     height: 10,
                     decoration: BoxDecoration(
-                      color: _T.onlineGreen,
+                      color: _kOnlineGreen,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: ring, width: 2),
                     ),
                   ),
                 ),
@@ -226,7 +443,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 style: GoogleFonts.notoSansKr(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: _T.textDark,
+                  color: onS,
                 ),
               ),
               Text(
@@ -234,8 +451,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 style: GoogleFonts.notoSansKr(
                   fontSize: 11,
                   color: partner.isOnline
-                      ? _T.onlineGreen
-                      : _T.textLight,
+                      ? _kOnlineGreen
+                      : context.hintColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -245,14 +462,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.more_vert_rounded,
-              color: _T.textDark, size: 22),
+          icon: Icon(Icons.more_vert_rounded,
+              color: onS, size: 22),
           onPressed: () => _showOptions(context, partner),
         ),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(height: 1, color: const Color(0xFFF0F2F5)),
+        child: Container(height: 1, color: Theme.of(context).dividerColor),
       ),
     );
   }
@@ -269,15 +486,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
         itemBuilder: (context, index) {
           // Top: load older button or spinner
           if (index == 0 && _isLoadingOlder) {
-            return const Padding(
-              padding: EdgeInsets.only(bottom: 12),
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
               child: Center(
                 child: SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: _T.primary,
+                    color: context.primary,
                   ),
                 ),
               ),
@@ -324,82 +541,102 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   }
 
   Widget _buildInputBar() {
-    return Container(
-      color: _T.surface,
-      padding: EdgeInsets.only(
-        left: 12,
-        right: 8,
-        top: 10,
-        bottom: MediaQuery.of(context).padding.bottom + 10,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Expanded(
-            child: Container(
-              constraints: const BoxConstraints(maxHeight: 120),
-              decoration: BoxDecoration(
-                color: _T.inputBg,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFE8EDF2)),
-              ),
-              child: TextField(
-                controller: _inputCtrl,
-                focusNode: _focusNode,
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
-                textCapitalization: TextCapitalization.sentences,
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 14,
-                  color: _T.textDark,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Type a message…',
-                  hintStyle: GoogleFonts.notoSansKr(
-                    fontSize: 14,
-                    color: _T.textLight,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                ),
-                onSubmitted: (_) => _canSend ? _send() : null,
+    final p = context.primary;
+    final cs = Theme.of(context).colorScheme;
+    final locked = _isDisconnected;
+    final canSendNow = _canSend && !locked;
+    return Opacity(
+      opacity: locked ? 0.55 : 1,
+      child: Container(
+        color: context.cardFill,
+        padding: EdgeInsets.only(
+          left: 12,
+          right: 8,
+          top: 10,
+          bottom: MediaQuery.of(context).padding.bottom + 10,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                icon: Icon(Icons.add_circle_outline_rounded,
+                    color: context.onSurfaceVar, size: 26),
+                onPressed: locked ? null : _showAttachSheet,
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          AnimatedBuilder(
-            animation: _sendBtnCtrl,
-            builder: (context, _) {
-              final v = _sendBtnCtrl.value;
-              return Transform.scale(
-                scale: 0.85 + 0.15 * v,
-                child: GestureDetector(
-                  onTap: _canSend ? _send : null,
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: _canSend
-                          ? _T.primary
-                          : const Color(0xFFDDE3EA),
-                      shape: BoxShape.circle,
+            const SizedBox(width: 4),
+            Expanded(
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 120),
+                decoration: BoxDecoration(
+                  color: context.subtleFill,
+                  borderRadius: BorderRadius.circular(24),
+                  border:
+                      Border.all(color: context.outline.withValues(alpha: 0.35)),
+                ),
+                child: TextField(
+                  controller: _inputCtrl,
+                  focusNode: _focusNode,
+                  readOnly: locked,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  textCapitalization: TextCapitalization.sentences,
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 14,
+                    color: context.onSurface,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: locked
+                        ? AppLocalizations.of(context)!.chatSendBlockedDisconnected
+                        : 'Type a message…',
+                    hintStyle: GoogleFonts.notoSansKr(
+                      fontSize: 14,
+                      color: context.hintColor,
                     ),
-                    child: Icon(
-                      Icons.send_rounded,
-                      color: _canSend
-                          ? Colors.white
-                          : _T.textLight,
-                      size: 20,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
                     ),
                   ),
+                  onSubmitted: (_) => canSendNow ? _send() : null,
                 ),
-              );
-            },
-          ),
-        ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            AnimatedBuilder(
+              animation: _sendBtnCtrl,
+              builder: (context, _) {
+                final v = _sendBtnCtrl.value;
+                return Transform.scale(
+                  scale: 0.85 + 0.15 * v,
+                  child: GestureDetector(
+                    onTap: canSendNow ? _send : null,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: canSendNow
+                            ? p
+                            : context.outline.withValues(alpha: 0.35),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.send_rounded,
+                        color: canSendNow ? cs.onPrimary : context.hintColor,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -413,12 +650,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   }
 
   void _showOptions(BuildContext context, PartnerModel partner) {
-    showModalBottomSheet(
+    final l = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => SafeArea(
+      builder: (sheetCtx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -427,7 +665,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFFDDE3EA),
+                color: Theme.of(sheetCtx)
+                    .colorScheme
+                    .outline
+                    .withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -436,15 +677,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               leading: const Icon(Icons.person_outline_rounded),
               title: Text('View Profile',
                   style: GoogleFonts.notoSansKr(fontSize: 14)),
-              onTap: () => Navigator.pop(context),
+              onTap: () => Navigator.pop(sheetCtx),
             ),
             ListTile(
-              leading: const Icon(Icons.block_rounded,
-                  color: Colors.red),
-              title: Text('Block User',
-                  style: GoogleFonts.notoSansKr(
-                      fontSize: 14, color: Colors.red)),
-              onTap: () => Navigator.pop(context),
+              leading: Icon(Icons.pause_circle_outline_rounded,
+                  color: context.onSurfaceVar),
+              title: Text(
+                l.chatDisconnectMenu,
+                style: GoogleFonts.notoSansKr(fontSize: 14),
+              ),
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                _confirmDisconnect();
+              },
             ),
             const SizedBox(height: 8),
           ],
@@ -455,6 +700,56 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
+}
+
+// ─────────────────────────── Disconnect banner ───────────────────────────
+class _DisconnectBanner extends StatelessWidget {
+  const _DisconnectBanner({
+    required this.message,
+    required this.reconnectLabel,
+    required this.onReconnect,
+  });
+
+  final String message;
+  final String reconnectLabel;
+  final VoidCallback onReconnect;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.primary;
+    return Material(
+      color: context.cs.primaryContainer.withValues(alpha: 0.55),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline_rounded, size: 20, color: p),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 13,
+                  color: context.onSurface,
+                  height: 1.35,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: onReconnect,
+              child: Text(
+                reconnectLabel,
+                style: GoogleFonts.notoSansKr(
+                  fontWeight: FontWeight.w700,
+                  color: p,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ─────────────────────────── Load Older Button ───────────────────────────
@@ -473,27 +768,21 @@ class _LoadOlderButton extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              color: _T.surface,
+              color: context.cardFill,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x0D000000),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ],
+              boxShadow: context.cardElevationShadow,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.keyboard_arrow_up_rounded,
-                    size: 16, color: _T.textGrey),
+                Icon(Icons.keyboard_arrow_up_rounded,
+                    size: 16, color: context.onSurfaceVar),
                 const SizedBox(width: 4),
                 Text(
                   'Load older messages',
                   style: GoogleFonts.notoSansKr(
                     fontSize: 12,
-                    color: _T.textGrey,
+                    color: context.onSurfaceVar,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -527,21 +816,21 @@ class _DateSeparator extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          const Expanded(
-              child: Divider(color: Color(0xFFE0E4EA), thickness: 1)),
+          Expanded(
+              child: Divider(color: Theme.of(context).dividerColor, thickness: 1)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
               _label(),
               style: GoogleFonts.notoSansKr(
                 fontSize: 11,
-                color: _T.textLight,
+                color: context.hintColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
-          const Expanded(
-              child: Divider(color: Color(0xFFE0E4EA), thickness: 1)),
+          Expanded(
+              child: Divider(color: Theme.of(context).dividerColor, thickness: 1)),
         ],
       ),
     );
@@ -566,7 +855,20 @@ class _BubbleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMe = message.isMe;
 
-    return Padding(
+    if (message.type == MessageType.system) {
+      return Padding(
+        padding: EdgeInsets.only(
+          top: isGroupStart ? 6 : 2,
+          bottom: isGroupEnd ? 2 : 0,
+        ),
+        child: _SystemNotice(text: message.content),
+      );
+    }
+
+    return AnimatedOpacity(
+      opacity: message.isPending ? 0.55 : 1.0,
+      duration: const Duration(milliseconds: 200),
+      child: Padding(
       padding: EdgeInsets.only(
         top: isGroupStart ? 6 : 2,
         bottom: isGroupEnd ? 2 : 0,
@@ -592,12 +894,19 @@ class _BubbleTile extends StatelessWidget {
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
-                _Bubble(
-                  message: message,
-                  isMe: isMe,
-                  isGroupStart: isGroupStart,
-                  isGroupEnd: isGroupEnd,
-                ),
+                if (message.type == MessageType.location &&
+                    message.locationData != null)
+                  _LocationBubble(
+                    location: message.locationData!,
+                    isMe: isMe,
+                  )
+                else
+                  _Bubble(
+                    message: message,
+                    isMe: isMe,
+                    isGroupStart: isGroupStart,
+                    isGroupEnd: isGroupEnd,
+                  ),
                 if (isGroupEnd)
                   Padding(
                     padding: const EdgeInsets.only(top: 3, left: 2, right: 2),
@@ -605,7 +914,7 @@ class _BubbleTile extends StatelessWidget {
                       _formatTime(message.timestamp),
                       style: GoogleFonts.notoSansKr(
                         fontSize: 10,
-                        color: _T.textLight,
+                        color: context.hintColor,
                       ),
                     ),
                   ),
@@ -619,7 +928,8 @@ class _BubbleTile extends StatelessWidget {
           if (isMe) const SizedBox(width: 40),
         ],
       ),
-    );
+      ), // Padding
+    ); // AnimatedOpacity
   }
 
   String _formatTime(DateTime dt) {
@@ -628,6 +938,35 @@ class _BubbleTile extends StatelessWidget {
     final period = h < 12 ? 'AM' : 'PM';
     final hour = (h % 12 == 0 ? 12 : h % 12).toString();
     return '$hour:$m $period';
+  }
+}
+
+// ─────────────────────────── System notice (welcome, etc.) ───────────────────────────
+class _SystemNotice extends StatelessWidget {
+  const _SystemNotice({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: context.subtleFill,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.notoSansKr(
+            fontSize: 12,
+            color: context.onSurfaceVar,
+            height: 1.35,
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -647,6 +986,9 @@ class _Bubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final myBg = cs.primary;
+    final partnerBg = context.cardFill;
     const r = Radius.circular(18);
     const rSmall = Radius.circular(4);
 
@@ -685,23 +1027,15 @@ class _Bubble extends StatelessWidget {
         padding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isMe ? _T.myBubble : _T.partnerBubble,
+          color: isMe ? myBg : partnerBg,
           borderRadius: borderRadius,
-          boxShadow: isMe
-              ? null
-              : const [
-                  BoxShadow(
-                    color: Color(0x0A000000),
-                    blurRadius: 4,
-                    offset: Offset(0, 1),
-                  ),
-                ],
+          boxShadow: isMe ? null : context.cardElevationShadow,
         ),
         child: Text(
           message.content,
           style: GoogleFonts.notoSansKr(
             fontSize: 14,
-            color: isMe ? Colors.white : _T.textDark,
+            color: isMe ? cs.onPrimary : context.onSurface,
             height: 1.45,
           ),
         ),
@@ -724,10 +1058,10 @@ class _SkeletonBubble extends StatelessWidget {
             isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!isMe) ...[
-            _circle(28),
+            _circle(context, 28),
             const SizedBox(width: 6),
           ],
-          _rect(isMe ? 180 : 200, 40),
+          _rect(context, isMe ? 180 : 200, 40),
           if (isMe) const SizedBox(width: 40),
           if (!isMe) const SizedBox(width: 40),
         ],
@@ -735,20 +1069,20 @@ class _SkeletonBubble extends StatelessWidget {
     );
   }
 
-  Widget _circle(double s) => Container(
+  Widget _circle(BuildContext context, double s) => Container(
         width: s,
         height: s,
-        decoration: const BoxDecoration(
-          color: Color(0xFFEEEEEE),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           shape: BoxShape.circle,
         ),
       );
 
-  Widget _rect(double w, double h) => Container(
+  Widget _rect(BuildContext context, double w, double h) => Container(
         width: w,
         height: h,
         decoration: BoxDecoration(
-          color: const Color(0xFFEEEEEE),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(14),
         ),
       );
@@ -767,11 +1101,12 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
-        color: _T.primary,
+      decoration: BoxDecoration(
+        color: cs.primary,
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
@@ -780,8 +1115,260 @@ class _Avatar extends StatelessWidget {
         style: GoogleFonts.notoSansKr(
           fontSize: fontSize,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: cs.onPrimary,
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────── Location Bubble ───────────────────────────
+class _LocationBubble extends StatelessWidget {
+  const _LocationBubble({required this.location, required this.isMe});
+  final LocationData location;
+  final bool isMe;
+
+  Future<void> _open() async {
+    final uri = Uri.parse(
+        'https://maps.google.com/?q=${location.lat},${location.lng}');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final p = context.primary;
+    final bg = isMe ? cs.primary : context.cardFill;
+    final text = isMe ? cs.onPrimary : context.onSurface;
+    final sub = isMe ? cs.onPrimary.withValues(alpha: 0.75) : context.onSurfaceVar;
+
+    return GestureDetector(
+      onTap: _open,
+      child: Container(
+        width: 220,
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isMe ? null : context.cardElevationShadow,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              height: 86,
+              decoration: BoxDecoration(
+                color: isMe
+                    ? cs.primary.withValues(alpha: 0.75)
+                    : context.subtleFill,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(location.typeEmoji,
+                      style: const TextStyle(fontSize: 28)),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${location.lat.toStringAsFixed(4)}, '
+                    '${location.lng.toStringAsFixed(4)}',
+                    style: GoogleFonts.notoSansKr(
+                        fontSize: 10, color: sub),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(location.name,
+                      style: GoogleFonts.notoSansKr(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: text),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  if (location.address.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(location.address,
+                        style: GoogleFonts.notoSansKr(
+                            fontSize: 11, color: sub, height: 1.3),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
+                  ],
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: isMe
+                          ? cs.onPrimary.withValues(alpha: 0.15)
+                          : p.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.open_in_new_rounded,
+                            size: 12,
+                            color: isMe ? cs.onPrimary : p),
+                        const SizedBox(width: 4),
+                        Text('Open in Maps',
+                            style: GoogleFonts.notoSansKr(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isMe ? cs.onPrimary : p)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────── Attach Sheet ───────────────────────────
+class _AttachSheet extends StatelessWidget {
+  const _AttachSheet({required this.onShareLocation});
+  final VoidCallback onShareLocation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.only(
+        top: 12,
+        left: 20,
+        right: 20,
+        bottom: MediaQuery.of(context).padding.bottom + 20,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: onShareLocation,
+            child: Column(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.location_on_rounded,
+                      color: Colors.green, size: 26),
+                ),
+                const SizedBox(height: 6),
+                Text('Location',
+                    style: GoogleFonts.notoSansKr(
+                        fontSize: 12, color: context.onSurfaceVar)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────── Location Picker Sheet ───────────────────────────
+class _LocationPickerSheet extends StatelessWidget {
+  const _LocationPickerSheet({required this.locations});
+  final List<LocationData> locations;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.primary;
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.only(
+        top: 12,
+        bottom: MediaQuery.of(context).padding.bottom + 8,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Icon(Icons.location_on_rounded,
+                    color: p, size: 20),
+                const SizedBox(width: 8),
+                Text('Share a Location',
+                    style: GoogleFonts.notoSansKr(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: context.onSurface)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          ...locations.map((loc) => ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: p.withValues(alpha: 0.08),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(loc.typeEmoji,
+                      style: const TextStyle(fontSize: 20)),
+                ),
+                title: Text(loc.name,
+                    style: GoogleFonts.notoSansKr(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: context.onSurface)),
+                subtitle: loc.address.isNotEmpty
+                    ? Text(loc.address,
+                        style: GoogleFonts.notoSansKr(
+                            fontSize: 12, color: context.onSurfaceVar),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis)
+                    : null,
+                onTap: () => Navigator.pop(context, loc),
+              )),
+        ],
       ),
     );
   }

@@ -266,6 +266,14 @@
   "partnerSendRequest": "リクエストを送る",
   "partnerPending": "保留中…",
   "partnerAccepted": "承認済み！",
+  "partnerRequestSentSuccess": "リクエストを送信しました。",
+  "partnerRequestNotSignedIn": "ログインしてからリクエストを送信してください。",
+  "partnerRequestProfileMissing": "このユーザーのプロフィールがありません。",
+  "partnerRequestAlreadyPending": "この相手への保留中のリクエストがすでにあります。",
+  "partnerRequestIncomingPending": "相手からすでにリクエストが届いています。チャットタブで承認してください。",
+  "partnerRequestAlreadyAccepted": "すでに接続済みです。",
+  "partnerRequestPreviouslyDeclined": "以前のリクエストは辞退されました。まだ再送信できません。",
+  "partnerRequestFailed": "リクエストを送信できませんでした。もう一度お試しください。",
 
   "chatSearchConversations": "会話を検索…",
   "chatEmptyTitle": "まだ会話がありません",
@@ -276,7 +284,21 @@
   "chatFilterTargetLanguage": "学びたい言語",
   "chatFilterFindPartners": "パートナーを探す",
   "chatRequestPending": "リクエスト保留中…",
+  "chatRequestsIncoming": "受信したリクエスト",
+  "chatRequestBannerSubtitle": "つながりたいようです 👋",
+  "chatRequestAccept": "承認",
+  "chatRequestDecline": "辞退",
   "chatFilterLanguageAny": "指定なし",
+  "chatDisconnectedListSubtitle": "Paused — open chat to reconnect",
+  "chatDisconnectMenu": "Pause connection",
+  "chatDisconnectConfirmTitle": "Pause this chat?",
+  "chatDisconnectConfirmBody": "You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.",
+  "chatReconnect": "Reconnect",
+  "chatDisconnectedBanner": "Connection paused. Reconnect to send messages.",
+  "chatSendBlockedDisconnected": "Reconnect to send messages.",
+  "chatDisconnectSuccess": "Chat paused.",
+  "chatReconnectSuccess": "Connection restored.",
+
 
   "authSuccessLogin": "おかえりなさい！",
   "authSuccessRegister": "登録完了！メールを確認してください。",
@@ -304,12 +326,41 @@
   "@verifyEmailResendCooldown": {
     "placeholders": { "seconds": { "type": "int" } }
   },
-  "authUniEmailLabel": "大学メール",
-  "authUniEmailHint": "メールID",
-  "authUniSelectHint": "大学を選択",
-  "authUniPickerTitle": "大学を選択",
-  "authUniSearchHint": "大学またはドメインで検索…",
-  "verifyEmailSent": "確認メールを送信しました。受信トレイをご確認ください。",
+
+  "authSuccessVerified": "メールアドレスが確認されました！サインインしてください。",
   "verifyEmailNotYet": "まだメールが確認されていません。受信トレイをご確認ください。",
-  "authSuccessVerified": "メール認証完了！ログインしてください。"
+
+  "errorChatRequestNotFound": "このリクエストはもう存在しません。",
+  "errorChatRequestNotPending": "このリクエストはすでに処理されました。",
+  "errorTransactionAborted": "接続が混み合っています — もう一度お試しください。",
+  "errorNetwork": "ネットワークエラー。接続を確認してください。",
+  "errorPermissionDenied": "この操作を行う権限がありません。",
+  "errorNotFound": "リクエストされたアイテムが見つかりません。",
+  "errorDataConflict": "データの競合。更新してからもう一度お試しください。",
+  "errorUnexpected": "予期しないエラーが発生しました。もう一度お試しください。",
+
+  "mapDistanceFromYouMeters": "現在地から{meters}m",
+  "@mapDistanceFromYouMeters": {
+    "placeholders": { "meters": { "type": "int" } }
+  },
+  "mapDistanceFromYouKilometers": "現在地から{km}km",
+  "@mapDistanceFromYouKilometers": {
+    "placeholders": { "km": { "type": "String" } }
+  },
+
+  "postMenuEdit": "編集",
+  "postMenuDelete": "削除",
+  "postUpdateSuccess": "投稿を更新しました",
+  "postEditSheetTitle": "投稿を編集",
+  "postEditTitleLabel": "タイトル",
+  "postEditContentLabel": "内容",
+  "postEditUpdateBtn": "更新",
+  "postDeleteSuccess": "投稿を削除しました",
+  "postDeleteTitle": "投稿を削除",
+  "postDeleteMessage": "この投稿を削除しますか？この操作は元に戻せません。",
+  "postDeleteCancel": "キャンセル",
+  "postDeleteConfirm": "削除",
+  "postTranslating": "翻訳中…",
+  "postShowOriginal": "原文を表示",
+  "postTranslate": "翻訳"
 }

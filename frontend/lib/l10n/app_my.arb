@@ -267,6 +267,15 @@
   "partnerPending": "စောင့်ဆိုင်းနေသည်…",
   "partnerAccepted": "လက်ခံပြီး!",
 
+  "partnerRequestSentSuccess": "Request sent.",
+  "partnerRequestNotSignedIn": "Please sign in to send a request.",
+  "partnerRequestProfileMissing": "This user has no profile yet.",
+  "partnerRequestAlreadyPending": "You already have a pending request with this person.",
+  "partnerRequestIncomingPending": "They already sent you a request. Open Chat to accept it.",
+  "partnerRequestAlreadyAccepted": "You are already connected with this person.",
+  "partnerRequestPreviouslyDeclined": "A previous request was declined. You cannot send again yet.",
+  "partnerRequestFailed": "Could not send the request. Please try again.",
+
   "chatSearchConversations": "စကားပြောများကို ရှာဖွေပါ…",
   "chatEmptyTitle": "စကားပြောမရှိသေးပါ",
   "chatEmptySubtitle": "ဘာသာစကားဖော်ဖော်ရှာဖော်ရှာပြီး စကားပြောစမည်!",
@@ -276,7 +285,21 @@
   "chatFilterTargetLanguage": "သင်ယူလိုသော ဘာသာ",
   "chatFilterFindPartners": "ဖော်ဖော်ရှာဖော်များ ရှာမည်",
   "chatRequestPending": "တောင်းဆိုမှု စောင့်ဆိုင်းနေသည်…",
+  "chatRequestsIncoming": "ဝင်ရောက်လာသောတောင်းဆိုမှု",
+  "chatRequestBannerSubtitle": "သင့်နှင့်ချိတ်ဆက်လိုသည် 👋",
+  "chatRequestAccept": "လက်ခံသည်",
+  "chatRequestDecline": "ငြင်းပယ်သည်",
   "chatFilterLanguageAny": "အားလုံး",
+  "chatDisconnectedListSubtitle": "Paused — open chat to reconnect",
+  "chatDisconnectMenu": "Pause connection",
+  "chatDisconnectConfirmTitle": "Pause this chat?",
+  "chatDisconnectConfirmBody": "You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.",
+  "chatReconnect": "Reconnect",
+  "chatDisconnectedBanner": "Connection paused. Reconnect to send messages.",
+  "chatSendBlockedDisconnected": "Reconnect to send messages.",
+  "chatDisconnectSuccess": "Chat paused.",
+  "chatReconnectSuccess": "Connection restored.",
+
 
   "authSuccessLogin": "ကြိုဆိုပါသည်！",
   "authSuccessRegister": "စာရင်းသွင်းပြီးပါပြီ！ အီးမေးလ် အတည်ပြုပါ။",
@@ -304,12 +327,41 @@
   "@verifyEmailResendCooldown": {
     "placeholders": { "seconds": { "type": "int" } }
   },
-  "authUniEmailLabel": "တက္ကသိုလ်အီးမေးလ်",
-  "authUniEmailHint": "အီးမေးလ် ID",
-  "authUniSelectHint": "တက္ကသိုလ်ရွေးပါ",
-  "authUniPickerTitle": "တက္ကသိုလ်ရွေးချယ်ပါ",
-  "authUniSearchHint": "တက္ကသိုလ် သို့မဟုတ် domain ရှာပါ…",
-  "verifyEmailSent": "အတည်ပြုအီးမေးလ် ပို့ပြီးပါပြီ။ သင့်ဝင်ခဲ့သောစာပုံး စစ်ဆေးပါ။",
-  "verifyEmailNotYet": "အီးမေးလ် မတည်ပြုရသေးပါ။ သင့်ဝင်ခဲ့သောစာပုံး စစ်ဆေးပါ။",
-  "authSuccessVerified": "အီးမေးလ် အတည်ပြုပြီးပါပြီ！ ဝင်ရောက်ပါ။"
+
+  "authSuccessVerified": "အီးမေးလ် အတည်ပြုပြီးပါပြီ! ဝင်ရောက်ပါ။",
+  "verifyEmailNotYet": "အီးမေးလ် မအတည်ပြုရသေးပါ။ inbox စစ်ဆေးပါ။",
+
+  "errorChatRequestNotFound": "ဤတောင်းဆိုမှု မရှိတော့ပါ။",
+  "errorChatRequestNotPending": "ဤတောင်းဆိုမှု ဖြေရှင်းပြီးပါပြီ။",
+  "errorTransactionAborted": "ချိတ်ဆက်မှု အလုပ်ရှုပ်နေသည် — ထပ်မံကြိုးစားပါ။",
+  "errorNetwork": "ကွန်ရက်အမှား။ ချိတ်ဆက်မှုစစ်ဆေးပါ။",
+  "errorPermissionDenied": "ဤလုပ်ဆောင်မှုခွင့်မရှိပါ။",
+  "errorNotFound": "တောင်းဆိုထားသောအရာမတွေ့ပါ။",
+  "errorDataConflict": "ဒေတာပဋိပက္ခ။ refresh ပြုလုပ်ပြီးပြန်ကြိုးစားပါ။",
+  "errorUnexpected": "မမျှော်လင့်သောအမှားဖြစ်ပွားသည်။ ပြန်ကြိုးစားပါ။",
+
+  "mapDistanceFromYouMeters": "သင်နှင့် {meters}m",
+  "@mapDistanceFromYouMeters": {
+    "placeholders": { "meters": { "type": "int" } }
+  },
+  "mapDistanceFromYouKilometers": "သင်နှင့် {km}km",
+  "@mapDistanceFromYouKilometers": {
+    "placeholders": { "km": { "type": "String" } }
+  },
+
+  "postMenuEdit": "တည်းဖြတ်မည်",
+  "postMenuDelete": "ဖျက်မည်",
+  "postUpdateSuccess": "ပို့စ်ကို အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ",
+  "postEditSheetTitle": "ပို့စ် တည်းဖြတ်မည်",
+  "postEditTitleLabel": "ခေါင်းစဉ်",
+  "postEditContentLabel": "အကြောင်းအရာ",
+  "postEditUpdateBtn": "ပြင်ဆင်မည်",
+  "postDeleteSuccess": "ပို့စ် ဖျက်ပြီးပါပြီ",
+  "postDeleteTitle": "ပို့စ် ဖျက်မည်",
+  "postDeleteMessage": "ဤပို့စ်ကို ဖျက်မှာ သေချာပါသလား? ဤလုပ်ဆောင်မှုကို နောက်ပြန်မဆွဲနိုင်ပါ။",
+  "postDeleteCancel": "မလုပ်တော့",
+  "postDeleteConfirm": "ဖျက်မည်",
+  "postTranslating": "ဘာသာပြန်နေသည်…",
+  "postShowOriginal": "မူရင်း ကြည့်မည်",
+  "postTranslate": "ဘာသာပြန်မည်"
 }

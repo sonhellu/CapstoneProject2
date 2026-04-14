@@ -735,6 +735,35 @@ class AppLocalizationsMy extends AppLocalizations {
   String get partnerAccepted => 'လက်ခံပြီး!';
 
   @override
+  String get partnerRequestSentSuccess => 'Request sent.';
+
+  @override
+  String get partnerRequestNotSignedIn => 'Please sign in to send a request.';
+
+  @override
+  String get partnerRequestProfileMissing => 'This user has no profile yet.';
+
+  @override
+  String get partnerRequestAlreadyPending =>
+      'You already have a pending request with this person.';
+
+  @override
+  String get partnerRequestIncomingPending =>
+      'They already sent you a request. Open Chat to accept it.';
+
+  @override
+  String get partnerRequestAlreadyAccepted =>
+      'You are already connected with this person.';
+
+  @override
+  String get partnerRequestPreviouslyDeclined =>
+      'A previous request was declined. You cannot send again yet.';
+
+  @override
+  String get partnerRequestFailed =>
+      'Could not send the request. Please try again.';
+
+  @override
   String get chatSearchConversations => 'စကားပြောများကို ရှာဖွေပါ…';
 
   @override
@@ -763,7 +792,48 @@ class AppLocalizationsMy extends AppLocalizations {
   String get chatRequestPending => 'တောင်းဆိုမှု စောင့်ဆိုင်းနေသည်…';
 
   @override
+  String get chatRequestsIncoming => 'ဝင်ရောက်လာသောတောင်းဆိုမှု';
+
+  @override
+  String get chatRequestBannerSubtitle => 'သင့်နှင့်ချိတ်ဆက်လိုသည် 👋';
+
+  @override
+  String get chatRequestAccept => 'လက်ခံသည်';
+
+  @override
+  String get chatRequestDecline => 'ငြင်းပယ်သည်';
+
+  @override
   String get chatFilterLanguageAny => 'အားလုံး';
+
+  @override
+  String get chatDisconnectedListSubtitle => 'Paused — open chat to reconnect';
+
+  @override
+  String get chatDisconnectMenu => 'Pause connection';
+
+  @override
+  String get chatDisconnectConfirmTitle => 'Pause this chat?';
+
+  @override
+  String get chatDisconnectConfirmBody =>
+      'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.';
+
+  @override
+  String get chatReconnect => 'Reconnect';
+
+  @override
+  String get chatDisconnectedBanner =>
+      'Connection paused. Reconnect to send messages.';
+
+  @override
+  String get chatSendBlockedDisconnected => 'Reconnect to send messages.';
+
+  @override
+  String get chatDisconnectSuccess => 'Chat paused.';
+
+  @override
+  String get chatReconnectSuccess => 'Connection restored.';
 
   @override
   String get authSuccessLogin => 'ကြိုဆိုပါသည်！';
@@ -822,28 +892,91 @@ class AppLocalizationsMy extends AppLocalizations {
   }
 
   @override
-  String get authUniEmailLabel => 'တက္ကသိုလ်အီးမေးလ်';
+  String get authSuccessVerified => 'အီးမေးလ် အတည်ပြုပြီးပါပြီ! ဝင်ရောက်ပါ။';
 
   @override
-  String get authUniEmailHint => 'အီးမေးလ် ID';
+  String get verifyEmailNotYet => 'အီးမေးလ် မအတည်ပြုရသေးပါ။ inbox စစ်ဆေးပါ။';
 
   @override
-  String get authUniSelectHint => 'တက္ကသိုလ်ရွေးပါ';
+  String get errorChatRequestNotFound => 'ဤတောင်းဆိုမှု မရှိတော့ပါ။';
 
   @override
-  String get authUniPickerTitle => 'တက္ကသိုလ်ရွေးချယ်ပါ';
+  String get errorChatRequestNotPending => 'ဤတောင်းဆိုမှု ဖြေရှင်းပြီးပါပြီ။';
 
   @override
-  String get authUniSearchHint => 'တက္ကသိုလ် သို့မဟုတ် domain ရှာပါ…';
+  String get errorTransactionAborted =>
+      'ချိတ်ဆက်မှု အလုပ်ရှုပ်နေသည် — ထပ်မံကြိုးစားပါ။';
 
   @override
-  String get verifyEmailSent =>
-      'အတည်ပြုအီးမေးလ် ပို့ပြီးပါပြီ။ သင့်ဝင်ခဲ့သောစာပုံး စစ်ဆေးပါ။';
+  String get errorNetwork => 'ကွန်ရက်အမှား။ ချိတ်ဆက်မှုစစ်ဆေးပါ။';
 
   @override
-  String get verifyEmailNotYet =>
-      'အီးမေးလ် မတည်ပြုရသေးပါ။ သင့်ဝင်ခဲ့သောစာပုံး စစ်ဆေးပါ။';
+  String get errorPermissionDenied => 'ဤလုပ်ဆောင်မှုခွင့်မရှိပါ။';
 
   @override
-  String get authSuccessVerified => 'အီးမေးလ် အတည်ပြုပြီးပါပြီ！ ဝင်ရောက်ပါ။';
+  String get errorNotFound => 'တောင်းဆိုထားသောအရာမတွေ့ပါ။';
+
+  @override
+  String get errorDataConflict =>
+      'ဒေတာပဋိပက္ခ။ refresh ပြုလုပ်ပြီးပြန်ကြိုးစားပါ။';
+
+  @override
+  String get errorUnexpected =>
+      'မမျှော်လင့်သောအမှားဖြစ်ပွားသည်။ ပြန်ကြိုးစားပါ။';
+
+  @override
+  String mapDistanceFromYouMeters(int meters) {
+    return 'သင်နှင့် ${meters}m';
+  }
+
+  @override
+  String mapDistanceFromYouKilometers(String km) {
+    return 'သင်နှင့် ${km}km';
+  }
+
+  @override
+  String get postMenuEdit => 'တည်းဖြတ်မည်';
+
+  @override
+  String get postMenuDelete => 'ဖျက်မည်';
+
+  @override
+  String get postUpdateSuccess => 'ပို့စ်ကို အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ';
+
+  @override
+  String get postEditSheetTitle => 'ပို့စ် တည်းဖြတ်မည်';
+
+  @override
+  String get postEditTitleLabel => 'ခေါင်းစဉ်';
+
+  @override
+  String get postEditContentLabel => 'အကြောင်းအရာ';
+
+  @override
+  String get postEditUpdateBtn => 'ပြင်ဆင်မည်';
+
+  @override
+  String get postDeleteSuccess => 'ပို့စ် ဖျက်ပြီးပါပြီ';
+
+  @override
+  String get postDeleteTitle => 'ပို့စ် ဖျက်မည်';
+
+  @override
+  String get postDeleteMessage =>
+      'ဤပို့စ်ကို ဖျက်မှာ သေချာပါသလား? ဤလုပ်ဆောင်မှုကို နောက်ပြန်မဆွဲနိုင်ပါ။';
+
+  @override
+  String get postDeleteCancel => 'မလုပ်တော့';
+
+  @override
+  String get postDeleteConfirm => 'ဖျက်မည်';
+
+  @override
+  String get postTranslating => 'ဘာသာပြန်နေသည်…';
+
+  @override
+  String get postShowOriginal => 'မူရင်း ကြည့်မည်';
+
+  @override
+  String get postTranslate => 'ဘာသာပြန်မည်';
 }

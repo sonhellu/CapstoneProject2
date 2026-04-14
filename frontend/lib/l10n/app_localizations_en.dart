@@ -735,6 +735,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get partnerAccepted => 'Accepted!';
 
   @override
+  String get partnerRequestSentSuccess => 'Request sent.';
+
+  @override
+  String get partnerRequestNotSignedIn => 'Please sign in to send a request.';
+
+  @override
+  String get partnerRequestProfileMissing => 'This user has no profile yet.';
+
+  @override
+  String get partnerRequestAlreadyPending =>
+      'You already have a pending request with this person.';
+
+  @override
+  String get partnerRequestIncomingPending =>
+      'They already sent you a request. Open Chat to accept it.';
+
+  @override
+  String get partnerRequestAlreadyAccepted =>
+      'You are already connected with this person.';
+
+  @override
+  String get partnerRequestPreviouslyDeclined =>
+      'A previous request was declined. You cannot send again yet.';
+
+  @override
+  String get partnerRequestFailed =>
+      'Could not send the request. Please try again.';
+
+  @override
   String get chatSearchConversations => 'Search conversations…';
 
   @override
@@ -762,7 +791,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatRequestPending => 'Request pending…';
 
   @override
+  String get chatRequestsIncoming => 'Incoming requests';
+
+  @override
+  String get chatRequestBannerSubtitle => 'Wants to connect with you 👋';
+
+  @override
+  String get chatRequestAccept => 'Accept';
+
+  @override
+  String get chatRequestDecline => 'Decline';
+
+  @override
   String get chatFilterLanguageAny => 'Any';
+
+  @override
+  String get chatDisconnectedListSubtitle => 'Paused — open chat to reconnect';
+
+  @override
+  String get chatDisconnectMenu => 'Pause connection';
+
+  @override
+  String get chatDisconnectConfirmTitle => 'Pause this chat?';
+
+  @override
+  String get chatDisconnectConfirmBody =>
+      'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.';
+
+  @override
+  String get chatReconnect => 'Reconnect';
+
+  @override
+  String get chatDisconnectedBanner =>
+      'Connection paused. Reconnect to send messages.';
+
+  @override
+  String get chatSendBlockedDisconnected => 'Reconnect to send messages.';
+
+  @override
+  String get chatDisconnectSuccess => 'Chat paused.';
+
+  @override
+  String get chatReconnectSuccess => 'Connection restored.';
 
   @override
   String get authSuccessLogin => 'Welcome back!';
@@ -822,28 +892,92 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get authUniEmailLabel => 'University Email';
-
-  @override
-  String get authUniEmailHint => 'email';
-
-  @override
-  String get authUniSelectHint => 'Select university';
-
-  @override
-  String get authUniPickerTitle => 'Select University';
-
-  @override
-  String get authUniSearchHint => 'Search university or domain…';
-
-  @override
-  String get verifyEmailSent =>
-      'Verification email sent. Please check your inbox.';
+  String get authSuccessVerified => 'Email verified! Please sign in.';
 
   @override
   String get verifyEmailNotYet =>
-      'Email not verified yet. Please check your inbox.';
+      'Email not yet verified. Please check your inbox.';
 
   @override
-  String get authSuccessVerified => 'Email verified! Please log in.';
+  String get errorChatRequestNotFound => 'This request no longer exists.';
+
+  @override
+  String get errorChatRequestNotPending =>
+      'This request has already been handled.';
+
+  @override
+  String get errorTransactionAborted => 'Connection busy — please try again.';
+
+  @override
+  String get errorNetwork => 'Network error. Check your connection.';
+
+  @override
+  String get errorPermissionDenied => 'You don\'t have permission to do that.';
+
+  @override
+  String get errorNotFound => 'The requested item was not found.';
+
+  @override
+  String get errorDataConflict =>
+      'Data conflict. Please refresh and try again.';
+
+  @override
+  String get errorUnexpected =>
+      'An unexpected error occurred. Please try again.';
+
+  @override
+  String mapDistanceFromYouMeters(int meters) {
+    return '${meters}m from you';
+  }
+
+  @override
+  String mapDistanceFromYouKilometers(String km) {
+    return '${km}km from you';
+  }
+
+  @override
+  String get postMenuEdit => 'Edit';
+
+  @override
+  String get postMenuDelete => 'Delete';
+
+  @override
+  String get postUpdateSuccess => 'Post updated successfully';
+
+  @override
+  String get postEditSheetTitle => 'Edit Post';
+
+  @override
+  String get postEditTitleLabel => 'Title';
+
+  @override
+  String get postEditContentLabel => 'Content';
+
+  @override
+  String get postEditUpdateBtn => 'Update';
+
+  @override
+  String get postDeleteSuccess => 'Post deleted';
+
+  @override
+  String get postDeleteTitle => 'Delete Post';
+
+  @override
+  String get postDeleteMessage =>
+      'Are you sure you want to delete this post? This action cannot be undone.';
+
+  @override
+  String get postDeleteCancel => 'Cancel';
+
+  @override
+  String get postDeleteConfirm => 'Delete';
+
+  @override
+  String get postTranslating => 'Translating…';
+
+  @override
+  String get postShowOriginal => 'Show original';
+
+  @override
+  String get postTranslate => 'Translate';
 }

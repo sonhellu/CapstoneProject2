@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../chat/repository/user_repository.dart';
+
 class AuthProvider extends ChangeNotifier {
   final _auth = FirebaseAuth.instance;
 
@@ -24,7 +26,16 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    await _auth.signInWithEmailAndPassword(email: email, password: password);
+    final cred = await _auth.signInWithEmailAndPassword(
+        email: email, password: password);
+    final user = cred.user;
+    if (user != null) {
+      await UserRepository.instance.saveOrUpdateProfile(
+        uid: user.uid,
+        displayName: user.displayName ?? email.split('@').first,
+        email: email,
+      );
+    }
   }
 
   Future<void> registerWithEmail({
@@ -38,6 +49,14 @@ class AuthProvider extends ChangeNotifier {
     );
     if (name.isNotEmpty) {
       await cred.user?.updateDisplayName(name);
+    }
+    final user = cred.user;
+    if (user != null) {
+      await UserRepository.instance.saveOrUpdateProfile(
+        uid: user.uid,
+        displayName: name.isNotEmpty ? name : email.split('@').first,
+        email: email,
+      );
     }
     // Send verification email immediately after registration
     await cred.user?.sendEmailVerification();

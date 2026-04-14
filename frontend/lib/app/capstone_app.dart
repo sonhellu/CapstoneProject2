@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../core/locale/locale_controller.dart';
+import '../core/theme/app_theme.dart';
+import '../core/theme/theme_controller.dart';
 import '../core/widgets/locale_change_overlay.dart';
 import '../features/auth/presentation/auth_screen.dart';
 import '../features/auth/presentation/verify_email_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
-import '../features/auth/theme/auth_theme.dart';
 import '../features/shell/main_shell.dart';
 import 'package:capstone_frontend/l10n/app_localizations.dart';
 
@@ -21,38 +21,16 @@ class CapstoneApp extends StatelessWidget {
   /// Forwards to [MainShell] / [HomeTabScreen] (disable in widget tests).
   final bool homeCarouselAutoPlay;
 
-  // ── Dynamic font theme ──────────────────────────────────────────────────
-  // Myanmar (my) requires Noto Sans Myanmar for correct Unicode rendering.
-  // All other locales use Noto Sans KR (covers Latin, Hangul, CJK, Kana).
-  static ThemeData _buildTheme(Locale locale) {
-    final textTheme = locale.languageCode == 'my'
-        ? GoogleFonts.notoSansMyanmarTextTheme()
-        : GoogleFonts.notoSansKrTextTheme();
-
-    return ThemeData(
-      useMaterial3: true,
-      textTheme: textTheme,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AuthColors.primary,
-        brightness: Brightness.light,
-      ),
-      scaffoldBackgroundColor: AuthColors.background,
-      inputDecorationTheme: InputDecorationTheme(
-        floatingLabelBehavior: FloatingLabelBehavior.never,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AuthRadii.sm),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final localeCtrl = context.watch<LocaleController>();
+    final themeCtrl = context.watch<ThemeController>();
 
     return MaterialApp(
       locale: localeCtrl.locale,
-      theme: _buildTheme(localeCtrl.locale),
+      theme: AppTheme.light(localeCtrl.locale),
+      darkTheme: AppTheme.dark(localeCtrl.locale),
+      themeMode: themeCtrl.mode,
       // ── Fade-in / Fade-out overlay ────────────────────────────────────
       // Keeping the overlay in the tree (opacity 0 vs 1) gives us a proper
       // FadeOut when isLocaleChanging flips back to false.
@@ -61,7 +39,7 @@ class CapstoneApp extends StatelessWidget {
         return Stack(
           fit: StackFit.expand,
           children: [
-            ?child,
+            child ?? const SizedBox.shrink(),
             IgnorePointer(
               ignoring: !showOverlay,
               child: AnimatedOpacity(

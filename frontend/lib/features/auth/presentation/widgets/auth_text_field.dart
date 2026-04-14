@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/theme_ext.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../theme/auth_theme.dart';
 
@@ -44,7 +45,7 @@ class AuthTextField extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: AuthColors.textPrimary,
+                color: context.onSurface,
                 fontWeight: FontWeight.w600,
               ),
         ),
@@ -57,21 +58,21 @@ class AuthTextField extends StatelessWidget {
           validator: validator,
           autofillHints: autofillHints,
           onFieldSubmitted: onSubmitted,
-          style: const TextStyle(
-            color: AuthColors.textPrimary,
+          style: TextStyle(
+            color: context.onSurface,
             fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: AuthColors.textSecondary.withValues(alpha: 0.85),
+              color: context.onSurfaceVar.withValues(alpha: 0.85),
               fontWeight: FontWeight.w400,
             ),
             filled: true,
-            fillColor: AuthColors.background,
+            fillColor: context.subtleFill,
             prefixIcon: Icon(
               prefixIcon,
-              color: AuthColors.primary.withValues(alpha: 0.85),
+              color: context.primary.withValues(alpha: 0.85),
               size: 22,
             ),
             suffixIcon: showObscureToggle
@@ -84,7 +85,7 @@ class AuthTextField extends StatelessWidget {
                       obscureText
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
-                      color: AuthColors.textSecondary,
+                      color: context.onSurfaceVar,
                     ),
                   )
                 : suffixWidget,
@@ -95,13 +96,13 @@ class AuthTextField extends StatelessWidget {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AuthRadii.sm),
               borderSide: BorderSide(
-                color: AuthColors.border.withValues(alpha: 0.9),
+                color: context.outline.withValues(alpha: 0.9),
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AuthRadii.sm),
-              borderSide: const BorderSide(
-                color: AuthColors.primary,
+              borderSide: BorderSide(
+                color: context.primary,
                 width: 1.5,
               ),
             ),
