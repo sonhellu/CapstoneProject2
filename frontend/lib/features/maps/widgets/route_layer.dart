@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -171,26 +173,31 @@ Future<void> drawRouteOnMap(
 }
 
 /// Removes the route path overlay and endpoint markers from the map.
+/// Safe to call even when the overlays don't exist yet.
 Future<void> clearRouteFromMap(NaverMapController ctrl) async {
+  Future<void> tryDelete(NOverlayInfo info) async {
+    try {
+      await ctrl.deleteOverlay(info);
+    } catch (_) {
+      // Overlay didn't exist — safe to ignore.
+    }
+  }
+
   await Future.wait([
-    ctrl.deleteOverlay(
-      const NOverlayInfo(type: NOverlayType.pathOverlay, id: _kRouteOverlayId),
-    ),
-    ctrl.deleteOverlay(
-      const NOverlayInfo(type: NOverlayType.marker, id: _kStartMarkerId),
-    ),
-    ctrl.deleteOverlay(
-      const NOverlayInfo(type: NOverlayType.marker, id: _kGoalMarkerId),
-    ),
+    tryDelete(const NOverlayInfo(type: NOverlayType.pathOverlay, id: _kRouteOverlayId)),
+    tryDelete(const NOverlayInfo(type: NOverlayType.marker, id: _kStartMarkerId)),
+    tryDelete(const NOverlayInfo(type: NOverlayType.marker, id: _kGoalMarkerId)),
   ]);
 }
 
 // ─────────────────────────── Info panel widget ───────────────────────
 
-/// Floating card shown at the bottom of the map while a route is active.
-///
-/// Shows distance + duration on success, a spinner while loading,
-/// and an error message on failure.  Has a close button to dismiss.
+const _kDriveColor = Color(0xFF007AFF);
+const _kWalkColor  = Color(0xFF32D74B);
+const _kPanelBg    = Color(0xFF1C1C1E);
+
+/// Glassmorphism floating card shown at the bottom of the map while a route
+/// is active. Displays driving and walking modes side-by-side (Bento layout).
 class RouteInfoPanel extends StatelessWidget {
   const RouteInfoPanel({
     super.key,
@@ -201,153 +208,296 @@ class RouteInfoPanel extends StatelessWidget {
   final RouteState state;
   final VoidCallback onClose;
 
+  /// Walking speed ≈ 1.25 m/s = 75 m/min.
+  static int _walkMinutes(int meters) => (meters / 75).ceil();
+
+  static String _walkLabel(int meters) {
+    final mins = _walkMinutes(meters);
+    if (mins < 60) return '$mins min';
+    final h = mins ~/ 60;
+    final m = mins % 60;
+    return m == 0 ? '$h hr' : '$h hr $m min';
+  }
+
   @override
   Widget build(BuildContext context) {
     if (state.isIdle) return const SizedBox.shrink();
 
-    final cs = Theme.of(context).colorScheme;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Material(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        elevation: 6,
-        shadowColor: Colors.black26,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              // ── Icon ──
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: state.isLoading
-                    ? SizedBox(
-                        key: const ValueKey('spinner'),
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: cs.primary,
-                        ),
-                      )
-                    : Icon(
-                        state.isError
-                            ? Icons.error_outline_rounded
-                            : Icons.directions_car_rounded,
-                        key: ValueKey(state.status),
-                        color: state.isError ? Colors.red : cs.primary,
-                        size: 22,
-                      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              color: _kPanelBg.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.12),
+                width: 0.5,
               ),
-              const SizedBox(width: 12),
-
-              // ── Text ──
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
-                  child: state.isLoading
-                      ? Text(
-                          'Finding route…',
-                          key: const ValueKey('loading'),
-                          style: GoogleFonts.notoSansKr(
-                            fontSize: 13,
-                            color: cs.onSurfaceVariant,
-                          ),
-                        )
-                      : state.isError
-                          ? Text(
-                              state.errorMessage ?? 'Route unavailable',
-                              key: const ValueKey('error'),
-                              style: GoogleFonts.notoSansKr(
-                                fontSize: 13,
-                                color: Colors.red,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          : _RouteStats(
-                              key: const ValueKey('stats'),
-                              result: state.result!,
-                            ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  blurRadius: 28,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 10),
                 ),
-              ),
-
-              // ── Close ──
-              if (!state.isLoading)
-                IconButton(
-                  onPressed: onClose,
-                  icon: Icon(
-                    Icons.close_rounded,
-                    size: 18,
-                    color: cs.onSurfaceVariant,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  splashRadius: 18,
-                ),
-            ],
+              ],
+            ),
+            child: _buildBody(),
           ),
         ),
       ),
     );
   }
+
+  Widget _buildBody() {
+    // ── Loading ──
+    if (state.isLoading) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: _kDriveColor,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Text(
+              'Finding route…',
+              style: GoogleFonts.notoSans(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // ── Error ──
+    if (state.isError) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(18, 16, 12, 16),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              color: Colors.redAccent,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                state.errorMessage ?? 'Route unavailable',
+                style: GoogleFonts.notoSans(
+                  fontSize: 13,
+                  color: Colors.redAccent,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            _CloseButton(onTap: onClose),
+          ],
+        ),
+      );
+    }
+
+    // ── Success ──
+    final result = state.result!;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          // ── Drive + Divider + Walk (expanded to fill available space) ──
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: _ModeChip(
+                    icon: Icons.directions_car_rounded,
+                    label: 'Drive',
+                    color: _kDriveColor,
+                    distance: result.distanceLabel,
+                    duration: result.durationLabel,
+                  ),
+                ),
+
+                // Divider
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Container(
+                    width: 0.7,
+                    height: 36,
+                    color: Colors.white.withValues(alpha: 0.15),
+                  ),
+                ),
+
+                Expanded(
+                  child: _ModeChip(
+                    icon: Icons.directions_walk_rounded,
+                    label: 'Walk',
+                    color: _kWalkColor,
+                    distance: result.distanceLabel,
+                    duration: _walkLabel(result.distanceMeters),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          // ── Start button ──
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF007AFF), Color(0xFF0055CC)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF007AFF).withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.navigation_rounded, size: 14),
+              label: Text(
+                'Go',
+                style: GoogleFonts.notoSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                shadowColor: Colors.transparent,
+                elevation: 0,
+                minimumSize: const Size(64, 38),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 8),
+          _CloseButton(onTap: onClose),
+        ],
+      ),
+    );
+  }
 }
 
-class _RouteStats extends StatelessWidget {
-  const _RouteStats({super.key, required this.result});
-  final RouteResult result;
+// ─────────────────────────── Mode chip (compact) ─────────────────────────────
+
+/// Compact horizontal chip: [icon] label  distance · duration
+class _ModeChip extends StatelessWidget {
+  const _ModeChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.distance,
+    required this.duration,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final String distance;
+  final String duration;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Distance
-        _StatChip(
-          icon: Icons.straighten_rounded,
-          label: result.distanceLabel,
-          color: cs.primary,
+        // Icon + mode label
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: GoogleFonts.notoSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 10),
-        // Duration
-        _StatChip(
-          icon: Icons.schedule_rounded,
-          label: result.durationLabel,
-          color: const Color(0xFF00695C),
+        const SizedBox(height: 3),
+        // Distance bold
+        Text(
+          distance,
+          style: GoogleFonts.notoSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            height: 1,
+          ),
+        ),
+        const SizedBox(height: 2),
+        // Duration subtle
+        Text(
+          duration,
+          style: GoogleFonts.notoSans(
+            fontSize: 11,
+            color: Colors.white.withValues(alpha: 0.55),
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );
   }
 }
 
-class _StatChip extends StatelessWidget {
-  const _StatChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
+// ─────────────────────────── Close button ────────────────────────────
 
-  final IconData icon;
-  final String label;
-  final Color color;
+class _CloseButton extends StatelessWidget {
+  const _CloseButton({required this.onTap});
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: GoogleFonts.notoSansKr(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: color,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 26,
+        height: 26,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.10),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.15),
+            width: 0.5,
           ),
         ),
-      ],
+        child: Icon(
+          Icons.close_rounded,
+          size: 14,
+          color: Colors.white.withValues(alpha: 0.6),
+        ),
+      ),
     );
   }
 }

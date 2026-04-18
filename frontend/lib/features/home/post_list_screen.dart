@@ -23,6 +23,19 @@ class _PostListScreenState extends State<PostListScreen> {
   bool _isSearchOpen = false;
   String _sortMode = 'Recent'; // 'Recent' | 'Popular'
   String _query = '';
+  String _selectedCategory = 'All';
+
+  static const _kCategories = [
+    'All', 'Campus', 'International', 'Scholarship', 'Housing', 'Academic',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialCategory != null) {
+      _selectedCategory = widget.initialCategory!;
+    }
+  }
 
   @override
   void dispose() {
@@ -32,6 +45,11 @@ class _PostListScreenState extends State<PostListScreen> {
 
   List<Post> get _filtered {
     var list = List<Post>.from(mockPosts);
+
+    // category filter
+    if (_selectedCategory != 'All') {
+      list = list.where((p) => p.category == _selectedCategory).toList();
+    }
 
     // text search
     if (_query.isNotEmpty) {
@@ -64,6 +82,7 @@ class _PostListScreenState extends State<PostListScreen> {
           children: [
             _buildHeader(context),
             if (_isSearchOpen) _buildSearchBar(),
+            _buildCategoryRow(),
             _buildSortRow(),
             Expanded(
               child: posts.isEmpty
@@ -152,6 +171,49 @@ class _PostListScreenState extends State<PostListScreen> {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Category Filter Row ───
+  Widget _buildCategoryRow() {
+    return Container(
+      color: context.cardFill,
+      padding: const EdgeInsets.fromLTRB(16, 0, 0, 10),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: _kCategories.map((cat) {
+            final selected = _selectedCategory == cat;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _selectedCategory = cat);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: selected ? context.primary : context.subtleFill,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    cat,
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: selected
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : context.onSurfaceVar,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ),
     );

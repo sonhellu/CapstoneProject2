@@ -735,6 +735,9 @@ class AppLocalizationsMy extends AppLocalizations {
   String get partnerAccepted => 'လက်ခံပြီး!';
 
   @override
+  String get partnerOpenChat => 'Chat ဖွင့်မည်';
+
+  @override
   String get partnerRequestSentSuccess => 'Request sent.';
 
   @override
@@ -754,10 +757,6 @@ class AppLocalizationsMy extends AppLocalizations {
   @override
   String get partnerRequestAlreadyAccepted =>
       'You are already connected with this person.';
-
-  @override
-  String get partnerRequestPreviouslyDeclined =>
-      'A previous request was declined. You cannot send again yet.';
 
   @override
   String get partnerRequestFailed =>
@@ -820,6 +819,16 @@ class AppLocalizationsMy extends AppLocalizations {
       'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.';
 
   @override
+  String get chatSoftUnmatchMenu => 'Disconnect';
+
+  @override
+  String get chatSoftUnmatchConfirmTitle => 'Disconnect?';
+
+  @override
+  String get chatSoftUnmatchConfirmBody =>
+      'Are you sure you want to disconnect? You can still find this person in search later.';
+
+  @override
   String get chatReconnect => 'Reconnect';
 
   @override
@@ -834,6 +843,12 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get chatReconnectSuccess => 'Connection restored.';
+
+  @override
+  String get chatShareLocation => 'တည်နေရာမျှဝေရန်';
+
+  @override
+  String get chatOpenInMap => 'မြေပုံတွင်ကြည့်ရန်';
 
   @override
   String get authSuccessLogin => 'ကြိုဆိုပါသည်！';

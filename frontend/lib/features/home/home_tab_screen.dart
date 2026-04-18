@@ -7,10 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:provider/provider.dart';
+
 import '../../core/navigation/app_transitions.dart';
 import '../../core/theme/theme_ext.dart';
 import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/providers/auth_provider.dart';
 import 'create_post_screen.dart';
 import 'models/post.dart';
 import 'post_list_screen.dart';
@@ -108,6 +111,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final mq = MediaQuery.of(context);
+    final userName = context.watch<AuthProvider>().displayName ?? 'Student';
     // viewPadding: physical safe area; not reduced when keyboard opens (unlike padding.bottom).
     final safeBottom = mq.viewPadding.bottom;
     final navBarHeight = kBottomNavigationBarHeight + safeBottom;
@@ -129,7 +133,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
         controller: _scrollController,
         slivers: [
           SliverToBoxAdapter(child: _buildAppBar()),
-          SliverToBoxAdapter(child: _buildBanner()),
+          SliverToBoxAdapter(child: _buildBanner(userName)),
           // ── International horizontal section ──
           SliverToBoxAdapter(
             child: _SectionHeader(
@@ -217,7 +221,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   }
 
   // ─── Banner ───
-  Widget _buildBanner() {
+  Widget _buildBanner(String userName) {
     final p = context.primary;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -233,7 +237,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               autoPlayCurve: Curves.easeInOutCubic,
               onPageChanged: (i, _) => setState(() => _bannerIndex = i),
             ),
-            items: _banners.map((b) => _BannerCard(item: b)).toList(),
+            items: _banners.map((b) => _BannerCard(item: b, userName: userName)).toList(),
           ),
           const SizedBox(height: 10),
           Row(
@@ -279,8 +283,9 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
 // ─────────────────────────── Banner Card ───────────────────────────
 class _BannerCard extends StatelessWidget {
-  const _BannerCard({required this.item});
+  const _BannerCard({required this.item, required this.userName});
   final _BannerItem item;
+  final String userName;
 
   @override
   Widget build(BuildContext context) {
@@ -322,7 +327,7 @@ class _BannerCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome, Nguyen Van A 👋',
+                  'Welcome, $userName 👋',
                   style: GoogleFonts.notoSansKr(
                     fontSize: 13,
                     color: Colors.white.withValues(alpha: 0.85),

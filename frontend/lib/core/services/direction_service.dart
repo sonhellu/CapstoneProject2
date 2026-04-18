@@ -81,7 +81,7 @@ class DirectionService {
   static final instance = DirectionService._();
 
   static const _baseUrl =
-      'https://naveropenapi.apigw.ntruss.com/map-direction/v5/driving';
+      'https://maps.apigw.ntruss.com/map-direction/v1/driving';
 
   /// Returns a [RouteResult] containing the optimal driving path, distance,
   /// and duration between [start] and [goal].

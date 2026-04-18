@@ -1,9 +1,15 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/errors/send_chat_request_result.dart';
+import '../../core/navigation/app_transitions.dart';
 import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
+import 'chat_detail_screen.dart';
 import 'models/chat_models.dart';
 import 'services/chat_service.dart';
 
@@ -45,12 +51,96 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
   late Future<List<PartnerModel>> _resultsFuture;
   final _requestStatuses = <String, RequestStatus>{};
 
+  /// Active Firestore listeners keyed by partner ID.
+  /// Each fires when the partner accepts (status → 'active').
+  final _subs = <String, StreamSubscription<DocumentSnapshot>>{};
+
   @override
   void initState() {
     super.initState();
     _resultsFuture = ChatService.instance.searchPartners(
       gender: widget.gender,
       language: widget.language,
+    );
+    _resultsFuture.then((partners) {
+      if (mounted) _initStatuses(partners);
+    });
+  }
+
+  /// Batch-reads chat_requests for every search result and seeds button states.
+  /// Also starts watchers for any pending outgoing requests (so accept is detected live).
+  Future<void> _initStatuses(List<PartnerModel> partners) async {
+    if (partners.isEmpty) return;
+    final myUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+    final snaps = await Future.wait(
+      partners.map((p) => FirebaseFirestore.instance
+          .collection('chat_requests')
+          .doc(_requestId(p.id))
+          .get()),
+    );
+
+    if (!mounted) return;
+    final updates = <String, RequestStatus>{};
+    for (var i = 0; i < partners.length; i++) {
+      final data = snaps[i].data();
+      if (data == null) continue;
+      final status = data['status'] as String?;
+      final senderId = data['senderId'] as String?;
+      if (status == 'active') {
+        updates[partners[i].id] = RequestStatus.accepted;
+      } else if (status == 'pending' && senderId == myUid) {
+        updates[partners[i].id] = RequestStatus.pending;
+        _watchRequest(partners[i]); // detect when partner accepts
+      }
+    }
+    if (updates.isNotEmpty) setState(() => _requestStatuses.addAll(updates));
+  }
+
+  @override
+  void dispose() {
+    for (final s in _subs.values) { s.cancel(); }
+    super.dispose();
+  }
+
+  String _requestId(String partnerId) {
+    final myUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    return myUid.compareTo(partnerId) <= 0
+        ? '${myUid}_$partnerId'
+        : '${partnerId}_$myUid';
+  }
+
+  void _watchRequest(PartnerModel partner) {
+    _subs[partner.id]?.cancel();
+    _subs[partner.id] = FirebaseFirestore.instance
+        .collection('chat_requests')
+        .doc(_requestId(partner.id))
+        .snapshots()
+        .listen((snap) {
+      if (!mounted) return;
+      final status = snap.data()?['status'] as String?;
+      if (status == 'active') {
+        setState(
+            () => _requestStatuses[partner.id] = RequestStatus.accepted);
+        _subs.remove(partner.id)?.cancel();
+      } else if (snap.data() == null) {
+        // Doc deleted (declined) — reset button.
+        setState(() => _requestStatuses.remove(partner.id));
+        _subs.remove(partner.id)?.cancel();
+      }
+    });
+  }
+
+  void _openChat(PartnerModel partner) {
+    final chat = ChatModel(
+      id: _requestId(partner.id),
+      partner: partner,
+      lastMessage: '',
+      lastTime: '',
+      status: ChatSyncStatus.active,
+    );
+    Navigator.of(context).push(
+      AppTransitions.fadeSlide(ChatDetailScreen(chat: chat)),
     );
   }
 
@@ -60,9 +150,13 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
     if (!mounted) return;
     final l = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
-    if (result != SendChatRequestResult.sent) {
+
+    if (result == SendChatRequestResult.sent) {
+      _watchRequest(partner); // start listening for accept
+    } else {
       setState(() => _requestStatuses.remove(partner.id));
     }
+
     final text = switch (result) {
       SendChatRequestResult.sent => l.partnerRequestSentSuccess,
       SendChatRequestResult.notSignedIn => l.partnerRequestNotSignedIn,
@@ -74,8 +168,6 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
         l.partnerRequestIncomingPending,
       SendChatRequestResult.alreadyAccepted =>
         l.partnerRequestAlreadyAccepted,
-      SendChatRequestResult.previouslyDeclined =>
-        l.partnerRequestPreviouslyDeclined,
       SendChatRequestResult.failed => l.partnerRequestFailed,
     };
     messenger.showSnackBar(
@@ -120,6 +212,7 @@ class _SearchPartnerScreenState extends State<SearchPartnerScreen> {
                       status: _requestStatuses[partners[i].id] ??
                           RequestStatus.none,
                       onSendRequest: () => _sendRequest(partners[i]),
+                      onOpenChat: () => _openChat(partners[i]),
                     ),
                   );
                 },
@@ -215,11 +308,13 @@ class _PartnerCard extends StatelessWidget {
     required this.partner,
     required this.status,
     required this.onSendRequest,
+    required this.onOpenChat,
   });
 
   final PartnerModel partner;
   final RequestStatus status;
   final VoidCallback onSendRequest;
+  final VoidCallback onOpenChat;
 
   @override
   Widget build(BuildContext context) {
@@ -352,7 +447,11 @@ class _PartnerCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: _RequestButton(
-                l: l, status: status, onTap: onSendRequest),
+              l: l,
+              status: status,
+              onTap: onSendRequest,
+              onOpenChat: onOpenChat,
+            ),
           ),
         ],
       ),
@@ -366,10 +465,12 @@ class _RequestButton extends StatelessWidget {
     required this.l,
     required this.status,
     required this.onTap,
+    required this.onOpenChat,
   });
   final AppLocalizations l;
   final RequestStatus status;
   final VoidCallback onTap;
+  final VoidCallback onOpenChat;
 
   @override
   Widget build(BuildContext context) {
@@ -418,11 +519,11 @@ class _RequestButton extends StatelessWidget {
           ),
         ),
       RequestStatus.accepted => ElevatedButton.icon(
-          onPressed: null,
-          icon: const Icon(Icons.check_rounded, size: 16),
+          onPressed: onOpenChat,
+          icon: const Icon(Icons.chat_bubble_rounded, size: 16),
           label: Text(
-            l.partnerAccepted,
-            style: GoogleFonts.notoSansKr(
+            l.partnerOpenChat,
+            style: GoogleFonts.notoSans(
                 fontSize: 13, fontWeight: FontWeight.w700),
           ),
           style: ElevatedButton.styleFrom(

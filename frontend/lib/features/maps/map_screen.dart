@@ -1,10 +1,10 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,16 +15,18 @@ import '../../core/naver_map/naver_map_sdk_controller.dart';
 import '../../core/services/geocoding_service.dart';
 import '../../core/services/place_search_service.dart';
 import '../../core/services/translation_service.dart';
-import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
+import '../shell/theme/shell_theme.dart';
+import 'map_focus_controller.dart';
 import 'models/user_pin_model.dart';
 import 'widgets/pin_bottom_sheet.dart';
 import 'widgets/review_modal.dart';
+import 'widgets/route_layer.dart';
 
 // ──────────────────────────── Constants ────────────────────────────
 
 const _kKeimyungUniv = NLatLng(35.8562, 128.4896); // Keimyung University
-const _kSeoulStation = NLatLng(37.5547, 126.9706);  // fallback
+const _kSeoulStation = NLatLng(37.5547, 126.9706); // fallback
 const double _kUserZoom = 15.0;
 const Duration _kFlyDuration = Duration(milliseconds: 800);
 const Duration _kOverlayFadeDuration = Duration(milliseconds: 500);
@@ -97,6 +99,9 @@ class _MapScreenState extends State<MapScreen>
   // ── Saved pins ───────────────────────────────────────────────────
   final Set<String> _savedPinIds = {};
 
+  // ── In-app routing ───────────────────────────────────────────────
+  final _routeCtrl = RouteController();
+
   @override
   bool get wantKeepAlive => true;
 
@@ -110,15 +115,26 @@ class _MapScreenState extends State<MapScreen>
         setState(() => _overlayVisible = false);
       }
     });
+    MapFocusController.instance.addListener(_onMapFocusRequest);
+    _routeCtrl.addListener(_onRouteStateChanged);
   }
 
   @override
   void dispose() {
+    MapFocusController.instance.removeListener(_onMapFocusRequest);
+    _routeCtrl.removeListener(_onRouteStateChanged);
+    _routeCtrl.dispose();
     _debounce?.cancel();
     _loadingTimeout?.cancel();
     _searchCtrl.dispose();
     _searchFocus.dispose();
     super.dispose();
+  }
+
+  void _onMapFocusRequest() {
+    final loc = MapFocusController.instance.consume();
+    if (loc == null) return;
+    _flyToPosition(NLatLng(loc.lat, loc.lng));
   }
 
   // ────────────────────────────────────────────────────────────────
@@ -163,7 +179,14 @@ class _MapScreenState extends State<MapScreen>
 
     setState(() => _isSearchingPlaces = true);
     _debounce = Timer(const Duration(milliseconds: 500), () async {
-      final results = await PlaceSearchService.search(query.trim());
+      // Pass user position (fallback: campus centre) so results are
+      // filtered to within 5 km — avoids Seoul/Busan noise.
+      final centre = _userPosition ?? _kKeimyungUniv;
+      final results = await PlaceSearchService.search(
+        query.trim(),
+        centerLat: centre.latitude,
+        centerLng: centre.longitude,
+      );
       if (mounted) {
         setState(() {
           _placeResults = results;
@@ -209,9 +232,6 @@ class _MapScreenState extends State<MapScreen>
     final ctrl = _mapCtrl;
     if (ctrl == null) return;
 
-    final captionPrimary = Theme.of(context).colorScheme.primary;
-    final captionHalo = Theme.of(context).colorScheme.surface;
-
     // Remove previous search-result marker if any.
     if (_searchMarker != null) {
       await ctrl.deleteOverlay(
@@ -234,8 +254,8 @@ class _MapScreenState extends State<MapScreen>
       NOverlayCaption(
         text: place.name,
         textSize: 13,
-        color: captionPrimary,
-        haloColor: captionHalo,
+        color: const Color(0xFF003478),
+        haloColor: Colors.white,
       ),
     );
     await ctrl.addOverlay(marker);
@@ -267,12 +287,17 @@ class _MapScreenState extends State<MapScreen>
       builder: (_) => _SymbolInfoSheet(
         symbol: symbol,
         targetLang: targetLang,
+        userPosition: _userPosition,
         onAddPin: () {
           Navigator.of(context).pop();
           _onMapLongTap(
             NPoint(symbol.position.longitude, symbol.position.latitude),
             symbol.position,
           );
+        },
+        onDirections: () {
+          Navigator.of(context).pop();
+          _startDirections(symbol.position);
         },
       ),
     );
@@ -410,6 +435,76 @@ class _MapScreenState extends State<MapScreen>
   }
 
   // ────────────────────────────────────────────────────────────────
+  // In-app Routing
+  // ────────────────────────────────────────────────────────────────
+
+  void _onRouteStateChanged() {
+    final ctrl = _mapCtrl;
+    if (ctrl == null) return;
+    final s = _routeCtrl.state;
+    if (s.isSuccess) {
+      drawRouteOnMap(ctrl, s.result!).catchError((e) {
+        debugPrint('[Route] drawRouteOnMap error: $e');
+      });
+    }
+    if (s.isIdle) {
+      clearRouteFromMap(ctrl).catchError((e) {
+        debugPrint('[Route] clearRouteFromMap error: $e');
+      });
+    }
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _startDirections(NLatLng goal) async {
+    // Capture l before any await
+    final noLocationMsg = AppLocalizations.of(
+      context,
+    )!.mapLocationPermissionRequired;
+    final start = _userPosition;
+    if (start == null) {
+      _showSnack(noLocationMsg);
+      return;
+    }
+    await _routeCtrl.fetchRoute(start: start, goal: goal);
+  }
+
+  void _clearRoute() {
+    final ctrl = _mapCtrl;
+    if (ctrl != null) clearRouteFromMap(ctrl);
+    _routeCtrl.clear();
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Reverse Geocoding on map tap
+  // ────────────────────────────────────────────────────────────────
+
+  void _showMapTapSheet(NLatLng latLng) {
+    final targetLang = AppLocaleResolver.targetLang(context);
+    final addressFuture = GeocodingService.instance.getLocalizedAddress(
+      latLng.latitude,
+      latLng.longitude,
+      targetLang,
+    );
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _MapTapSheet(
+        latLng: latLng,
+        addressFuture: addressFuture,
+        userPosition: _userPosition,
+        onPinHere: () {
+          Navigator.of(context).pop();
+          _onMapLongTap(NPoint(latLng.longitude, latLng.latitude), latLng);
+        },
+        onDirections: () {
+          Navigator.of(context).pop();
+          _startDirections(latLng);
+        },
+      ),
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────
   // Community Pinning Logic
   // ────────────────────────────────────────────────────────────────
 
@@ -526,23 +621,7 @@ class _MapScreenState extends State<MapScreen>
 
   // ── Directions ────────────────────────────────────────────────────
   Future<void> _openDirections(UserPinModel pin) async {
-    final lat = pin.latLng.latitude;
-    final lng = pin.latLng.longitude;
-    final name = Uri.encodeComponent(pin.name);
-
-    // Try Naver Maps app first, fall back to web.
-    final naverUri = Uri.parse(
-      'nmap://route/public?dlat=$lat&dlng=$lng&dname=$name&appname=com.capstone.app',
-    );
-    final webUri = Uri.parse(
-      'https://map.naver.com/v5/directions/-/-/-/public?c=$lng,$lat,15,0,0,0,dh',
-    );
-
-    if (await canLaunchUrl(naverUri)) {
-      await launchUrl(naverUri);
-    } else {
-      await launchUrl(webUri, mode: LaunchMode.externalApplication);
-    }
+    await _startDirections(pin.latLng);
   }
 
   // ── Report ────────────────────────────────────────────────────────
@@ -580,8 +659,7 @@ class _MapScreenState extends State<MapScreen>
 
   void _showPinInfoSheet(UserPinModel pin) {
     final parentCtx = context;
-    // TODO: replace with real currentUserId from auth when backend is ready.
-    const currentUserId = 'me';
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
     final isOwner = pin.authorId == currentUserId || pin.authorId.isEmpty;
 
     showModalBottomSheet<void>(
@@ -618,6 +696,7 @@ class _MapScreenState extends State<MapScreen>
           Navigator.of(sheetCtx).pop();
           _openDirections(pin);
         },
+        userPosition: _userPosition,
       ),
     );
   }
@@ -681,7 +760,7 @@ class _MapScreenState extends State<MapScreen>
     final fabBottom = MediaQuery.of(context).padding.bottom + 30.0;
 
     return Scaffold(
-      backgroundColor: context.bg,
+      backgroundColor: ShellColors.background,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: _isMapReady
           ? Padding(
@@ -762,6 +841,9 @@ class _MapScreenState extends State<MapScreen>
             onSymbolTapped: _onSymbolTapped,
             onMapTapped: (point, latLng) {
               FocusScope.of(context).unfocus();
+              if (!_searchFocus.hasFocus) {
+                _showMapTapSheet(latLng);
+              }
             },
             onMapLongTapped: _onMapLongTap,
           ),
@@ -819,8 +901,7 @@ class _MapScreenState extends State<MapScreen>
           ),
 
           // Naver place results — shown while user is typing a query.
-          if (_searchActive &&
-              (_placeResults.isNotEmpty || _isSearchingPlaces))
+          if (_searchActive && (_placeResults.isNotEmpty || _isSearchingPlaces))
             Positioned(
               top: 0,
               left: 0,
@@ -856,10 +937,41 @@ class _MapScreenState extends State<MapScreen>
                 ),
               ),
             ),
+
+          // ── Route info panel (shown while route is active) ──
+          // bottom aligns with the location FAB; right leaves room for the FAB (56 px + 16 px margin).
+          if (!_routeCtrl.state.isIdle)
+            Positioned(
+              bottom: fabBottom - 16,
+              left: 2,
+              right: 62,
+              child: RouteInfoPanel(
+                state: _routeCtrl.state,
+                onClose: _clearRoute,
+              ),
+            ),
         ],
       ),
     );
   }
+}
+
+// ──────────────────────────── Distance helper ────────────────────────────
+
+/// Returns a localized distance string (e.g. "現在地から350m", "Cách bạn 1.2km").
+/// Returns null when [userPos] is null.
+String? _distanceLabel(NLatLng? userPos, NLatLng target, AppLocalizations l) {
+  if (userPos == null) return null;
+  final meters = Geolocator.distanceBetween(
+    userPos.latitude,
+    userPos.longitude,
+    target.latitude,
+    target.longitude,
+  );
+  if (meters < 1000) {
+    return l.mapDistanceFromYouMeters(meters.round());
+  }
+  return l.mapDistanceFromYouKilometers((meters / 1000).toStringAsFixed(1));
 }
 
 // ──────────────────────────── _SymbolInfoSheet ────────────────────────────
@@ -869,29 +981,30 @@ class _SymbolInfoSheet extends StatefulWidget {
     required this.symbol,
     required this.targetLang,
     required this.onAddPin,
+    required this.onDirections,
+    this.userPosition,
   });
 
   final NSymbolInfo symbol;
-  final String targetLang; // pre-resolved by parent from correct context
+  final String targetLang;
   final VoidCallback onAddPin;
+  final VoidCallback onDirections;
+  final NLatLng? userPosition;
 
   @override
   State<_SymbolInfoSheet> createState() => _SymbolInfoSheetState();
 }
 
 class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
-  // Holds the single Future — initialised once in didChangeDependencies.
   Future<String>? _translationFuture;
+  Future<LocalizedAddress>? _addressFuture;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // didChangeDependencies is the correct lifecycle to read InheritedWidgets
-    // (Localizations, MediaQuery, etc.) — unlike initState, context is safe here.
     if (_translationFuture != null) return; // init only once
 
-    final langCode = Localizations.localeOf(context).languageCode;
-    final targetLang = LangCode.fromTag(langCode.toUpperCase());
+    final targetLang = widget.targetLang;
 
     if (targetLang == LangCode.ko || widget.symbol.caption.trim().isEmpty) {
       _translationFuture = Future.value(widget.symbol.caption);
@@ -902,6 +1015,12 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
         to: targetLang,
       );
     }
+
+    _addressFuture = GeocodingService.instance.getLocalizedAddress(
+      widget.symbol.position.latitude,
+      widget.symbol.position.longitude,
+      targetLang,
+    );
   }
 
   @override
@@ -910,25 +1029,23 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
     final lng = widget.symbol.position.longitude.toStringAsFixed(6);
 
     return Container(
-      decoration: BoxDecoration(
-        color: context.cardFill,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       child: SafeArea(
         top: false,
         child: FutureBuilder<String>(
           future: _translationFuture,
-          builder: (sheetContext, snapshot) {
+          builder: (context, snapshot) {
             final isLoading =
                 snapshot.connectionState == ConnectionState.waiting;
             final translated = snapshot.data;
-            final hasTranslation = translated != null &&
+            final hasTranslation =
+                translated != null &&
                 translated != widget.symbol.caption &&
                 translated.isNotEmpty;
-            final p = sheetContext.primary;
-            final onSurf = sheetContext.onSurface;
-            final hint = sheetContext.hintColor;
 
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -940,7 +1057,7 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: sheetContext.outline.withValues(alpha: 0.35),
+                      color: const Color(0xFFDDE3EA),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -955,11 +1072,18 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: sheetContext.cs.primaryContainer,
+                        color: const Color(0xFFEEF2FF),
                         shape: BoxShape.circle,
-                        border: Border.all(color: p, width: 1.5),
+                        border: Border.all(
+                          color: const Color(0xFF003478),
+                          width: 1.5,
+                        ),
                       ),
-                      child: Icon(Icons.place_rounded, color: p, size: 20),
+                      child: const Icon(
+                        Icons.place_rounded,
+                        color: Color(0xFF003478),
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -968,12 +1092,12 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                         children: [
                           // Loading spinner while translation resolves
                           if (isLoading)
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                               width: 10,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: p,
+                                color: Color(0xFF003478),
                               ),
                             )
                           else
@@ -985,7 +1109,7 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                               style: GoogleFonts.notoSansKr(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w700,
-                                color: onSurf,
+                                color: const Color(0xFF1A1A1A),
                               ),
                             ),
 
@@ -997,7 +1121,7 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                                 'Original: ${widget.symbol.caption}',
                                 style: GoogleFonts.notoSansKr(
                                   fontSize: 12,
-                                  color: hint,
+                                  color: const Color(0xFF94A3B8),
                                 ),
                               ),
                             ),
@@ -1008,45 +1132,127 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
                 ),
                 const SizedBox(height: 12),
 
-                // ── Coordinates ──────────────────────────────────────
+                // ── Address (reverse-geocoded) ────────────────────────
+                FutureBuilder<LocalizedAddress>(
+                  future: _addressFuture,
+                  builder: (context, addrSnap) {
+                    if (addrSnap.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1.5,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      );
+                    }
+                    final addr = addrSnap.data;
+                    final addressText = addr?.localized.isNotEmpty == true
+                        ? addr!.localized
+                        : addr?.korean.isNotEmpty == true
+                        ? addr!.korean
+                        : '$lat, $lng';
+                    return Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on_outlined,
+                          size: 14,
+                          color: Color(0xFF94A3B8),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            addressText,
+                            style: GoogleFonts.notoSansKr(
+                              fontSize: 12,
+                              color: const Color(0xFF94A3B8),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+
+                // ── Distance from user ────────────────────────────────
+                if (_distanceLabel(
+                      widget.userPosition,
+                      widget.symbol.position,
+                      AppLocalizations.of(context)!,
+                    )
+                    case final dist?) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.near_me_rounded,
+                        size: 13,
+                        color: Color(0xFF2563EB),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        dist,
+                        style: GoogleFonts.notoSans(
+                          fontSize: 12,
+                          color: const Color(0xFF2563EB),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 20),
+
+                // ── Action buttons ───────────────────────────────────
                 Row(
                   children: [
-                    Icon(Icons.my_location_rounded, size: 14, color: hint),
-                    const SizedBox(width: 6),
-                    Text(
-                      '$lat, $lng',
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 12,
-                        color: hint,
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: widget.onDirections,
+                        icon: const Icon(Icons.directions_rounded, size: 18),
+                        label: Text(
+                          AppLocalizations.of(context)!.mapDirections,
+                          style: GoogleFonts.notoSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: widget.onAddPin,
+                        icon: const Icon(Icons.push_pin_rounded, size: 18),
+                        label: Text(
+                          AppLocalizations.of(context)!.mapPinSpot,
+                          style: GoogleFonts.notoSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF003478),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 20),
-
-                // ── Pin button ───────────────────────────────────────
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: widget.onAddPin,
-                    icon: const Icon(Icons.push_pin_rounded, size: 18),
-                    label: Text(
-                      'Pin this location',
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: p,
-                      foregroundColor: sheetContext.cs.onPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                  ),
                 ),
               ],
             );
@@ -1088,11 +1294,6 @@ class _MapFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final p = context.primary;
-    final onP = context.cs.onPrimary;
-    final chipBg = context.cardFill;
-    final onSurf = context.onSurface;
-    final onVar = context.onSurfaceVar;
     return SizedBox(
       height: 38,
       child: ListView.separated(
@@ -1110,9 +1311,15 @@ class _MapFilterBar extends StatelessWidget {
               curve: Curves.easeOut,
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: selected ? p : chipBg,
+                color: selected ? const Color(0xFF003478) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: context.cardElevationShadow,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x20000000),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -1120,7 +1327,7 @@ class _MapFilterBar extends StatelessWidget {
                   Icon(
                     icon,
                     size: 15,
-                    color: selected ? onP : onVar,
+                    color: selected ? Colors.white : const Color(0xFF64748B),
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -1128,7 +1335,7 @@ class _MapFilterBar extends StatelessWidget {
                     style: GoogleFonts.notoSansKr(
                       fontSize: 13,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                      color: selected ? onP : onSurf,
+                      color: selected ? Colors.white : const Color(0xFF1A1A1A),
                     ),
                   ),
                 ],
@@ -1161,22 +1368,28 @@ class _PlaceResultsDropdown extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: context.cardFill,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: context.cardElevationShadow,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 16,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: isLoading && items.isEmpty
-            ? Padding(
-                padding: const EdgeInsets.symmetric(vertical: 18),
+            ? const Padding(
+                padding: EdgeInsets.symmetric(vertical: 18),
                 child: Center(
                   child: SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: context.primary,
+                      color: Color(0xFF003478),
                     ),
                   ),
                 ),
@@ -1186,11 +1399,11 @@ class _PlaceResultsDropdown extends StatelessWidget {
                 children: [
                   for (int i = 0; i < items.length; i++) ...[
                     if (i > 0)
-                      Divider(
+                      const Divider(
                         height: 1,
                         indent: 16,
                         endIndent: 16,
-                        color: context.divider,
+                        color: Color(0xFFF0F0F0),
                       ),
                     _PlaceTile(
                       place: items[i],
@@ -1211,7 +1424,6 @@ class _PlaceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = context.primary;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -1222,13 +1434,13 @@ class _PlaceTile extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: context.cs.primaryContainer,
+                color: const Color(0xFFEEF2FF),
                 shape: BoxShape.circle,
-                border: Border.all(color: p, width: 1.5),
+                border: Border.all(color: const Color(0xFF003478), width: 1.5),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.place_rounded,
-                color: p,
+                color: Color(0xFF003478),
                 size: 18,
               ),
             ),
@@ -1242,19 +1454,20 @@ class _PlaceTile extends StatelessWidget {
                     style: GoogleFonts.notoSansKr(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: context.onSurface,
+                      color: const Color(0xFF1A1A1A),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (place.category.isNotEmpty || place.address.isNotEmpty)
                     Text(
-                      [place.category, place.address]
-                          .where((s) => s.isNotEmpty)
-                          .join(' · '),
+                      [
+                        place.category,
+                        place.address,
+                      ].where((s) => s.isNotEmpty).join(' · '),
                       style: GoogleFonts.notoSansKr(
                         fontSize: 12,
-                        color: context.hintColor,
+                        color: const Color(0xFF94A3B8),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1262,10 +1475,10 @@ class _PlaceTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
+            const Icon(
               Icons.arrow_forward_ios_rounded,
               size: 13,
-              color: context.outline.withValues(alpha: 0.6),
+              color: Color(0xFFCBD5E1),
             ),
           ],
         ),
@@ -1289,9 +1502,15 @@ class _SearchResultsDropdown extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: context.cardFill,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: context.cardElevationShadow,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 16,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -1300,11 +1519,11 @@ class _SearchResultsDropdown extends StatelessWidget {
           children: [
             for (int i = 0; i < items.length; i++) ...[
               if (i > 0)
-                Divider(
+                const Divider(
                   height: 1,
                   indent: 16,
                   endIndent: 16,
-                  color: context.divider,
+                  color: Color(0xFFF0F0F0),
                 ),
               _ResultTile(pin: items[i], onTap: () => onSelect(items[i])),
             ],
@@ -1353,7 +1572,7 @@ class _ResultTile extends StatelessWidget {
                     style: GoogleFonts.notoSansKr(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: context.onSurface,
+                      color: const Color(0xFF1A1A1A),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1363,7 +1582,7 @@ class _ResultTile extends StatelessWidget {
                       pin.notes,
                       style: GoogleFonts.notoSansKr(
                         fontSize: 12,
-                        color: context.hintColor,
+                        color: const Color(0xFF94A3B8),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1371,10 +1590,10 @@ class _ResultTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
+            const Icon(
               Icons.arrow_forward_ios_rounded,
               size: 13,
-              color: context.outline.withValues(alpha: 0.6),
+              color: Color(0xFFCBD5E1),
             ),
           ],
         ),
@@ -1403,18 +1622,24 @@ class _MapSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final hint = context.hintColor;
     return Container(
       height: 52,
       decoration: BoxDecoration(
-        color: context.cardFill,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(30),
-        boxShadow: context.cardElevationShadow,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 16,
+            spreadRadius: 0,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           const SizedBox(width: 16),
-          Icon(Icons.search_rounded, color: hint, size: 22),
+          const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
@@ -1425,7 +1650,7 @@ class _MapSearchBar extends StatelessWidget {
               onSubmitted: onChanged,
               style: GoogleFonts.notoSansKr(
                 fontSize: 14,
-                color: context.onSurface,
+                color: const Color(0xFF1A1A1A),
               ),
               decoration: InputDecoration(
                 isCollapsed: true,
@@ -1433,7 +1658,7 @@ class _MapSearchBar extends StatelessWidget {
                 hintText: l.mapSearchHere,
                 hintStyle: GoogleFonts.notoSansKr(
                   fontSize: 14,
-                  color: hint,
+                  color: const Color(0xFFADB5BD),
                 ),
               ),
             ),
@@ -1444,21 +1669,21 @@ class _MapSearchBar extends StatelessWidget {
                 ? GestureDetector(
                     key: const ValueKey('clear'),
                     onTap: onClear,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14),
                       child: Icon(
                         Icons.close_rounded,
-                        color: hint,
+                        color: Color(0xFF94A3B8),
                         size: 20,
                       ),
                     ),
                   )
-                : Padding(
-                    key: const ValueKey('mic'),
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                : const Padding(
+                    key: ValueKey('mic'),
+                    padding: EdgeInsets.symmetric(horizontal: 14),
                     child: Icon(
                       Icons.tune_rounded,
-                      color: context.primary,
+                      color: Color(0xFF003478),
                       size: 20,
                     ),
                   ),
@@ -1605,6 +1830,7 @@ class _PinInfoSheet extends StatelessWidget {
     required this.onShare,
     required this.onReport,
     required this.onDirections,
+    this.userPosition,
   });
 
   final UserPinModel pin;
@@ -1616,6 +1842,7 @@ class _PinInfoSheet extends StatelessWidget {
   final VoidCallback onShare;
   final VoidCallback onReport;
   final VoidCallback onDirections;
+  final NLatLng? userPosition;
 
   Future<void> _confirmDelete(BuildContext context) async {
     final l = AppLocalizations.of(context)!;
@@ -1644,9 +1871,9 @@ class _PinInfoSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: context.cardFill,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
         top: false,
@@ -1662,7 +1889,7 @@ class _PinInfoSheet extends StatelessWidget {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: context.outline.withValues(alpha: 0.35),
+                    color: const Color(0xFFDDE3EA),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1674,6 +1901,7 @@ class _PinInfoSheet extends StatelessWidget {
                   pin: pin,
                   onEditTap: onEditTap,
                   onConfirmDelete: () => _confirmDelete(context),
+                  userPosition: userPosition,
                 )
               else
                 _PublicView(
@@ -1683,6 +1911,7 @@ class _PinInfoSheet extends StatelessWidget {
                   onShare: onShare,
                   onReport: onReport,
                   onDirections: onDirections,
+                  userPosition: userPosition,
                 ),
             ],
           ), // Column
@@ -1699,10 +1928,12 @@ class _OwnerView extends StatelessWidget {
     required this.pin,
     required this.onEditTap,
     required this.onConfirmDelete,
+    this.userPosition,
   });
   final UserPinModel pin;
   final VoidCallback onEditTap;
   final VoidCallback onConfirmDelete;
+  final NLatLng? userPosition;
 
   @override
   Widget build(BuildContext context) {
@@ -1717,7 +1948,7 @@ class _OwnerView extends StatelessWidget {
           _NotesBox(notes: pin.notes),
         ],
         const SizedBox(height: 12),
-        _CoordRow(pin: pin, l: l),
+        _CoordRow(pin: pin, l: l, userPosition: userPosition),
         const SizedBox(height: 20),
         Row(
           children: [
@@ -1725,8 +1956,8 @@ class _OwnerView extends StatelessWidget {
               child: _InfoSheetButton(
                 label: l.btnEdit,
                 icon: Icons.edit_rounded,
-                backgroundColor: context.primary,
-                foregroundColor: context.cs.onPrimary,
+                backgroundColor: const Color(0xFF003478),
+                foregroundColor: Colors.white,
                 onTap: onEditTap,
               ),
             ),
@@ -1757,6 +1988,7 @@ class _PublicView extends StatelessWidget {
     required this.onShare,
     required this.onReport,
     required this.onDirections,
+    this.userPosition,
   });
   final UserPinModel pin;
   final bool isSaved;
@@ -1764,21 +1996,20 @@ class _PublicView extends StatelessWidget {
   final VoidCallback onShare;
   final VoidCallback onReport;
   final VoidCallback onDirections;
+  final NLatLng? userPosition;
 
-  Color _categoryAccent(BuildContext context, PinType type) {
-    final primary = context.primary;
-    return switch (type) {
-      PinType.restaurant => const Color(0xFFE65100),
-      PinType.realEstate => primary,
-      PinType.utility => const Color(0xFF7B1FA2),
-      PinType.pharmacy => const Color(0xFF2E7D32),
-    };
-  }
+  // Category chip colours
+  static const _categoryColors = <PinType, Color>{
+    PinType.restaurant: Color(0xFFE65100),
+    PinType.realEstate: Color(0xFF003478),
+    PinType.utility: Color(0xFF7B1FA2),
+    PinType.pharmacy: Color(0xFF2E7D32),
+  };
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final catColor = _categoryAccent(context, pin.type);
+    final catColor = _categoryColors[pin.type] ?? const Color(0xFF003478);
     final initial = pin.authorName.isNotEmpty
         ? pin.authorName[0].toUpperCase()
         : '?';
@@ -1794,8 +2025,8 @@ class _PublicView extends StatelessWidget {
             Container(
               width: 38,
               height: 38,
-              decoration: BoxDecoration(
-                color: context.primary,
+              decoration: const BoxDecoration(
+                color: Color(0xFF003478),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
@@ -1804,7 +2035,7 @@ class _PublicView extends StatelessWidget {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: context.cs.onPrimary,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -1822,7 +2053,7 @@ class _PublicView extends StatelessWidget {
                         style: GoogleFonts.notoSansKr(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: context.onSurface,
+                          color: const Color(0xFF1A1A1A),
                         ),
                       ),
                       if (pin.isVerified) ...[
@@ -1833,7 +2064,7 @@ class _PublicView extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: context.primary,
+                            color: const Color(0xFF003478),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Row(
@@ -1863,7 +2094,7 @@ class _PublicView extends StatelessWidget {
                     'Posted by',
                     style: GoogleFonts.notoSansKr(
                       fontSize: 11,
-                      color: context.hintColor,
+                      color: const Color(0xFFADB5BD),
                     ),
                   ),
                 ],
@@ -1889,7 +2120,7 @@ class _PublicView extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-        Divider(height: 1, color: context.divider),
+        const Divider(height: 1, color: Color(0xFFF0F0F0)),
         const SizedBox(height: 14),
 
         // ── Name + category chip ──
@@ -1907,7 +2138,7 @@ class _PublicView extends StatelessWidget {
                     style: GoogleFonts.notoSansKr(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
-                      color: context.onSurface,
+                      color: const Color(0xFF1A1A1A),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -1958,7 +2189,7 @@ class _PublicView extends StatelessWidget {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: context.onSurface,
+                  color: const Color(0xFF1A1A1A),
                 ),
               ),
               const SizedBox(width: 4),
@@ -1966,15 +2197,15 @@ class _PublicView extends StatelessWidget {
                 AppLocalizations.of(context)!.reviewsCount(pin.reviewCount),
                 style: GoogleFonts.notoSansKr(
                   fontSize: 12,
-                  color: context.primary,
+                  color: const Color(0xFF003478),
                   decoration: TextDecoration.underline,
                 ),
               ),
               const SizedBox(width: 2),
-              Icon(
+              const Icon(
                 Icons.chevron_right_rounded,
                 size: 14,
-                color: context.primary,
+                color: Color(0xFF003478),
               ),
             ],
           ),
@@ -1986,36 +2217,37 @@ class _PublicView extends StatelessWidget {
         ],
 
         const SizedBox(height: 12),
-        _CoordRow(pin: pin, l: l),
+        _CoordRow(pin: pin, l: l, userPosition: userPosition),
         const SizedBox(height: 20),
 
         // ── Secondary action bar: Save · Share ──
         Builder(
-          builder: (ctx) {
-            final loc = AppLocalizations.of(ctx)!;
-            final cs = ctx.cs;
+          builder: (context) {
+            final l = AppLocalizations.of(context)!;
             return Row(
               children: [
                 Expanded(
                   child: _InfoSheetButton(
-                    label: isSaved ? loc.mapPinSaved : loc.btnSave,
+                    label: isSaved ? l.mapPinSaved : l.btnSave,
                     icon: isSaved
                         ? Icons.bookmark_rounded
                         : Icons.bookmark_border_rounded,
-                    backgroundColor:
-                        isSaved ? ctx.primary : cs.primaryContainer,
-                    foregroundColor:
-                        isSaved ? cs.onPrimary : ctx.primary,
+                    backgroundColor: isSaved
+                        ? const Color(0xFF003478)
+                        : const Color(0xFFF0F4FF),
+                    foregroundColor: isSaved
+                        ? Colors.white
+                        : const Color(0xFF003478),
                     onTap: onSave,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _InfoSheetButton(
-                    label: loc.actionShare,
+                    label: l.actionShare,
                     icon: Icons.share_rounded,
-                    backgroundColor: ctx.surfaceVar,
-                    foregroundColor: ctx.onSurfaceVar,
+                    backgroundColor: const Color(0xFFF5F7FA),
+                    foregroundColor: const Color(0xFF6A6A6A),
                     onTap: onShare,
                   ),
                 ),
@@ -2028,13 +2260,13 @@ class _PublicView extends StatelessWidget {
 
         // ── Primary CTA: Directions ──
         Builder(
-          builder: (ctx) {
-            final loc = AppLocalizations.of(ctx)!;
+          builder: (context) {
+            final l = AppLocalizations.of(context)!;
             return _InfoSheetButton(
-              label: loc.mapDirections,
+              label: l.mapDirections,
               icon: Icons.directions_rounded,
-              backgroundColor: ctx.primary,
-              foregroundColor: ctx.cs.onPrimary,
+              backgroundColor: const Color(0xFF003478),
+              foregroundColor: Colors.white,
               onTap: onDirections,
               fullWidth: true,
             );
@@ -2067,14 +2299,14 @@ class _PinHeader extends StatelessWidget {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: context.onSurface,
+                  color: const Color(0xFF1A1A1A),
                 ),
               ),
               Text(
                 pin.type.localizedLabel(l),
                 style: GoogleFonts.notoSansKr(
                   fontSize: 12,
-                  color: context.onSurfaceVar,
+                  color: const Color(0xFF6A6A6A),
                 ),
               ),
             ],
@@ -2105,14 +2337,14 @@ class _NotesBox extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: context.surfaceVar,
+        color: const Color(0xFFF5F7FA),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         notes,
         style: GoogleFonts.notoSansKr(
           fontSize: 14,
-          color: context.onSurface,
+          color: const Color(0xFF1A1A1A),
           height: 1.6,
         ),
       ),
@@ -2121,36 +2353,65 @@ class _NotesBox extends StatelessWidget {
 }
 
 class _CoordRow extends StatelessWidget {
-  const _CoordRow({required this.pin, required this.l});
+  const _CoordRow({required this.pin, required this.l, this.userPosition});
   final UserPinModel pin;
   final AppLocalizations l;
+  final NLatLng? userPosition;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final dist = _distanceLabel(userPosition, pin.latLng, l);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          pin.isPublic ? Icons.public_rounded : Icons.lock_outline_rounded,
-          size: 14,
-          color: context.hintColor,
+        Row(
+          children: [
+            Icon(
+              pin.isPublic ? Icons.public_rounded : Icons.lock_outline_rounded,
+              size: 14,
+              color: const Color(0xFFADB5BD),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              pin.isPublic
+                  ? l.mapPinInfoPublicShort
+                  : l.mapPinVisibilityPrivate,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 11,
+                color: const Color(0xFFADB5BD),
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '${pin.latLng.latitude.toStringAsFixed(5)}, '
+              '${pin.latLng.longitude.toStringAsFixed(5)}',
+              style: GoogleFonts.notoSansKr(
+                fontSize: 11,
+                color: const Color(0xFFADB5BD),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 4),
-        Text(
-          pin.isPublic ? l.mapPinInfoPublicShort : l.mapPinVisibilityPrivate,
-          style: GoogleFonts.notoSansKr(
-            fontSize: 11,
-            color: context.hintColor,
+        if (dist != null) ...[
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              const Icon(
+                Icons.near_me_rounded,
+                size: 13,
+                color: Color(0xFF2563EB),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                dist,
+                style: GoogleFonts.notoSans(
+                  fontSize: 12,
+                  color: const Color(0xFF2563EB),
+                ),
+              ),
+            ],
           ),
-        ),
-        const Spacer(),
-        Text(
-          '${pin.latLng.latitude.toStringAsFixed(5)}, '
-          '${pin.latLng.longitude.toStringAsFixed(5)}',
-          style: GoogleFonts.notoSansKr(
-            fontSize: 11,
-            color: context.hintColor,
-          ),
-        ),
+        ],
       ],
     );
   }
@@ -2225,17 +2486,23 @@ class _LocationFab extends StatelessWidget {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: context.cardFill,
+          color: Colors.white,
           shape: BoxShape.circle,
-          boxShadow: context.cardElevationShadow,
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x26000000),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: isLocating
-            ? Padding(
-                padding: const EdgeInsets.all(13),
+            ? const Padding(
+                padding: EdgeInsets.all(13),
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    context.primary,
+                    ShellColors.primaryBlue,
                   ),
                 ),
               )
@@ -2243,7 +2510,7 @@ class _LocationFab extends StatelessWidget {
                 isCentred
                     ? Icons.my_location_rounded
                     : Icons.location_searching_rounded,
-                color: context.primary,
+                color: ShellColors.primaryBlue,
                 size: 24,
               ),
       ),
@@ -2259,9 +2526,8 @@ class _LoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final p = context.primary;
     return ColoredBox(
-      color: context.bg,
+      color: Colors.white,
       child: Center(
         child: TweenAnimationBuilder<double>(
           tween: Tween(begin: 0.88, end: 1.0),
@@ -2272,13 +2538,15 @@ class _LoadingOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 52,
                 height: 52,
                 child: CircularProgressIndicator(
                   strokeWidth: 3.2,
-                  valueColor: AlwaysStoppedAnimation<Color>(p),
-                  backgroundColor: p.withValues(alpha: 0.12),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    ShellColors.primaryBlue,
+                  ),
+                  backgroundColor: Color(0x1F003478),
                 ),
               ),
               const SizedBox(height: 20),
@@ -2287,7 +2555,7 @@ class _LoadingOverlay extends StatelessWidget {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: p,
+                  color: ShellColors.primaryBlue,
                 ),
               ),
               const SizedBox(height: 6),
@@ -2295,7 +2563,7 @@ class _LoadingOverlay extends StatelessWidget {
                 l.statusFetchingLocation,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 12,
-                  color: context.hintColor,
+                  color: Color(0xFF94A3B8),
                 ),
               ),
             ],
@@ -2316,7 +2584,7 @@ class _SdkErrorBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: context.bg,
+      backgroundColor: ShellColors.background,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -2326,7 +2594,7 @@ class _SdkErrorBody extends StatelessWidget {
               Icon(
                 Icons.map_outlined,
                 size: 56,
-                color: context.primary.withValues(alpha: 0.4),
+                color: ShellColors.primaryBlue.withValues(alpha: 0.4),
               ),
               const SizedBox(height: 16),
               Text(
@@ -2334,7 +2602,7 @@ class _SdkErrorBody extends StatelessWidget {
                 style: GoogleFonts.notoSansKr(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: context.onSurface,
+                  color: const Color(0xFF1A1A1A),
                 ),
               ),
               const SizedBox(height: 8),
@@ -2345,12 +2613,196 @@ class _SdkErrorBody extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.notoSansKr(
                   fontSize: 13,
-                  color: context.onSurfaceVar,
+                  color: const Color(0xFF6A6A6A),
                   height: 1.5,
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ──────────────────────────── _MapTapSheet ────────────────────────────
+
+class _MapTapSheet extends StatelessWidget {
+  const _MapTapSheet({
+    required this.latLng,
+    required this.addressFuture,
+    required this.onPinHere,
+    required this.onDirections,
+    this.userPosition,
+  });
+
+  final NLatLng latLng;
+  final Future<LocalizedAddress> addressFuture;
+  final VoidCallback onPinHere;
+  final VoidCallback onDirections;
+  final NLatLng? userPosition;
+
+  @override
+  Widget build(BuildContext context) {
+    final lat = latLng.latitude.toStringAsFixed(6);
+    final lng = latLng.longitude.toStringAsFixed(6);
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drag handle
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDDE3EA),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Address block
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEEF2FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.place_rounded,
+                    color: Color(0xFF003478),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FutureBuilder<LocalizedAddress>(
+                    future: addressFuture,
+                    builder: (context, snap) {
+                      if (snap.connectionState == ConnectionState.waiting) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Color(0xFF003478),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '$lat, $lng',
+                              style: GoogleFonts.notoSans(
+                                fontSize: 12,
+                                color: const Color(0xFF94A3B8),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      final addr = snap.data;
+                      final primary = addr?.localized.isNotEmpty == true
+                          ? addr!.localized
+                          : addr?.korean ?? '$lat, $lng';
+                      final secondary = (addr?.hasTranslation == true)
+                          ? addr!.korean
+                          : '$lat, $lng';
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            primary,
+                            style: GoogleFonts.notoSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1A1A1A),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            secondary,
+                            style: GoogleFonts.notoSans(
+                              fontSize: 12,
+                              color: const Color(0xFF94A3B8),
+                            ),
+                          ),
+                          if (_distanceLabel(
+                                userPosition,
+                                latLng,
+                                AppLocalizations.of(context)!,
+                              )
+                              case final dist?) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.near_me_rounded,
+                                  size: 13,
+                                  color: Color(0xFF2563EB),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  dist,
+                                  style: GoogleFonts.notoSans(
+                                    fontSize: 12,
+                                    color: const Color(0xFF2563EB),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: _InfoSheetButton(
+                    label: AppLocalizations.of(context)!.mapDirections,
+                    icon: Icons.directions_rounded,
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                    onTap: onDirections,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _InfoSheetButton(
+                    label: AppLocalizations.of(context)!.mapPinSpot,
+                    icon: Icons.push_pin_rounded,
+                    backgroundColor: const Color(0xFF003478),
+                    foregroundColor: Colors.white,
+                    onTap: onPinHere,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

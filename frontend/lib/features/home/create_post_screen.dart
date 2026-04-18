@@ -13,7 +13,14 @@ abstract final class _Cfg {
   static const contentMax = 2000;
   static const maxPhotos  = 5;
 
-  static const categories = ['International 🌏', 'Campus 🇰🇷'];
+  static const categories = [
+    'International 🌏',
+    'Campus 🇰🇷',
+    'Scholarship 🎓',
+    'Housing 🏠',
+    'Academic 📚',
+    'Lost & Found 🔍',
+  ];
 
   static const languages = [
     'Korean', 'Vietnamese', 'English', 'Japanese', 'Chinese', 'Myanmar',
@@ -218,14 +225,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           // ── Category ──
           _Label(l.createPostCategory),
           const SizedBox(height: 10),
-          Row(
-            children: _Cfg.categories.map((cat) => Padding(
-              padding: const EdgeInsets.only(right: 10),
-              child: _CategoryChip(
-                label: cat,
-                selected: _category == cat,
-                onTap: () => setState(() => _category = cat),
-              ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: _Cfg.categories.map((cat) => _CategoryChip(
+              label: cat,
+              selected: _category == cat,
+              onTap: () => setState(() => _category = cat),
             )).toList(),
           ),
           const SizedBox(height: 24),

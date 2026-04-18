@@ -724,6 +724,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get partnerAccepted => '承認済み！';
 
   @override
+  String get partnerOpenChat => 'メッセージを送る';
+
+  @override
   String get partnerRequestSentSuccess => 'リクエストを送信しました。';
 
   @override
@@ -741,9 +744,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get partnerRequestAlreadyAccepted => 'すでに接続済みです。';
-
-  @override
-  String get partnerRequestPreviouslyDeclined => '以前のリクエストは辞退されました。まだ再送信できません。';
 
   @override
   String get partnerRequestFailed => 'リクエストを送信できませんでした。もう一度お試しください。';
@@ -804,6 +804,15 @@ class AppLocalizationsJa extends AppLocalizations {
       'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.';
 
   @override
+  String get chatSoftUnmatchMenu => '接続を切る';
+
+  @override
+  String get chatSoftUnmatchConfirmTitle => '接続を切りますか？';
+
+  @override
+  String get chatSoftUnmatchConfirmBody => '接続を切ってもよろしいですか？後から検索でこの相手を見つけられます。';
+
+  @override
   String get chatReconnect => 'Reconnect';
 
   @override
@@ -818,6 +827,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chatReconnectSuccess => 'Connection restored.';
+
+  @override
+  String get chatShareLocation => '場所を共有';
+
+  @override
+  String get chatOpenInMap => '地図で見る';
 
   @override
   String get authSuccessLogin => 'おかえりなさい！';

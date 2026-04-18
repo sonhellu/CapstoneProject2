@@ -9,11 +9,12 @@ class ThemeController extends ChangeNotifier {
 
   bool get isDark => _mode == ThemeMode.dark;
 
-  ThemeController() {
-    _load();
-  }
+  ThemeController();
 
-  Future<void> _load() async {
+  /// Loads the persisted theme before the first frame.
+  /// Call [await themeCtrl.init()] in [main()] before [runApp] to prevent
+  /// the light→dark flash on startup.
+  Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString(_key);
     if (saved == 'dark') {
@@ -23,7 +24,7 @@ class ThemeController extends ChangeNotifier {
     } else {
       _mode = ThemeMode.system;
     }
-    notifyListeners();
+    // No notifyListeners() needed — called before the widget tree exists.
   }
 
   Future<void> setMode(ThemeMode mode) async {

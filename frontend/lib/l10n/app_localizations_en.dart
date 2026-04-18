@@ -735,6 +735,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get partnerAccepted => 'Accepted!';
 
   @override
+  String get partnerOpenChat => 'Open Chat';
+
+  @override
   String get partnerRequestSentSuccess => 'Request sent.';
 
   @override
@@ -754,10 +757,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get partnerRequestAlreadyAccepted =>
       'You are already connected with this person.';
-
-  @override
-  String get partnerRequestPreviouslyDeclined =>
-      'A previous request was declined. You cannot send again yet.';
 
   @override
   String get partnerRequestFailed =>
@@ -819,6 +818,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.';
 
   @override
+  String get chatSoftUnmatchMenu => 'Disconnect';
+
+  @override
+  String get chatSoftUnmatchConfirmTitle => 'Disconnect?';
+
+  @override
+  String get chatSoftUnmatchConfirmBody =>
+      'Are you sure you want to disconnect? You can still find this person in search later.';
+
+  @override
   String get chatReconnect => 'Reconnect';
 
   @override
@@ -833,6 +842,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatReconnectSuccess => 'Connection restored.';
+
+  @override
+  String get chatShareLocation => 'Share a Location';
+
+  @override
+  String get chatOpenInMap => 'View on Map';
 
   @override
   String get authSuccessLogin => 'Welcome back!';

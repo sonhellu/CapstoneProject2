@@ -730,6 +730,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get partnerAccepted => 'Đã chấp nhận!';
 
   @override
+  String get partnerOpenChat => 'Gửi tin nhắn';
+
+  @override
   String get partnerRequestSentSuccess => 'Đã gửi lời mời.';
 
   @override
@@ -748,10 +751,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get partnerRequestAlreadyAccepted => 'Hai bạn đã kết nối rồi.';
-
-  @override
-  String get partnerRequestPreviouslyDeclined =>
-      'Lời mời trước đã bị từ chối. Chưa thể gửi lại.';
 
   @override
   String get partnerRequestFailed =>
@@ -814,6 +813,16 @@ class AppLocalizationsVi extends AppLocalizations {
       'Ban se khong gui tin duoc cho den khi ket noi lai. Luon co the mo lai cuoc tro chuyen va chon Ket noi lai.';
 
   @override
+  String get chatSoftUnmatchMenu => 'Ngắt kết nối';
+
+  @override
+  String get chatSoftUnmatchConfirmTitle => 'Ngắt kết nối?';
+
+  @override
+  String get chatSoftUnmatchConfirmBody =>
+      'Bạn có chắc muốn ngắt kết nối? Bạn vẫn có thể tìm thấy người này trong danh sách tìm kiếm sau này.';
+
+  @override
   String get chatReconnect => 'Ket noi lai';
 
   @override
@@ -828,6 +837,12 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get chatReconnectSuccess => 'Da ket noi lai.';
+
+  @override
+  String get chatShareLocation => 'Chia sẻ vị trí';
+
+  @override
+  String get chatOpenInMap => 'Xem trên bản đồ';
 
   @override
   String get authSuccessLogin => 'Chào mừng trở lại!';

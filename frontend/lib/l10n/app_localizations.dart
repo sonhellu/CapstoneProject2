@@ -1444,6 +1444,12 @@ abstract class AppLocalizations {
   /// **'Accepted!'**
   String get partnerAccepted;
 
+  /// No description provided for @partnerOpenChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Chat'**
+  String get partnerOpenChat;
+
   /// No description provided for @partnerRequestSentSuccess.
   ///
   /// In en, this message translates to:
@@ -1479,12 +1485,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You are already connected with this person.'**
   String get partnerRequestAlreadyAccepted;
-
-  /// No description provided for @partnerRequestPreviouslyDeclined.
-  ///
-  /// In en, this message translates to:
-  /// **'A previous request was declined. You cannot send again yet.'**
-  String get partnerRequestPreviouslyDeclined;
 
   /// No description provided for @partnerRequestFailed.
   ///
@@ -1600,6 +1600,24 @@ abstract class AppLocalizations {
   /// **'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.'**
   String get chatDisconnectConfirmBody;
 
+  /// No description provided for @chatSoftUnmatchMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get chatSoftUnmatchMenu;
+
+  /// No description provided for @chatSoftUnmatchConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect?'**
+  String get chatSoftUnmatchConfirmTitle;
+
+  /// No description provided for @chatSoftUnmatchConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to disconnect? You can still find this person in search later.'**
+  String get chatSoftUnmatchConfirmBody;
+
   /// No description provided for @chatReconnect.
   ///
   /// In en, this message translates to:
@@ -1629,6 +1647,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connection restored.'**
   String get chatReconnectSuccess;
+
+  /// No description provided for @chatShareLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Share a Location'**
+  String get chatShareLocation;
+
+  /// No description provided for @chatOpenInMap.
+  ///
+  /// In en, this message translates to:
+  /// **'View on Map'**
+  String get chatOpenInMap;
 
   /// No description provided for @authSuccessLogin.
   ///

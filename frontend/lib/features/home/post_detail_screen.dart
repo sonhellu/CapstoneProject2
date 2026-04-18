@@ -24,6 +24,21 @@ const _categoryColors = <String, Color>{
   'Academic': Color(0xFF1565C0),
 };
 
+// ─────────────────────────── Mock Comment ───────────────────────────
+
+class _CommentModel {
+  const _CommentModel({
+    required this.authorName,
+    required this.avatarInitial,
+    required this.text,
+    required this.time,
+  });
+  final String authorName;
+  final String avatarInitial;
+  final String text;
+  final String time;
+}
+
 // ─────────────────────────── Screen ───────────────────────────
 class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({super.key, required this.post});
@@ -36,9 +51,33 @@ class PostDetailScreen extends StatefulWidget {
 class _PostDetailScreenState extends State<PostDetailScreen> {
   int _currentImageIndex = 0;
   final _pageCtrl = PageController();
+  final _scrollCtrl = ScrollController();
+  final _commentCtrl = TextEditingController();
+  final _commentFocus = FocusNode();
   bool _isFollowing = false;
   late int _likeCount;
   bool _isLiked = false;
+
+  late final List<_CommentModel> _comments = [
+    const _CommentModel(
+      authorName: 'Tanaka Yuki',
+      avatarInitial: 'T',
+      text: 'Really helpful! Thanks for sharing 🙏',
+      time: '1h ago',
+    ),
+    const _CommentModel(
+      authorName: 'Ahmed Hassan',
+      avatarInitial: 'A',
+      text: 'I wish I had this guide when I first came here...',
+      time: '3h ago',
+    ),
+    const _CommentModel(
+      authorName: 'Kim Jisoo',
+      avatarInitial: 'K',
+      text: '카카오뱅크 정말 추천해요! 외국인도 쉽게 만들 수 있어요.',
+      time: '5h ago',
+    ),
+  ];
 
   @override
   void initState() {
@@ -49,7 +88,28 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   void dispose() {
     _pageCtrl.dispose();
+    _scrollCtrl.dispose();
+    _commentCtrl.dispose();
+    _commentFocus.dispose();
     super.dispose();
+  }
+
+  void _submitComment() {
+    final text = _commentCtrl.text.trim();
+    if (text.isEmpty) return;
+    setState(() {
+      _comments.insert(
+        0,
+        _CommentModel(
+          authorName: 'You',
+          avatarInitial: 'Y',
+          text: text,
+          time: 'Just now',
+        ),
+      );
+      _commentCtrl.clear();
+    });
+    _commentFocus.unfocus();
   }
 
   void _copyContent() {
@@ -83,7 +143,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
     return Scaffold(
       backgroundColor: context.bg,
+      bottomNavigationBar: _buildCommentInput(),
       body: CustomScrollView(
+        controller: _scrollCtrl,
         slivers: [
           // ── App Bar ──
           SliverAppBar(
@@ -171,6 +233,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     Divider(height: 1, color: Theme.of(context).dividerColor),
                     const SizedBox(height: 20),
                     _buildActionBar(),
+                    const SizedBox(height: 28),
+                    Divider(height: 1, color: Theme.of(context).dividerColor),
+                    const SizedBox(height: 20),
+                    _buildCommentsSection(),
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -308,6 +374,164 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
+  // ─── Comments Section ───
+  Widget _buildCommentsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.chat_bubble_outline_rounded, size: 16, color: context.primary),
+            const SizedBox(width: 6),
+            Text(
+              'Comments (${_comments.length})',
+              style: GoogleFonts.notoSansKr(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: context.primary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (_comments.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                'Be the first to comment!',
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 13,
+                  color: context.hintColor,
+                ),
+              ),
+            ),
+          )
+        else
+          ...List.generate(_comments.length, (i) {
+            final c = _comments[i];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Avatar
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: context.primary.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      c.avatarInitial.toUpperCase(),
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: context.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              c.authorName,
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: context.onSurface,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              c.time,
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 11,
+                                color: context.hintColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          c.text,
+                          style: GoogleFonts.notoSansKr(
+                            fontSize: 13,
+                            color: context.onSurfaceVar,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+      ],
+    );
+  }
+
+  // ─── Comment Input (bottom bar) ───
+  Widget _buildCommentInput() {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _commentCtrl,
+                  focusNode: _commentFocus,
+                  style: GoogleFonts.notoSansKr(fontSize: 14, color: context.onSurface),
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _submitComment(),
+                  decoration: InputDecoration(
+                    hintText: 'Write a comment…',
+                    hintStyle: GoogleFonts.notoSansKr(fontSize: 14, color: context.hintColor),
+                    filled: true,
+                    fillColor: context.subtleFill,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _submitComment,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: context.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.send_rounded, color: cs.onPrimary, size: 18),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // ─── Action Bar ───
   Widget _buildActionBar() {
     final l10n = AppLocalizations.of(context)!;
@@ -335,10 +559,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         Expanded(
           child: _ActionButton(
             icon: Icons.chat_bubble_outline_rounded,
-            label: '${widget.post.comments}',
+            label: '${_comments.length}',
             color: muted,
             bg: subtle,
-            onTap: () {},
+            onTap: () {
+              _commentFocus.requestFocus();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _scrollCtrl.animateTo(
+                  _scrollCtrl.position.maxScrollExtent,
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOut,
+                );
+              });
+            },
           ),
         ),
         const SizedBox(width: 10),

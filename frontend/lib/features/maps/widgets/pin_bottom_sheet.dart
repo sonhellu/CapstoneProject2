@@ -4,15 +4,24 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/services/geocoding_service.dart';
-import '../../../core/theme/theme_ext.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/user_pin_model.dart';
 import '../repository/pin_repository.dart';
 
-// ──────────────────────────── Accent tokens (non-theme) ────────────────────
+// ──────────────────────────── Design Tokens ────────────────────────────
 
-const _kGold = Color(0xFFFFB300);
-const _kDanger = Color(0xFFD32F2F);
+abstract final class _T {
+  static const primary    = Color(0xFF003478);
+  static const gold       = Color(0xFFFFB300);
+  static const surface    = Colors.white;
+  static const background = Color(0xFFF5F7FA);
+  static const textDark   = Color(0xFF1A1A1A);
+  static const textGrey   = Color(0xFF6A6A6A);
+  static const textLight  = Color(0xFFADB5BD);
+  static const border     = Color(0xFFE4E8EF);
+  static const divider    = Color(0xFFF0F2F5);
+  static const danger     = Color(0xFFD32F2F);
+}
 
 // ──────────────────────────── Entry Point ────────────────────────────
 
@@ -151,7 +160,7 @@ class _PinFormSheetState extends State<_PinFormSheet> {
             l.mapPinSaveFail,
             style: GoogleFonts.notoSansKr(fontSize: 13),
           ),
-          backgroundColor: _kDanger,
+          backgroundColor: _T.danger,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -164,9 +173,9 @@ class _PinFormSheetState extends State<_PinFormSheet> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Container(
-      decoration: BoxDecoration(
-        color: context.cardFill,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: const BoxDecoration(
+        color: _T.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
@@ -189,11 +198,11 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: _kGold.withValues(alpha: 0.12),
+                    color: _T.gold.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.push_pin_rounded,
-                      color: _kGold, size: 18),
+                      color: _T.gold, size: 18),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -205,7 +214,7 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                         style: GoogleFonts.notoSansKr(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
-                          color: context.onSurface,
+                          color: _T.textDark,
                         ),
                       ),
                       _AddressSubtitle(resolved: _resolvedAddress, latLng: widget.latLng),
@@ -213,14 +222,14 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.close_rounded,
-                      size: 20, color: context.onSurfaceVar),
+                  icon: const Icon(Icons.close_rounded,
+                      size: 20, color: _T.textGrey),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
           ),
-          Divider(height: 20, thickness: 1, color: Theme.of(context).dividerColor),
+          const Divider(height: 20, thickness: 1, color: _T.divider),
           // ── Scrollable form body ─────────────────────────────────
           Expanded(
             child: ListView(
@@ -263,11 +272,11 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                     onChanged: (_) => setState(() {}),
                     textInputAction: TextInputAction.next,
                     style: GoogleFonts.notoSansKr(
-                        fontSize: 15, color: context.onSurface),
+                        fontSize: 15, color: _T.textDark),
                     decoration: InputDecoration.collapsed(
                       hintText: l.mapPinNameHint,
                       hintStyle: GoogleFonts.notoSansKr(
-                          fontSize: 15, color: context.hintColor),
+                          fontSize: 15, color: _T.textLight),
                     ),
                   ),
                 ),
@@ -284,11 +293,11 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                     buildCounter: (_, {required currentLength,
                         required isFocused, maxLength}) => null,
                     style: GoogleFonts.notoSansKr(
-                        fontSize: 14, color: context.onSurface, height: 1.6),
+                        fontSize: 14, color: _T.textDark, height: 1.6),
                     decoration: InputDecoration.collapsed(
                       hintText: l.mapPinNotesHint,
                       hintStyle: GoogleFonts.notoSansKr(
-                          fontSize: 14, color: context.hintColor),
+                          fontSize: 14, color: _T.textLight),
                     ),
                   ),
                 ),
@@ -355,16 +364,16 @@ class _VisibilityToggle extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: context.bg,
+        color: _T.background,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.outline),
+        border: Border.all(color: _T.border),
       ),
       child: Row(
         children: [
           Icon(
             isPublic ? Icons.public_rounded : Icons.lock_outline_rounded,
             size: 20,
-            color: isPublic ? context.primary : context.onSurfaceVar,
+            color: isPublic ? _T.primary : _T.textGrey,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -373,7 +382,7 @@ class _VisibilityToggle extends StatelessWidget {
               style: GoogleFonts.notoSansKr(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: context.onSurface,
+                color: _T.textDark,
               ),
             ),
           ),
@@ -381,7 +390,7 @@ class _VisibilityToggle extends StatelessWidget {
             value: isPublic,
             onChanged: onChanged,
             activeThumbColor: Colors.white,
-            activeTrackColor: context.primary,
+            activeTrackColor: _T.primary,
           ),
         ],
       ),
@@ -414,10 +423,10 @@ class _TypeSelector extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: isSel ? _kGold.withValues(alpha: 0.12) : context.bg,
+              color: isSel ? _T.gold.withValues(alpha: 0.12) : _T.background,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isSel ? _kGold : context.outline,
+                color: isSel ? _T.gold : _T.border,
                 width: isSel ? 1.5 : 1,
               ),
             ),
@@ -427,7 +436,7 @@ class _TypeSelector extends StatelessWidget {
                 fontSize: 13,
                 fontWeight:
                     isSel ? FontWeight.w700 : FontWeight.w400,
-                color: isSel ? const Color(0xFF8A6000) : context.onSurfaceVar,
+                color: isSel ? const Color(0xFF8A6000) : _T.textGrey,
               ),
             ),
           ),
@@ -454,7 +463,7 @@ class _StarRating extends StatelessWidget {
             padding: const EdgeInsets.only(right: 6),
             child: Icon(
               i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
-              color: _kGold,
+              color: _T.gold,
               size: 34,
             ),
           ),
@@ -493,10 +502,10 @@ class _PhotoPickerRow extends StatelessWidget {
                 height: 80,
                 margin: const EdgeInsets.only(right: 10),
                 decoration: BoxDecoration(
-                  color: context.bg,
+                  color: _T.background,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: _kGold.withValues(alpha: 0.5),
+                    color: _T.gold.withValues(alpha: 0.5),
                     width: 1.5,
                   ),
                 ),
@@ -504,14 +513,14 @@ class _PhotoPickerRow extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(Icons.add_a_photo_outlined,
-                        color: _kGold, size: 24),
+                        color: _T.gold, size: 24),
                     const SizedBox(height: 4),
                     Text(
                       l.mapPinAddPhoto,
                       style: GoogleFonts.notoSansKr(
                         fontSize: 9,
                         fontWeight: FontWeight.w700,
-                        color: _kGold,
+                        color: _T.gold,
                       ),
                     ),
                   ],
@@ -526,13 +535,13 @@ class _PhotoPickerRow extends StatelessWidget {
                 height: 80,
                 margin: const EdgeInsets.only(right: 10),
                 decoration: BoxDecoration(
-                  color: _kGold.withValues(alpha: 0.08),
+                  color: _T.gold.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: _kGold.withValues(alpha: 0.3)),
+                      color: _T.gold.withValues(alpha: 0.3)),
                 ),
                 child: Icon(Icons.image_rounded,
-                    color: _kGold.withValues(alpha: 0.5), size: 30),
+                    color: _T.gold.withValues(alpha: 0.5), size: 30),
               ),
               Positioned(
                 top: -6,
@@ -543,7 +552,7 @@ class _PhotoPickerRow extends StatelessWidget {
                     width: 20,
                     height: 20,
                     decoration: const BoxDecoration(
-                      color: _kDanger,
+                      color: _T.danger,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.close_rounded,
@@ -581,8 +590,8 @@ class _SaveButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: enabled ? onTap : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _kGold,
-          disabledBackgroundColor: _kGold.withValues(alpha: 0.4),
+          backgroundColor: _T.gold,
+          disabledBackgroundColor: _T.gold.withValues(alpha: 0.4),
           foregroundColor: Colors.white,
           shape: const StadiumBorder(),
           elevation: 0,
@@ -630,15 +639,15 @@ class _AddressSubtitle extends StatelessWidget {
     if (resolved == null) {
       return Row(
         children: [
-          SizedBox(
+          const SizedBox(
             width: 10,
             height: 10,
-            child: CircularProgressIndicator(strokeWidth: 1.5, color: context.hintColor),
+            child: CircularProgressIndicator(strokeWidth: 1.5, color: _T.textLight),
           ),
           const SizedBox(width: 6),
           Text(
             '${latLng.latitude.toStringAsFixed(5)}, ${latLng.longitude.toStringAsFixed(5)}',
-            style: GoogleFonts.notoSansKr(fontSize: 11, color: context.hintColor),
+            style: GoogleFonts.notoSansKr(fontSize: 11, color: _T.textLight),
           ),
         ],
       );
@@ -648,7 +657,7 @@ class _AddressSubtitle extends StatelessWidget {
     if (resolved!.localized.isEmpty) {
       return Text(
         '${latLng.latitude.toStringAsFixed(5)}, ${latLng.longitude.toStringAsFixed(5)}',
-        style: GoogleFonts.notoSansKr(fontSize: 11, color: context.hintColor),
+        style: GoogleFonts.notoSansKr(fontSize: 11, color: _T.textLight),
       );
     }
 
@@ -661,7 +670,7 @@ class _AddressSubtitle extends StatelessWidget {
           style: GoogleFonts.notoSansKr(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: context.onSurfaceVar,
+            color: _T.textGrey,
           ),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -669,7 +678,7 @@ class _AddressSubtitle extends StatelessWidget {
         if (resolved!.hasTranslation)
           Text(
             resolved!.korean,
-            style: GoogleFonts.notoSansKr(fontSize: 10, color: context.hintColor),
+            style: GoogleFonts.notoSansKr(fontSize: 10, color: _T.textLight),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -707,9 +716,9 @@ class _FormBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: context.bg,
+        color: _T.background,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.outline),
+        border: Border.all(color: _T.border),
       ),
       child: child,
     );

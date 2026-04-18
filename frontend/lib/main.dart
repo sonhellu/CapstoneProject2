@@ -20,6 +20,10 @@ Future<void> main() async {
   // Phải gọi trước runApp để background isolate nhận được FCM handler.
   if (!kIsWeb) NotificationService.registerBackgroundHandler();
 
+  // Load saved theme BEFORE runApp to avoid light→dark flash on startup.
+  final themeCtrl = ThemeController();
+  await themeCtrl.init();
+
   final naverMapSdk = NaverMapSdkController();
 
   if (!kIsWeb) {
@@ -43,7 +47,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => LocaleController()),
-        ChangeNotifierProvider(create: (_) => ThemeController()),
+        ChangeNotifierProvider.value(value: themeCtrl),
         ChangeNotifierProvider.value(value: naverMapSdk),
         ChangeNotifierProxyProvider<AuthProvider, ChatController>(
           create: (ctx) =>

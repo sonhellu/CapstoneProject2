@@ -50,7 +50,7 @@ class MockPinService {
       'lng': 128.4912,
       'title': '정문 약국',
       'content': '정문 바로 앞, 학생 할인 적용',
-      'type': 'pharmacy',
+      'type': 'utility',
     },
     {
       'id': 'km_004',
@@ -143,7 +143,6 @@ class MockPinService {
   static PinType _typeFromString(String t) => switch (t) {
         'restaurant' => PinType.restaurant,
         'realEstate' => PinType.realEstate,
-        'pharmacy'   => PinType.pharmacy,
         _            => PinType.utility,
       };
 
@@ -156,7 +155,5 @@ class MockPinService {
         isPublic: true,
         rating: 4,
         createdAt: DateTime(2025, 1, 1),
-        authorName: 'hicampus',
-        isVerified: true,
       );
 }

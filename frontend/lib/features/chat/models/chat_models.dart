@@ -6,6 +6,20 @@ enum Gender { male, female, any }
 
 enum RequestStatus { none, pending, accepted, rejected }
 
+/// State machine for a user pair.
+///
+/// ```
+/// none ──► pending ──► active ──► disconnected
+///                 ↑                     │
+///                 └─────────────────────┘  (reconnect)
+/// ```
+///
+/// - [none]         chat_requests doc does not exist.
+/// - [pending]      chat_requests.status == 'pending'.
+/// - [active]       chat_requests.status == 'active'  /  conversations.status == 'active'.
+/// - [disconnected] both docs have status == 'disconnected'.
+enum ChatSyncStatus { none, pending, active, disconnected }
+
 // ─────────────────────────── LocationData ───────────────────────────
 
 class LocationData {
@@ -82,8 +96,6 @@ class MessageModel {
   });
 
   final String id;
-
-  /// Firebase UID of the sender.
   final String senderId;
   final String content;
   final DateTime timestamp;
@@ -93,30 +105,13 @@ class MessageModel {
   /// Non-null when [type] == [MessageType.location].
   final LocationData? locationData;
 
-  /// True while the message is awaiting Firestore confirmation (optimistic).
-  /// Bubble renders at reduced opacity until this becomes false.
+  /// True while the message is awaiting Firestore confirmation (optimistic UI).
   final bool isPending;
 
-  bool get isMe =>
-      senderId == FirebaseAuth.instance.currentUser?.uid;
-
-  /// Returns a copy with [isPending] cleared and [id]/[timestamp] updated.
-  MessageModel confirmedWith({required String id, required DateTime timestamp}) =>
-      MessageModel(
-        id: id,
-        senderId: senderId,
-        content: content,
-        timestamp: timestamp,
-        isRead: isRead,
-        type: type,
-        locationData: locationData,
-        isPending: false,
-      );
+  bool get isMe => senderId == FirebaseAuth.instance.currentUser?.uid;
 }
 
 // ─────────────────────────── Chat Request ───────────────────────────
-
-enum ChatRequestStatus { pending, accepted, rejected }
 
 class ChatRequestModel {
   const ChatRequestModel({
@@ -128,7 +123,7 @@ class ChatRequestModel {
 
   final String id;
   final PartnerModel sender;
-  final ChatRequestStatus status;
+  final ChatSyncStatus status;
   final DateTime timestamp;
 }
 
@@ -142,7 +137,8 @@ class ChatModel {
     required this.lastTime,
     this.unreadCount = 0,
     this.isActive = true,
-    this.isDisconnected = false,
+    this.status = ChatSyncStatus.active,
+    this.lastClearedAt,
   });
 
   final String id;
@@ -151,9 +147,16 @@ class ChatModel {
   final String lastTime;
   final int unreadCount;
 
-  /// false = request sent but not yet accepted
+  /// false = placeholder row navigated from accept (no existing conversation data).
   final bool isActive;
 
-  /// true when [Firestore conversation `status`] is `disconnected` (paused; can reconnect).
-  final bool isDisconnected;
+  /// Mirrors Firestore conversation `status`.
+  final ChatSyncStatus status;
+
+  /// Set to the server timestamp when a conversation is reconnected.
+  /// [ChatService.getMessages] filters out messages older than this so the
+  /// chat room appears empty after a reconnect.
+  final DateTime? lastClearedAt;
+
+  bool get isDisconnected => status == ChatSyncStatus.disconnected;
 }
