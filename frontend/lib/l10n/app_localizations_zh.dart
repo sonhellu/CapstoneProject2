@@ -724,6 +724,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get partnerAccepted => '已接受！';
 
   @override
+  String get partnerOpenChat => '发送消息';
+
+  @override
   String get partnerRequestSentSuccess => '请求已发送。';
 
   @override
@@ -740,9 +743,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get partnerRequestAlreadyAccepted => '你们已连接。';
-
-  @override
-  String get partnerRequestPreviouslyDeclined => '之前的请求已被拒绝，暂时无法再次发送。';
 
   @override
   String get partnerRequestFailed => '无法发送请求，请重试。';
@@ -803,6 +803,15 @@ class AppLocalizationsZh extends AppLocalizations {
       'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.';
 
   @override
+  String get chatSoftUnmatchMenu => '断开连接';
+
+  @override
+  String get chatSoftUnmatchConfirmTitle => '断开连接？';
+
+  @override
+  String get chatSoftUnmatchConfirmBody => '确定要断开连接吗？之后仍可在搜索中找到此人。';
+
+  @override
   String get chatReconnect => 'Reconnect';
 
   @override
@@ -817,6 +826,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatReconnectSuccess => 'Connection restored.';
+
+  @override
+  String get chatShareLocation => '分享位置';
+
+  @override
+  String get chatOpenInMap => '在地图中查看';
 
   @override
   String get authSuccessLogin => '欢迎回来！';

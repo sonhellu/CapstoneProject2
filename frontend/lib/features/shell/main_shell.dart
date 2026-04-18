@@ -13,6 +13,7 @@ import '../chat/chat_controller.dart';
 import '../chat/repository/user_repository.dart';
 import '../chat/chat_tab_screen.dart';
 import '../home/home_tab_screen.dart';
+import '../maps/map_focus_controller.dart';
 import '../maps/maps_tab_screen.dart';
 import '../profile/profile_tab_screen.dart';
 import 'widgets/floating_bottom_nav.dart';
@@ -44,12 +45,15 @@ class _MainShellState extends State<MainShell> {
 
   final math.Random _random = math.Random();
   StreamSubscription? _newRequestSub;
+  StreamSubscription? _newMessageSub;
 
   @override
   void initState() {
     super.initState();
     if (!kIsWeb) _initNotifications();
     _listenNewRequests();
+    _listenNewMessages();
+    MapFocusController.instance.addListener(_onMapFocusRequest);
   }
 
   void _listenNewRequests() {
@@ -67,9 +71,32 @@ class _MainShellState extends State<MainShell> {
     });
   }
 
+  void _listenNewMessages() {
+    final ctrl = context.read<ChatController>();
+    _newMessageSub = ctrl.newMessages.listen((chat) {
+      if (!mounted) return;
+      if (_selectedIndex == 1) return; // already on Chat tab
+      InAppNotificationBanner.show(
+        context: context,
+        title: chat.partner.name,
+        subtitle: chat.lastMessage,
+        avatarInitial: chat.partner.avatarInitial,
+        onTap: () => setState(() => _selectedIndex = 1),
+      );
+    });
+  }
+
+  void _onMapFocusRequest() {
+    if (MapFocusController.instance.pending != null) {
+      _onNavTap(_mapsIndex);
+    }
+  }
+
   @override
   void dispose() {
     _newRequestSub?.cancel();
+    _newMessageSub?.cancel();
+    MapFocusController.instance.removeListener(_onMapFocusRequest);
     super.dispose();
   }
 

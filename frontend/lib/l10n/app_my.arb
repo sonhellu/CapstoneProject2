@@ -266,6 +266,7 @@
   "partnerSendRequest": "တောင်းဆိုမှုပို့မည်",
   "partnerPending": "စောင့်ဆိုင်းနေသည်…",
   "partnerAccepted": "လက်ခံပြီး!",
+  "partnerOpenChat": "Chat ဖွင့်မည်",
 
   "partnerRequestSentSuccess": "Request sent.",
   "partnerRequestNotSignedIn": "Please sign in to send a request.",
@@ -273,7 +274,6 @@
   "partnerRequestAlreadyPending": "You already have a pending request with this person.",
   "partnerRequestIncomingPending": "They already sent you a request. Open Chat to accept it.",
   "partnerRequestAlreadyAccepted": "You are already connected with this person.",
-  "partnerRequestPreviouslyDeclined": "A previous request was declined. You cannot send again yet.",
   "partnerRequestFailed": "Could not send the request. Please try again.",
 
   "chatSearchConversations": "စကားပြောများကို ရှာဖွေပါ…",
@@ -294,11 +294,16 @@
   "chatDisconnectMenu": "Pause connection",
   "chatDisconnectConfirmTitle": "Pause this chat?",
   "chatDisconnectConfirmBody": "You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.",
+  "chatSoftUnmatchMenu": "Disconnect",
+  "chatSoftUnmatchConfirmTitle": "Disconnect?",
+  "chatSoftUnmatchConfirmBody": "Are you sure you want to disconnect? You can still find this person in search later.",
   "chatReconnect": "Reconnect",
   "chatDisconnectedBanner": "Connection paused. Reconnect to send messages.",
   "chatSendBlockedDisconnected": "Reconnect to send messages.",
   "chatDisconnectSuccess": "Chat paused.",
   "chatReconnectSuccess": "Connection restored.",
+  "chatShareLocation": "တည်နေရာမျှဝေရန်",
+  "chatOpenInMap": "မြေပုံတွင်ကြည့်ရန်",
 
 
   "authSuccessLogin": "ကြိုဆိုပါသည်！",

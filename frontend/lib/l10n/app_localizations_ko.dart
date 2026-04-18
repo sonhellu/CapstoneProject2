@@ -724,6 +724,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get partnerAccepted => '수락됨!';
 
   @override
+  String get partnerOpenChat => '메시지 보내기';
+
+  @override
   String get partnerRequestSentSuccess => '요청을 보냈습니다.';
 
   @override
@@ -741,10 +744,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get partnerRequestAlreadyAccepted => '이미 연결되어 있습니다.';
-
-  @override
-  String get partnerRequestPreviouslyDeclined =>
-      '이전 요청이 거절되었습니다. 아직 다시 보낼 수 없습니다.';
 
   @override
   String get partnerRequestFailed => '요청을 보낼 수 없습니다. 다시 시도하세요.';
@@ -805,6 +804,16 @@ class AppLocalizationsKo extends AppLocalizations {
       'You will not be able to send messages until you reconnect. You can reopen this chat anytime and tap Reconnect.';
 
   @override
+  String get chatSoftUnmatchMenu => '연결 끊기';
+
+  @override
+  String get chatSoftUnmatchConfirmTitle => '연결을 끊을까요?';
+
+  @override
+  String get chatSoftUnmatchConfirmBody =>
+      '연결을 끊으시겠습니까? 나중에 검색에서 이 사람을 다시 찾을 수 있습니다.';
+
+  @override
   String get chatReconnect => 'Reconnect';
 
   @override
@@ -819,6 +828,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chatReconnectSuccess => 'Connection restored.';
+
+  @override
+  String get chatShareLocation => '위치 공유';
+
+  @override
+  String get chatOpenInMap => '지도에서 보기';
 
   @override
   String get authSuccessLogin => '다시 오신 것을 환영합니다!';

@@ -1,12 +1,14 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import '../../core/feedback/app_snackbar.dart';
+import '../../core/locale/app_locale_resolver.dart';
+import '../../core/services/translation_service.dart';
+import '../maps/map_focus_controller.dart';
 import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
 import '../maps/services/mock_pin_service.dart';
@@ -35,6 +37,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   final _focusNode = FocusNode();
   final _messages = <MessageModel>[];
 
+  /// Cached UID — read once in initState to avoid repeated Firebase calls per render.
+  late final String _cachedMyUid;
+
   /// Tracks all IDs already present in [_messages] to prevent duplicates.
   final _addedIds = <String>{};
 
@@ -42,21 +47,21 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   /// When Firestore confirms a message we replace the pending entry in-place.
   final _pendingMsgIds = <String>{};
 
+  /// Cursor for loading older pages — last doc of the previous descending query.
+  DocumentSnapshot<Map<String, dynamic>>? _oldestCursor;
+
   bool _isLoadingInitial = true;
   bool _isLoadingOlder = false;
   bool _hasMoreOlder = true;
-  int _currentPage = 1;
   bool _canSend = false;
-  bool _isDisconnected = false;
 
   StreamSubscription<MessageModel>? _messageSub;
-  StreamSubscription<bool>? _convStatusSub;
   late final AnimationController _sendBtnCtrl;
 
   @override
   void initState() {
     super.initState();
-    _isDisconnected = widget.chat.isDisconnected;
+    _cachedMyUid = FirebaseAuth.instance.currentUser?.uid ?? 'me';
     _sendBtnCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
@@ -64,23 +69,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     _loadInitialMessages();
     _messageSub = ChatService.instance
         .incomingMessagesStream(widget.chat.id)
-        .listen(_onIncomingMessage);
-    _convStatusSub = ChatService.instance
-        .conversationDisconnectedStream(widget.chat.id)
-        .listen((disconnected) {
-      if (!mounted) return;
-      setState(() => _isDisconnected = disconnected);
-      if (disconnected) {
-        _sendBtnCtrl.reverse();
-      } else if (_inputCtrl.text.trim().isNotEmpty) {
-        _sendBtnCtrl.forward();
-      }
-    });
+        .listen(
+          _onIncomingMessage,
+          // Silently absorb stream errors (e.g. Firestore permission-denied
+          // while the app is in the background or the session expires).
+          // sendMessage already shows its own error snackbar on failure.
+          onError: (_) {},
+        );
     _inputCtrl.addListener(() {
       final canSend = _inputCtrl.text.trim().isNotEmpty;
       if (canSend != _canSend) {
         setState(() => _canSend = canSend);
-        if (canSend && !_isDisconnected) {
+        if (canSend) {
           _sendBtnCtrl.forward();
         } else {
           _sendBtnCtrl.reverse();
@@ -93,7 +93,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   @override
   void dispose() {
     _messageSub?.cancel();
-    _convStatusSub?.cancel();
     _sendBtnCtrl.dispose();
     _scrollCtrl.dispose();
     _inputCtrl.dispose();
@@ -102,9 +101,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   }
 
   void _onScroll() {
-    // When scrolled to top → load older messages
-    if (_scrollCtrl.position.pixels >=
-            _scrollCtrl.position.maxScrollExtent - 80 &&
+    // Trigger load-older when user scrolls near the TOP of the list
+    // (pixels ≈ 0 = top; maxScrollExtent = bottom).
+    if (_scrollCtrl.position.pixels <= 80 &&
         !_isLoadingOlder &&
         _hasMoreOlder) {
       _loadOlderMessages();
@@ -112,11 +111,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   }
 
   Future<void> _loadInitialMessages() async {
-    final msgs = await ChatService.instance.getMessages(widget.chat.id);
+    final (msgs, cursor) = await ChatService.instance
+        .getMessages(widget.chat.id, since: widget.chat.lastClearedAt);
     // Reset unread badge when opening chat.
     ChatService.instance.resetUnreadCount(widget.chat.id);
     if (!mounted) return;
     setState(() {
+      _oldestCursor = cursor;
+      _hasMoreOlder = msgs.length >= ChatService.kPageSize;
       for (final m in msgs) {
         if (_addedIds.add(m.id)) _messages.add(m);
       }
@@ -128,10 +130,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   Future<void> _loadOlderMessages() async {
     if (_isLoadingOlder) return;
     setState(() => _isLoadingOlder = true);
-    final older = await ChatService.instance.getMessages(
+
+    final (older, cursor) = await ChatService.instance.getMessages(
       widget.chat.id,
-      page: _currentPage + 1,
+      before: _oldestCursor,
+      since: widget.chat.lastClearedAt,
     );
+
     if (!mounted) return;
     if (older.isEmpty) {
       setState(() {
@@ -142,10 +147,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     }
     final prevExtent = _scrollCtrl.position.maxScrollExtent;
     setState(() {
-      // Insert only messages not already shown (dedup by ID).
       final newOlder = older.where((m) => _addedIds.add(m.id)).toList();
       _messages.insertAll(0, newOlder);
-      _currentPage++;
+      _oldestCursor = cursor;
+      _hasMoreOlder = older.length >= ChatService.kPageSize;
       _isLoadingOlder = false;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -198,11 +203,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   // ── Location sharing ──────────────────────────────────────────────────────
 
   void _showAttachSheet() {
-    if (_isDisconnected) {
-      final l = AppLocalizations.of(context)!;
-      showErrorTextSnackBar(context, l.chatSendBlockedDisconnected);
-      return;
-    }
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -230,17 +230,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   }
 
   Future<void> _sendLocation(LocationData location) async {
-    if (_isDisconnected) {
-      final l = AppLocalizations.of(context)!;
-      showErrorTextSnackBar(context, l.chatSendBlockedDisconnected);
-      return;
-    }
     HapticFeedback.lightImpact();
     final tempId =
         'pending_loc_${DateTime.now().microsecondsSinceEpoch}';
     final tempMsg = MessageModel(
       id: tempId,
-      senderId: _myUid(),
+      senderId: _cachedMyUid,
       content: '${location.typeEmoji} ${location.name}',
       timestamp: DateTime.now(),
       type: MessageType.location,
@@ -276,11 +271,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   }
 
   Future<void> _send() async {
-    if (_isDisconnected) {
-      final l = AppLocalizations.of(context)!;
-      showErrorTextSnackBar(context, l.chatSendBlockedDisconnected);
-      return;
-    }
     final text = _inputCtrl.text.trim();
     if (text.isEmpty) return;
     _inputCtrl.clear();
@@ -292,7 +282,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     final tempId = 'pending_${DateTime.now().microsecondsSinceEpoch}';
     final tempMsg = MessageModel(
       id: tempId,
-      senderId: _myUid(),
+      senderId: _cachedMyUid,
       content: text,
       timestamp: DateTime.now(),
       isPending: true,
@@ -337,19 +327,37 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     }
   }
 
-  /// Current user's UID — safe fallback to 'me'.
-  String _myUid() {
-    // ignore: unnecessary_import — firebase_auth is a transitive dep already
-    return (FirebaseAuth.instance.currentUser?.uid) ?? 'me';
+  /// Opens the modern BottomSheet action menu (replaces PopupMenuButton).
+  void _showChatActions(PartnerModel partner) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _ChatActionsSheet(
+        partner: partner,
+        onViewProfile: () {
+          Navigator.pop(context);
+          // TODO: navigate to partner profile screen
+        },
+        onReport: () {
+          Navigator.pop(context);
+          // TODO: open report flow
+        },
+        onDisconnect: () {
+          Navigator.pop(context);
+          _confirmSoftUnmatch();
+        },
+      ),
+    );
   }
 
-  Future<void> _confirmDisconnect() async {
+  Future<void> _confirmSoftUnmatch() async {
     final l = AppLocalizations.of(context)!;
     final go = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l.chatDisconnectConfirmTitle),
-        content: Text(l.chatDisconnectConfirmBody),
+        title: Text(l.chatSoftUnmatchConfirmTitle),
+        content: Text(l.chatSoftUnmatchConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -357,37 +365,34 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l.chatDisconnectMenu),
+            child: Text(
+              l.chatSoftUnmatchMenu,
+              style: const TextStyle(color: Colors.redAccent),
+            ),
           ),
         ],
       ),
     );
     if (go != true || !mounted) return;
-    await ChatService.instance.disconnectConversation(widget.chat.id);
-    if (mounted) showSuccessSnackBar(context, l.chatDisconnectSuccess);
-  }
-
-  Future<void> _onReconnect() async {
-    final l = AppLocalizations.of(context)!;
-    await ChatService.instance.reconnectConversation(widget.chat.id);
-    if (mounted) showSuccessSnackBar(context, l.chatReconnectSuccess);
+    try {
+      await ChatService.instance.disconnectPartner(widget.chat.id);
+      if (!mounted) return;
+      showSuccessSnackBar(context, l.chatDisconnectSuccess);
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, e);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final partner = widget.chat.partner;
-    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: context.bg,
       appBar: _buildAppBar(partner),
       body: Column(
         children: [
-          if (_isDisconnected)
-            _DisconnectBanner(
-              message: l.chatDisconnectedBanner,
-              reconnectLabel: l.chatReconnect,
-              onReconnect: _onReconnect,
-            ),
           Expanded(
             child: _isLoadingInitial
                 ? _buildSkeleton()
@@ -462,9 +467,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.more_vert_rounded,
-              color: onS, size: 22),
-          onPressed: () => _showOptions(context, partner),
+          icon: Icon(Icons.more_vert_rounded, color: onS, size: 22),
+          onPressed: () => _showChatActions(partner),
         ),
       ],
       bottom: PreferredSize(
@@ -530,6 +534,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               _BubbleTile(
                 message: msg,
                 partnerInitial: widget.chat.partner.avatarInitial,
+                partnerLangTag: widget.chat.partner.nativeLanguage,
                 isGroupStart: isGroupStart,
                 isGroupEnd: isGroupEnd,
               ),
@@ -543,21 +548,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   Widget _buildInputBar() {
     final p = context.primary;
     final cs = Theme.of(context).colorScheme;
-    final locked = _isDisconnected;
-    final canSendNow = _canSend && !locked;
-    return Opacity(
-      opacity: locked ? 0.55 : 1,
-      child: Container(
-        color: context.cardFill,
-        padding: EdgeInsets.only(
-          left: 12,
-          right: 8,
-          top: 10,
-          bottom: MediaQuery.of(context).padding.bottom + 10,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
+    final canSendNow = _canSend;
+    return Container(
+      color: context.cardFill,
+      padding: EdgeInsets.only(
+        left: 12,
+        right: 8,
+        top: 10,
+        bottom: MediaQuery.of(context).padding.bottom + 10,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
             SizedBox(
               width: 40,
               height: 40,
@@ -565,7 +567,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 padding: EdgeInsets.zero,
                 icon: Icon(Icons.add_circle_outline_rounded,
                     color: context.onSurfaceVar, size: 26),
-                onPressed: locked ? null : _showAttachSheet,
+                onPressed: _showAttachSheet,
               ),
             ),
             const SizedBox(width: 4),
@@ -581,7 +583,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 child: TextField(
                   controller: _inputCtrl,
                   focusNode: _focusNode,
-                  readOnly: locked,
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
                   textCapitalization: TextCapitalization.sentences,
@@ -590,9 +591,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                     color: context.onSurface,
                   ),
                   decoration: InputDecoration(
-                    hintText: locked
-                        ? AppLocalizations.of(context)!.chatSendBlockedDisconnected
-                        : 'Type a message…',
+                    hintText: 'Type a message…',
                     hintStyle: GoogleFonts.notoSansKr(
                       fontSize: 14,
                       color: context.hintColor,
@@ -637,7 +636,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -649,107 +647,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     );
   }
 
-  void _showOptions(BuildContext context, PartnerModel partner) {
-    final l = AppLocalizations.of(context)!;
-    showModalBottomSheet<void>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetCtx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Theme.of(sheetCtx)
-                    .colorScheme
-                    .outline
-                    .withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.person_outline_rounded),
-              title: Text('View Profile',
-                  style: GoogleFonts.notoSansKr(fontSize: 14)),
-              onTap: () => Navigator.pop(sheetCtx),
-            ),
-            ListTile(
-              leading: Icon(Icons.pause_circle_outline_rounded,
-                  color: context.onSurfaceVar),
-              title: Text(
-                l.chatDisconnectMenu,
-                style: GoogleFonts.notoSansKr(fontSize: 14),
-              ),
-              onTap: () {
-                Navigator.pop(sheetCtx);
-                _confirmDisconnect();
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
-}
-
-// ─────────────────────────── Disconnect banner ───────────────────────────
-class _DisconnectBanner extends StatelessWidget {
-  const _DisconnectBanner({
-    required this.message,
-    required this.reconnectLabel,
-    required this.onReconnect,
-  });
-
-  final String message;
-  final String reconnectLabel;
-  final VoidCallback onReconnect;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.primary;
-    return Material(
-      color: context.cs.primaryContainer.withValues(alpha: 0.55),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-        child: Row(
-          children: [
-            Icon(Icons.info_outline_rounded, size: 20, color: p),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                message,
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 13,
-                  color: context.onSurface,
-                  height: 1.35,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: onReconnect,
-              child: Text(
-                reconnectLabel,
-                style: GoogleFonts.notoSansKr(
-                  fontWeight: FontWeight.w700,
-                  color: p,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // ─────────────────────────── Load Older Button ───────────────────────────
@@ -842,12 +741,14 @@ class _BubbleTile extends StatelessWidget {
   const _BubbleTile({
     required this.message,
     required this.partnerInitial,
+    required this.partnerLangTag,
     required this.isGroupStart,
     required this.isGroupEnd,
   });
 
   final MessageModel message;
   final String partnerInitial;
+  final String partnerLangTag;
   final bool isGroupStart;
   final bool isGroupEnd;
 
@@ -906,6 +807,7 @@ class _BubbleTile extends StatelessWidget {
                     isMe: isMe,
                     isGroupStart: isGroupStart,
                     isGroupEnd: isGroupEnd,
+                    partnerLangTag: isMe ? null : partnerLangTag,
                   ),
                 if (isGroupEnd)
                   Padding(
@@ -971,75 +873,230 @@ class _SystemNotice extends StatelessWidget {
 }
 
 // ─────────────────────────── Bubble ───────────────────────────
-class _Bubble extends StatelessWidget {
+
+enum _TxState { idle, loading, done }
+
+class _Bubble extends StatefulWidget {
   const _Bubble({
     required this.message,
     required this.isMe,
     required this.isGroupStart,
     required this.isGroupEnd,
+    this.partnerLangTag,
   });
 
   final MessageModel message;
   final bool isMe;
   final bool isGroupStart;
   final bool isGroupEnd;
+  /// Native language tag of the partner (e.g. "KR", "ko"). Null for own messages.
+  final String? partnerLangTag;
+
+  @override
+  State<_Bubble> createState() => _BubbleState();
+}
+
+class _BubbleState extends State<_Bubble> {
+  _TxState _txState = _TxState.idle;
+  String? _translated;
+
+  bool _canTranslate(BuildContext context) {
+    if (widget.isMe) return false;
+    if (widget.message.type != MessageType.text) return false;
+    if (widget.message.content.trim().isEmpty) return false;
+    final toIso = AppLocaleResolver.targetLang(context);
+    return LangCode.isPapagoSupported(toIso);
+  }
+
+  Future<void> _onTranslateTap() async {
+    if (_txState == _TxState.loading) return;
+
+    if (_txState == _TxState.done) {
+      setState(() => _txState = _TxState.idle);
+      return;
+    }
+
+    if (_translated != null) {
+      setState(() => _txState = _TxState.done);
+      return;
+    }
+
+    setState(() => _txState = _TxState.loading);
+
+    final toIso = AppLocaleResolver.targetLang(context);
+
+    // 1. Detect actual language of this message (handles mixed-language text).
+    // 2. Fallback to partner's profile language if detection fails.
+    final detected = await TranslationService.instance
+        .detectLanguage(widget.message.content);
+    final fromIso = detected ?? LangCode.fromTag(widget.partnerLangTag ?? '');
+
+    // No-op if detected language already matches app language.
+    if (fromIso == toIso) {
+      if (!mounted) return;
+      setState(() {
+        _translated = widget.message.content;
+        _txState = _TxState.done;
+      });
+      return;
+    }
+
+    final result = await TranslationService.instance.translateText(
+      widget.message.content,
+      from: fromIso,
+      to: toIso,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _translated = result;
+      _txState = _TxState.done;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = context.isDark;
     final myBg = cs.primary;
-    final partnerBg = context.cardFill;
+    // Partner bubble: in dark mode use cs.surface (distinct from AppBar/cardFill)
+    // In light mode use cardFill (white).
+    final partnerBg = isDark ? cs.surface : context.cardFill;
     const r = Radius.circular(18);
     const rSmall = Radius.circular(4);
+    final isMe = widget.isMe;
 
     final borderRadius = isMe
         ? BorderRadius.only(
             topLeft: r,
-            topRight: isGroupStart ? r : rSmall,
+            topRight: widget.isGroupStart ? r : rSmall,
             bottomLeft: r,
-            bottomRight: isGroupEnd ? rSmall : rSmall,
+            bottomRight: widget.isGroupEnd ? rSmall : rSmall,
           )
         : BorderRadius.only(
-            topLeft: isGroupStart ? r : rSmall,
+            topLeft: widget.isGroupStart ? r : rSmall,
             topRight: r,
-            bottomLeft: isGroupEnd ? rSmall : rSmall,
+            bottomLeft: widget.isGroupEnd ? rSmall : rSmall,
             bottomRight: r,
           );
 
-    return GestureDetector(
-      onLongPress: () {
-        HapticFeedback.mediumImpact();
-        Clipboard.setData(ClipboardData(text: message.content));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Message copied',
-              style: GoogleFonts.notoSansKr(fontSize: 13),
+    final displayText = _txState == _TxState.done
+        ? (_translated ?? widget.message.content)
+        : widget.message.content;
+
+    final canTx = _canTranslate(context);
+    final l = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment:
+          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Message bubble ──
+        GestureDetector(
+          onLongPress: () {
+            HapticFeedback.mediumImpact();
+            Clipboard.setData(ClipboardData(text: widget.message.content));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Message copied',
+                  style: GoogleFonts.notoSansKr(fontSize: 13),
+                ),
+                duration: const Duration(seconds: 1),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isMe ? myBg : partnerBg,
+              borderRadius: borderRadius,
+              border: (!isMe && isDark)
+                  ? Border.all(
+                      color: cs.outline.withValues(alpha: 0.25),
+                      width: 1,
+                    )
+                  : null,
+              boxShadow: isMe ? null : context.cardElevationShadow,
             ),
-            duration: const Duration(seconds: 1),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      },
-      child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: isMe ? myBg : partnerBg,
-          borderRadius: borderRadius,
-          boxShadow: isMe ? null : context.cardElevationShadow,
-        ),
-        child: Text(
-          message.content,
-          style: GoogleFonts.notoSansKr(
-            fontSize: 14,
-            color: isMe ? cs.onPrimary : context.onSurface,
-            height: 1.45,
+            child: Text(
+              displayText,
+              // notoSans (not notoSansKr) — the base multilingual variant covers
+              // Vietnamese combining diacritics; the KR subset does not, causing
+              // broken line-wrapping on Vietnamese text.
+              style: GoogleFonts.notoSans(
+                fontSize: 14,
+                color: isMe ? cs.onPrimary : context.onSurface,
+                height: 1.45,
+              ),
+            ),
           ),
         ),
-      ),
+
+        // ── Translate chip (partner messages only) ──
+        if (canTx) ...[
+          const SizedBox(height: 4),
+          GestureDetector(
+            onTap: _onTranslateTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: _txState == _TxState.done
+                    ? cs.surfaceContainerHighest
+                    : cs.primary.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _txState == _TxState.done
+                      ? cs.outline.withValues(alpha: 0.45)
+                      : cs.primary.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_txState == _TxState.loading)
+                    SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 1.5,
+                        color: cs.primary,
+                      ),
+                    )
+                  else
+                    Icon(
+                      Icons.translate_rounded,
+                      size: 11,
+                      color: _txState == _TxState.done
+                          ? cs.onSurfaceVariant
+                          : cs.primary,
+                    ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _txState == _TxState.loading
+                        ? l.postTranslating
+                        : _txState == _TxState.done
+                            ? l.postShowOriginal
+                            : l.postTranslate,
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: _txState == _TxState.done
+                          ? cs.onSurfaceVariant
+                          : cs.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -1128,12 +1185,9 @@ class _LocationBubble extends StatelessWidget {
   final LocationData location;
   final bool isMe;
 
-  Future<void> _open() async {
-    final uri = Uri.parse(
-        'https://maps.google.com/?q=${location.lat},${location.lng}');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+  void _openInApp(BuildContext context) {
+    MapFocusController.instance.focus(location);
+    Navigator.of(context).pop();
   }
 
   @override
@@ -1145,7 +1199,7 @@ class _LocationBubble extends StatelessWidget {
     final sub = isMe ? cs.onPrimary.withValues(alpha: 0.75) : context.onSurfaceVar;
 
     return GestureDetector(
-      onTap: _open,
+      onTap: () => _openInApp(context),
       child: Container(
         width: 220,
         decoration: BoxDecoration(
@@ -1213,12 +1267,12 @@ class _LocationBubble extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.open_in_new_rounded,
+                        Icon(Icons.map_rounded,
                             size: 12,
                             color: isMe ? cs.onPrimary : p),
                         const SizedBox(width: 4),
-                        Text('Open in Maps',
-                            style: GoogleFonts.notoSansKr(
+                        Text(AppLocalizations.of(context)!.chatOpenInMap,
+                            style: GoogleFonts.notoSans(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: isMe ? cs.onPrimary : p)),
@@ -1302,73 +1356,263 @@ class _LocationPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final p = context.primary;
+    final bottomPad = MediaQuery.of(context).padding.bottom;
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      // No fixed padding here — handled inside the scrollable area.
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Drag handle ──
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 4),
+            child: Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+          ),
+          // ── Title ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Row(
+              children: [
+                Icon(Icons.location_on_rounded, color: p, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  l.chatShareLocation,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: context.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // ── Scrollable location list ──
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.only(bottom: bottomPad + 8),
+              children: locations.map((loc) => ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: p.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(loc.typeEmoji,
+                          style: const TextStyle(fontSize: 20)),
+                    ),
+                    title: Text(
+                      loc.name,
+                      style: GoogleFonts.notoSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: context.onSurface,
+                      ),
+                    ),
+                    subtitle: loc.address.isNotEmpty
+                        ? Text(
+                            loc.address,
+                            style: GoogleFonts.notoSans(
+                                fontSize: 12, color: context.onSurfaceVar),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )
+                        : null,
+                    onTap: () => Navigator.pop(context, loc),
+                  )).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────── Chat Actions Sheet ───────────────────────────
+
+class _ChatActionsSheet extends StatelessWidget {
+  const _ChatActionsSheet({
+    required this.partner,
+    required this.onViewProfile,
+    required this.onReport,
+    required this.onDisconnect,
+  });
+
+  final PartnerModel partner;
+  final VoidCallback onViewProfile;
+  final VoidCallback onReport;
+  final VoidCallback onDisconnect;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final surface = cs.surface;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       padding: EdgeInsets.only(
         top: 12,
-        bottom: MediaQuery.of(context).padding.bottom + 8,
+        left: 16,
+        right: 16,
+        bottom: MediaQuery.of(context).padding.bottom + 20,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Handle bar
           Center(
             child: Container(
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                color: cs.outline.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Icon(Icons.location_on_rounded,
-                    color: p, size: 20),
-                const SizedBox(width: 8),
-                Text('Share a Location',
-                    style: GoogleFonts.notoSansKr(
+          const SizedBox(height: 20),
+
+          // Partner info header
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: cs.primary,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  partner.avatarInitial.toUpperCase(),
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      partner.name,
+                      style: GoogleFonts.notoSansKr(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: context.onSurface)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-          ...locations.map((loc) => ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: p.withValues(alpha: 0.08),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(loc.typeEmoji,
-                      style: const TextStyle(fontSize: 20)),
+                        color: cs.onSurface,
+                      ),
+                    ),
+                    Text(
+                      partner.school,
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 12,
+                        color: cs.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                title: Text(loc.name,
-                    style: GoogleFonts.notoSansKr(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: context.onSurface)),
-                subtitle: loc.address.isNotEmpty
-                    ? Text(loc.address,
-                        style: GoogleFonts.notoSansKr(
-                            fontSize: 12, color: context.onSurfaceVar),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis)
-                    : null,
-                onTap: () => Navigator.pop(context, loc),
-              )),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+          Divider(height: 1, color: cs.outline.withValues(alpha: 0.25)),
+          const SizedBox(height: 8),
+
+          // View Profile
+          _ActionTile(
+            icon: Icons.person_outline_rounded,
+            label: 'View Profile',
+            color: cs.onSurface,
+            onTap: onViewProfile,
+          ),
+
+          // Report
+          _ActionTile(
+            icon: Icons.flag_outlined,
+            label: 'Report',
+            color: cs.error,
+            onTap: onReport,
+          ),
+
+          const SizedBox(height: 4),
+          Divider(height: 1, color: cs.outline.withValues(alpha: 0.25)),
+          const SizedBox(height: 4),
+
+          // Disconnect — destructive action, red
+          _ActionTile(
+            icon: Icons.link_off_rounded,
+            label: 'Disconnect',
+            color: cs.error,
+            isBold: true,
+            onTap: onDisconnect,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _ActionTile extends StatelessWidget {
+  const _ActionTile({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+    this.isBold = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  final bool isBold;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+        child: Row(
+          children: [
+            Icon(icon, size: 22, color: color),
+            const SizedBox(width: 14),
+            Text(
+              label,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 15,
+                fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

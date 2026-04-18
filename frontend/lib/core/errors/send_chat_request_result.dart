@@ -1,6 +1,6 @@
 /// Outcome of [ChatService.sendRequest] — map to UI snackbars / banners.
 enum SendChatRequestResult {
-  /// Request document was written (merge create / safe update).
+  /// Request document was written (new or reconnect).
   sent,
 
   /// No signed-in user.
@@ -15,11 +15,8 @@ enum SendChatRequestResult {
   /// The other person already sent a pending request — accept from Chat tab.
   incomingPendingExists,
 
-  /// Pair already went through acceptance (or request already accepted).
+  /// Pair is already actively connected.
   alreadyAccepted,
-
-  /// Prior request was declined; rules do not allow resetting to pending.
-  previouslyDeclined,
 
   /// Firestore or network failure.
   failed,

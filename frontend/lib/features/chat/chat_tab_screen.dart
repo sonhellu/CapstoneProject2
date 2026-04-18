@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'package:capstone_frontend/l10n/app_localizations.dart';
+import '../../core/feedback/app_snackbar.dart';
 import '../../core/navigation/app_transitions.dart';
 import '../../core/theme/theme_ext.dart';
 import 'chat_controller.dart';
@@ -421,6 +422,8 @@ class _RequestTileState extends State<_RequestTile> {
     try {
       final convId = await widget.onAccept();
       if (mounted) widget.onAccepted(convId);
+    } catch (e) {
+      if (mounted) showErrorSnackBar(context, e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -430,6 +433,8 @@ class _RequestTileState extends State<_RequestTile> {
     setState(() => _loading = true);
     try {
       await action();
+    } catch (e) {
+      if (mounted) showErrorSnackBar(context, e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -603,11 +608,9 @@ class _ChatTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          chat.isDisconnected
-                              ? l.chatDisconnectedListSubtitle
-                              : chat.isActive
-                                  ? chat.lastMessage
-                                  : '⏳ ${l.chatRequestPending}',
+                          chat.isActive
+                              ? chat.lastMessage
+                              : '⏳ ${l.chatRequestPending}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.notoSansKr(

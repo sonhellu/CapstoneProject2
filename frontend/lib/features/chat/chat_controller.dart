@@ -29,11 +29,19 @@ class ChatController extends ChangeNotifier {
   final _chatsCtrl = StreamController<List<ChatModel>>.broadcast();
 
   List<ChatModel> _latestChats = const [];
+  int _lastTotalUnread = 0; // cache to avoid redundant notifyListeners calls
 
   // Emits each NEW incoming request once for the in-app banner.
   final _newRequestCtrl =
       StreamController<ChatRequestModel>.broadcast();
   Stream<ChatRequestModel> get newRequests => _newRequestCtrl.stream;
+
+  // Emits a ChatModel when its unread count increases (new message received).
+  final _newMessageCtrl = StreamController<ChatModel>.broadcast();
+  Stream<ChatModel> get newMessages => _newMessageCtrl.stream;
+
+  // Tracks previous unread counts to detect increases.
+  final _prevUnreadMap = <String, int>{};
 
   final _seenRequestIds = <String>{};
   StreamSubscription<List<ChatRequestModel>>? _incomingSub;
@@ -78,11 +86,28 @@ class ChatController extends ChangeNotifier {
       });
 
       // Single Firestore listener → broadcast to UI + update app badge.
+      // notifyListeners() is only called when totalUnread actually changes,
+      // preventing unnecessary rebuilds of every Consumer<ChatController>
+      // widget on every incoming message.
       _chatsSub = ChatService.instance.chatListStream(u).listen((list) {
         _latestChats = list;
         _chatsCtrl.add(list);
         _updateBadge();
-        notifyListeners();
+
+        // Detect chats where unread count increased → emit for in-app banner.
+        for (final chat in list) {
+          final prev = _prevUnreadMap[chat.id] ?? 0;
+          if (chat.unreadCount > prev) {
+            _newMessageCtrl.add(chat);
+          }
+          _prevUnreadMap[chat.id] = chat.unreadCount;
+        }
+
+        final newUnread = totalUnread;
+        if (newUnread != _lastTotalUnread) {
+          _lastTotalUnread = newUnread;
+          notifyListeners();
+        }
       });
     }
     notifyListeners();
@@ -90,11 +115,20 @@ class ChatController extends ChangeNotifier {
 
   void _updateBadge() {
     if (kIsWeb) return;
-    final count = totalUnread;
-    if (count > 0) {
-      FlutterAppBadger.updateBadgeCount(count);
-    } else {
-      FlutterAppBadger.removeBadge();
+    // flutter_app_badger chỉ hỗ trợ iOS/Android; desktop/embedder gây MissingPluginException.
+    if (defaultTargetPlatform != TargetPlatform.iOS &&
+        defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
+    try {
+      final count = totalUnread;
+      if (count > 0) {
+        FlutterAppBadger.updateBadgeCount(count);
+      } else {
+        FlutterAppBadger.removeBadge();
+      }
+    } catch (_) {
+      // Launcher không hỗ trợ badge hoặc plugin chưa gắn (ví dụ chạy trên một số máy ảo).
     }
   }
 
@@ -118,15 +152,16 @@ class ChatController extends ChangeNotifier {
       } on ChatAcceptException {
         rethrow;
       } on FirebaseException catch (e) {
-        attempt++;
-        if (e.code == 'aborted' && attempt <= _kMaxRetries) {
-          await Future.delayed(Duration(milliseconds: 200 * attempt));
-          continue;
+        if (e.code == 'aborted') {
+          if (attempt < _kMaxRetries) {
+            attempt++;
+            await Future.delayed(Duration(milliseconds: 200 * attempt));
+            continue;
+          }
+          throw ChatAcceptException(ChatAcceptFailure.transactionAborted);
         }
-        final failure = e.code == 'aborted'
-            ? ChatAcceptFailure.transactionAborted
-            : ChatAcceptFailure.networkError;
-        throw ChatAcceptException(failure);
+        // permission-denied, failed-precondition, unavailable, … — để snackbar map đúng.
+        rethrow;
       }
     }
   }
@@ -141,6 +176,7 @@ class ChatController extends ChangeNotifier {
     _incomingCtrl.close();
     _chatsCtrl.close();
     _newRequestCtrl.close();
+    _newMessageCtrl.close();
     _auth.removeListener(_onAuthChanged);
     super.dispose();
   }
