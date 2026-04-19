@@ -578,6 +578,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authValidationLocalPart => '只能使用字母、数字、. _ -';
 
   @override
+  String get authValidationNationalityEmpty => '请选择国籍';
+
+  @override
+  String get authValidationNativeLanguageEmpty => '请选择母语';
+
+  @override
+  String get authRegisterSearchHint => '搜索…';
+
+  @override
+  String get authRegisterSelectPlaceholder => '选择…';
+
+  @override
   String get authTooltipShowPassword => '显示密码';
 
   @override
@@ -971,4 +983,70 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get postTranslate => '翻译';
+
+  @override
+  String get scheduleScreenTitle => '日程';
+
+  @override
+  String get scheduleTodayHeader => '今日日程';
+
+  @override
+  String get scheduleViewAll => '查看全部';
+
+  @override
+  String get scheduleNoActivities => '当天没有活动';
+
+  @override
+  String get scheduleNoActivitiesToday => '今天没有安排，可在查看全部中添加。';
+
+  @override
+  String get scheduleAddActivity => '添加活动';
+
+  @override
+  String get scheduleEditActivity => '编辑活动';
+
+  @override
+  String get scheduleTitleLabel => '标题';
+
+  @override
+  String get scheduleLocationLabel => '地点';
+
+  @override
+  String get scheduleStartTime => '开始';
+
+  @override
+  String get scheduleEndTime => '结束';
+
+  @override
+  String get scheduleSave => '保存';
+
+  @override
+  String get scheduleEmojiLabel => '图标';
+
+  @override
+  String get scheduleColorLabel => '颜色';
+
+  @override
+  String get scheduleTitleRequired => '请输入标题。';
+
+  @override
+  String get scheduleEndAfterStart => '结束时间必须晚于开始时间。';
+
+  @override
+  String get scheduleNotesLabel => '备注';
+
+  @override
+  String get scheduleDelete => '删除';
+
+  @override
+  String get scheduleDeleteConfirmTitle => '删除活动?';
+
+  @override
+  String get scheduleDeleteConfirmMessage => '该活动将被永久删除。';
+
+  @override
+  String get scheduleGoToToday => '今天';
+
+  @override
+  String get scheduleDeleteCancel => '取消';
 }

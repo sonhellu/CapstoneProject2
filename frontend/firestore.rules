@@ -211,6 +211,12 @@ service cloud.firestore {
       }
     }
 
+    // ─────────────────────── /users/{uid}/schedule_activities ───────────────────
+
+    match /users/{userId}/schedule_activities/{activityId} {
+      allow read, write: if isOwner(userId);
+    }
+
     // ─────────────────────────── Catch-all deny ──────────────────────────────
 
     match /{document=**} {

@@ -581,6 +581,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String get authValidationLocalPart => 'Chỉ được dùng chữ cái, số, . _ -';
 
   @override
+  String get authValidationNationalityEmpty => 'Vui lòng chọn quốc tịch';
+
+  @override
+  String get authValidationNativeLanguageEmpty =>
+      'Vui lòng chọn ngôn ngữ mẹ đẻ';
+
+  @override
+  String get authRegisterSearchHint => 'Tìm…';
+
+  @override
+  String get authRegisterSelectPlaceholder => 'Chọn…';
+
+  @override
   String get authTooltipShowPassword => 'Hiện mật khẩu';
 
   @override
@@ -989,4 +1002,72 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get postTranslate => 'Dịch';
+
+  @override
+  String get scheduleScreenTitle => 'Lịch trình';
+
+  @override
+  String get scheduleTodayHeader => 'Lịch trình hôm nay';
+
+  @override
+  String get scheduleViewAll => 'Xem tất cả';
+
+  @override
+  String get scheduleNoActivities => 'Không có hoạt động trong ngày này';
+
+  @override
+  String get scheduleNoActivitiesToday =>
+      'Hôm nay chưa có lịch — chọn Xem tất cả để thêm.';
+
+  @override
+  String get scheduleAddActivity => 'Thêm hoạt động';
+
+  @override
+  String get scheduleEditActivity => 'Sửa hoạt động';
+
+  @override
+  String get scheduleTitleLabel => 'Tiêu đề';
+
+  @override
+  String get scheduleLocationLabel => 'Địa điểm';
+
+  @override
+  String get scheduleStartTime => 'Bắt đầu';
+
+  @override
+  String get scheduleEndTime => 'Kết thúc';
+
+  @override
+  String get scheduleSave => 'Lưu';
+
+  @override
+  String get scheduleEmojiLabel => 'Biểu tượng';
+
+  @override
+  String get scheduleColorLabel => 'Màu';
+
+  @override
+  String get scheduleTitleRequired => 'Vui lòng nhập tiêu đề.';
+
+  @override
+  String get scheduleEndAfterStart => 'Giờ kết thúc phải sau giờ bắt đầu.';
+
+  @override
+  String get scheduleNotesLabel => 'Ghi chú';
+
+  @override
+  String get scheduleDelete => 'Xóa';
+
+  @override
+  String get scheduleDeleteConfirmTitle => 'Xóa hoạt động?';
+
+  @override
+  String get scheduleDeleteConfirmMessage =>
+      'Hoạt động này sẽ bị xóa vĩnh viễn.';
+
+  @override
+  String get scheduleGoToToday => 'Hôm nay';
+
+  @override
+  String get scheduleDeleteCancel => 'Hủy';
 }

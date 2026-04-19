@@ -42,6 +42,8 @@ class AuthProvider extends ChangeNotifier {
     required String name,
     required String email,
     required String password,
+    required String nationality,
+    required String nativeLanguage,
   }) async {
     final cred = await _auth.createUserWithEmailAndPassword(
       email: email,
@@ -56,6 +58,8 @@ class AuthProvider extends ChangeNotifier {
         uid: user.uid,
         displayName: name.isNotEmpty ? name : email.split('@').first,
         email: email,
+        nationality: nationality,
+        nativeLanguage: nativeLanguage,
       );
     }
     // Send verification email immediately after registration

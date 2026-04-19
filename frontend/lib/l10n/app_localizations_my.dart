@@ -585,6 +585,19 @@ class AppLocalizationsMy extends AppLocalizations {
       'စာလုံး၊ ဂဏန်း၊ . _ - သာ အသုံးပြုနိုင်သည်';
 
   @override
+  String get authValidationNationalityEmpty => 'Please select your nationality';
+
+  @override
+  String get authValidationNativeLanguageEmpty =>
+      'Please select your native language';
+
+  @override
+  String get authRegisterSearchHint => 'Search…';
+
+  @override
+  String get authRegisterSelectPlaceholder => 'Select…';
+
+  @override
   String get authTooltipShowPassword => 'စကားဝှက်ပြမည်';
 
   @override
@@ -994,4 +1007,73 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get postTranslate => 'ဘာသာပြန်မည်';
+
+  @override
+  String get scheduleScreenTitle => 'အစီအစဉ်';
+
+  @override
+  String get scheduleTodayHeader => 'ယနေ့ အစီအစဉ်';
+
+  @override
+  String get scheduleViewAll => 'အားလုံး ကြည့်မည်';
+
+  @override
+  String get scheduleNoActivities => 'ဤနေ့တွင် လုပ်ဆောင်မှု မရှိပါ';
+
+  @override
+  String get scheduleNoActivitiesToday =>
+      'ယနေ့ အစီအစဉ် မရှိသေးပါ — ထည့်ရန် အားလုံး ကြည့်မည် နှိပ်ပါ';
+
+  @override
+  String get scheduleAddActivity => 'လုပ်ဆောင်မှု ထည့်မည်';
+
+  @override
+  String get scheduleEditActivity => 'လုပ်ဆောင်မှု တည်းဖြတ်မည်';
+
+  @override
+  String get scheduleTitleLabel => 'ခေါင်းစဉ်';
+
+  @override
+  String get scheduleLocationLabel => 'တည်နေရာ';
+
+  @override
+  String get scheduleStartTime => 'စတင်';
+
+  @override
+  String get scheduleEndTime => 'ပြီးဆုံး';
+
+  @override
+  String get scheduleSave => 'သိမ်းဆည်း';
+
+  @override
+  String get scheduleEmojiLabel => 'အိုင်ကွန်';
+
+  @override
+  String get scheduleColorLabel => 'အရောင်';
+
+  @override
+  String get scheduleTitleRequired => 'ခေါင်းစဉ် ထည့်သွင်းပါ';
+
+  @override
+  String get scheduleEndAfterStart =>
+      'ပြီးဆုံးချိန်သည် စတင်ချိန်ထက် နောက်ကျရမည်';
+
+  @override
+  String get scheduleNotesLabel => 'မှတ်စု';
+
+  @override
+  String get scheduleDelete => 'ဖျက်မည်';
+
+  @override
+  String get scheduleDeleteConfirmTitle => 'လုပ်ဆောင်မှု ဖျက်မည်?';
+
+  @override
+  String get scheduleDeleteConfirmMessage =>
+      'ဤလုပ်ဆောင်မှုကို အပြီးအပိုင် ဖျက်မည်';
+
+  @override
+  String get scheduleGoToToday => 'ယနေ့';
+
+  @override
+  String get scheduleDeleteCancel => 'မလုပ်တော့';
 }

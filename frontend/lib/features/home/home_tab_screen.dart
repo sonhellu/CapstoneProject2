@@ -18,6 +18,7 @@ import 'create_post_screen.dart';
 import 'models/post.dart';
 import 'post_list_screen.dart';
 import 'widgets/post_card.dart';
+import '../schedule/widgets/schedule_preview_widget.dart';
 
 const double _kBannerRadius = 16.0;
 
@@ -134,6 +135,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
         slivers: [
           SliverToBoxAdapter(child: _buildAppBar()),
           SliverToBoxAdapter(child: _buildBanner(userName)),
+          const SliverToBoxAdapter(child: SchedulePreviewWidget()),
           // ── International horizontal section ──
           SliverToBoxAdapter(
             child: _SectionHeader(
