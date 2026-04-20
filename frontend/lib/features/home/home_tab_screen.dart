@@ -19,6 +19,7 @@ import 'models/post.dart';
 import 'post_list_screen.dart';
 import 'widgets/post_card.dart';
 import '../schedule/widgets/schedule_preview_widget.dart';
+import '../university_web/university_web_screen.dart';
 
 const double _kBannerRadius = 16.0;
 
@@ -26,13 +27,15 @@ const double _kBannerRadius = 16.0;
 class _BannerItem {
   final String imageUrl;
   final String caption;
-  const _BannerItem(this.imageUrl, this.caption);
+  final String? websiteUrl;
+  const _BannerItem(this.imageUrl, this.caption, {this.websiteUrl});
 }
 
 const _banners = [
   _BannerItem(
     'https://images.unsplash.com/photo-1541410965313-d53b3c16ef17?w=800',
     'Keimyung University',
+    websiteUrl: 'https://www.kmu.ac.kr',
   ),
   _BannerItem(
     'https://images.unsplash.com/photo-1607013251379-e6eecfffe234?w=800',
@@ -292,9 +295,17 @@ class _BannerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.primary;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(_kBannerRadius),
-      child: Stack(
+    return GestureDetector(
+      onTap: item.websiteUrl == null
+          ? null
+          : () => openUniversityWeb(
+                context,
+                url: item.websiteUrl!,
+                title: item.caption,
+              ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(_kBannerRadius),
+        child: Stack(
         fit: StackFit.expand,
         children: [
           Image.network(
@@ -348,6 +359,7 @@ class _BannerCard extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }
