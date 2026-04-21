@@ -586,6 +586,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Only letters, numbers, . _ - are allowed';
 
   @override
+  String get authValidationNationalityEmpty => 'Please select your nationality';
+
+  @override
+  String get authValidationNativeLanguageEmpty =>
+      'Please select your native language';
+
+  @override
+  String get authRegisterSearchHint => 'Search…';
+
+  @override
+  String get authRegisterSelectPlaceholder => 'Select…';
+
+  @override
   String get authTooltipShowPassword => 'Show password';
 
   @override
@@ -995,4 +1008,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get postTranslate => 'Translate';
+
+  @override
+  String get scheduleScreenTitle => 'Schedule';
+
+  @override
+  String get scheduleTodayHeader => 'Today\'s schedule';
+
+  @override
+  String get scheduleViewAll => 'View all';
+
+  @override
+  String get scheduleNoActivities => 'No activities for this day';
+
+  @override
+  String get scheduleNoActivitiesToday =>
+      'Nothing scheduled today — tap View all to add one.';
+
+  @override
+  String get scheduleAddActivity => 'Add activity';
+
+  @override
+  String get scheduleEditActivity => 'Edit activity';
+
+  @override
+  String get scheduleTitleLabel => 'Title';
+
+  @override
+  String get scheduleLocationLabel => 'Location';
+
+  @override
+  String get scheduleStartTime => 'Start';
+
+  @override
+  String get scheduleEndTime => 'End';
+
+  @override
+  String get scheduleSave => 'Save';
+
+  @override
+  String get scheduleEmojiLabel => 'Icon';
+
+  @override
+  String get scheduleColorLabel => 'Color';
+
+  @override
+  String get scheduleTitleRequired => 'Please enter a title.';
+
+  @override
+  String get scheduleEndAfterStart => 'End time must be after start time.';
+
+  @override
+  String get scheduleNotesLabel => 'Notes';
+
+  @override
+  String get scheduleDelete => 'Delete';
+
+  @override
+  String get scheduleDeleteConfirmTitle => 'Delete activity?';
+
+  @override
+  String get scheduleDeleteConfirmMessage =>
+      'This activity will be permanently removed.';
+
+  @override
+  String get scheduleGoToToday => 'Today';
+
+  @override
+  String get scheduleDeleteCancel => 'Cancel';
 }

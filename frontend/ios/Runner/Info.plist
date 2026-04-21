@@ -53,5 +53,10 @@
 		<string>hicampus cần vị trí của bạn để hiển thị các địa điểm hỗ trợ sinh viên quanh đây.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 		<string>hicampus cần vị trí của bạn để gửi thông báo về các địa điểm hữu ích gần bạn.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

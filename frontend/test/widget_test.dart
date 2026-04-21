@@ -8,6 +8,7 @@ import 'package:capstone_frontend/core/naver_map/naver_map_sdk_controller.dart';
 import 'package:capstone_frontend/core/theme/theme_controller.dart';
 import 'package:capstone_frontend/features/auth/providers/auth_provider.dart';
 import 'package:capstone_frontend/features/chat/chat_controller.dart';
+import 'package:capstone_frontend/features/schedule/providers/schedule_provider.dart';
 import 'package:capstone_frontend/features/shell/main_shell.dart';
 import 'package:capstone_frontend/l10n/app_localizations.dart';
 
@@ -17,6 +18,7 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(create: (_) => ScheduleProvider()),
           ChangeNotifierProvider(create: (_) => LocaleController()),
           ChangeNotifierProvider(create: (_) => ThemeController()),
           ChangeNotifierProvider(create: (_) => NaverMapSdkController()),

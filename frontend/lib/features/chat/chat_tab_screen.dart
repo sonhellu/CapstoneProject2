@@ -303,7 +303,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
         itemCount: 6,
         separatorBuilder: (ctx, _) =>
             Divider(height: 1, indent: 80, color: Theme.of(ctx).dividerColor),
-        itemBuilder: (_, __) => const _SkeletonTile(),
+        itemBuilder: (_, _) => const _SkeletonTile(),
       ),
     );
   }

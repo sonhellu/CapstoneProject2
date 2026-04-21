@@ -21,6 +21,8 @@ class UserRepository {
     required String uid,
     required String displayName,
     required String email,
+    String? nationality,
+    String? nativeLanguage,
   }) async {
     final ref = _col.doc(uid);
     final snap = await ref.get();
@@ -32,7 +34,12 @@ class UserRepository {
         'displayName': displayName,
         'avatarInitial': initial,
         'email': email,
-        'nativeLanguage': 'Vietnamese',
+        'nationality': (nationality != null && nationality.isNotEmpty)
+            ? nationality
+            : 'Unknown',
+        'nativeLanguage': (nativeLanguage != null && nativeLanguage.isNotEmpty)
+            ? nativeLanguage
+            : 'Vietnamese',
         'learningLanguage': 'Korean',
         'gender': 'other',
         'school': 'Keimyung University',

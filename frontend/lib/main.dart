@@ -10,6 +10,7 @@ import 'core/naver_map/naver_map_sdk_controller.dart';
 import 'core/services/notification_service.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/chat/chat_controller.dart';
+import 'features/schedule/providers/schedule_provider.dart';
 import 'firebase_options.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -46,6 +47,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ScheduleProvider()),
         ChangeNotifierProvider(create: (_) => LocaleController()),
         ChangeNotifierProvider.value(value: themeCtrl),
         ChangeNotifierProvider.value(value: naverMapSdk),
