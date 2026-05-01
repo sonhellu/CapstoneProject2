@@ -56,11 +56,6 @@ backend/
 
 ---
 
-## 4. Run with Docker (recommended)
-
-```bash
-docker compose up --build
-```
 
 This will start two containers:
 | Container | Description | Port |
@@ -68,55 +63,30 @@ This will start two containers:
 | `api` | FastAPI app | `http://localhost:8000` |
 | `db` | PostgreSQL + PostGIS | `localhost:5433` |
 
-To run in the background:
 
-```bash
-docker compose up --build -d
-```
 
-To stop:
-
-```bash
-docker compose down
-```
-
----
-
-## 5. Verify it's working
-
-Open your browser or use curl:
-
-```bash
-curl http://localhost:8000/docs
-```
-
-You should see the Swagger UI with all available API endpoints.
-
----
-
-## 6. Connect to the database (optional)
-
-Use [TablePlus](https://tableplus.com/) or any PostgreSQL client:
-
-| Field | Value |
-|-------|-------|
-| Host | `127.0.0.1` |
-| Port | `5433` |
-| User | `hicampus` |
-| Password | `hicampus` |
-| Database | `hicampus` |
-
----
 
 ## API Endpoints
 
-| Method | Endpoint | Description | Auth required |
-|--------|----------|-------------|---------------|
-| `GET` | `/api/auth/me` | Get current user info | Yes |
-| `GET` | `/api/pins/` | List pins | — |
-| `GET` | `/api/posts/` | List posts | — |
-| `GET` | `/api/users/` | List users | — |
-| `GET` | `/api/chat/` | Chat | — |
+Auth
+GET /api/auth/me
+Posts
+GET /api/posts
+POST /api/posts
+PATCH /api/posts/{id}
+DELETE /api/posts/{id}
+GET /api/posts/{id}/comments
+POST /api/posts/{id}/comments
+
+Pins
+GET /api/pins
+POST /api/pins
+GET /api/pins/nearby?lat=&lng=
+
+Users
+GET /api/users/{id}
+PATCH /api/users/me
+GET /api/users?gender=&language=
 
 Authenticated endpoints require a Firebase ID token in the header
 
