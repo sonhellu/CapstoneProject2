@@ -82,15 +82,6 @@ CREATE TABLE posts (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE post_translations (
-    id SERIAL PRIMARY KEY,
-    post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
-    language_code VARCHAR(10) REFERENCES language(code),
-    translated_title VARCHAR(255),
-    translated_content TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE comments (
     id SERIAL PRIMARY KEY,
     post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
@@ -143,12 +134,4 @@ CREATE TABLE reviews (
     rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
     content TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- 7. 이메일 인증 코드
-CREATE TABLE verification_codes (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
-    code CHAR(6) NOT NULL,
-    expiry_time TIMESTAMP WITH TIME ZONE NOT NULL
 );
