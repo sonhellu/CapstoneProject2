@@ -25,14 +25,17 @@ CREATE TABLE departments (
 
 -- 2. 사용자 관련 테이블
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+	-- 참조용 id로 유지(firebase uid로 변경시 기존 테이블들과의 연결도 다시 작성 필요)
+	id SERIAL PRIMARY KEY,
+    -- firebase uid
+    firebase_uid varchar(128) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
     nickname VARCHAR(100) NOT NULL,
     nationality_iso2 CHAR(2) NOT NULL REFERENCES country(iso2),
     main_language VARCHAR(10) NOT NULL REFERENCES language(code),
     school_id INTEGER REFERENCES schools(id),
     department_id INTEGER REFERENCES departments(id),
+    profile_image_url TEXT,
     -- 한국 국적('KR')일 경우 자동으로 is_helper true
     is_helper BOOLEAN GENERATED ALWAYS AS (nationality_iso2 = 'KR') STORED,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
