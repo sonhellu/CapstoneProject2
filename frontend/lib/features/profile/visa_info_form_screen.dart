@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -22,6 +24,7 @@ class _VisaInfoFormScreenState extends State<VisaInfoFormScreen> {
 
   DateTime? _permissionDate;
   DateTime? _expiryDate;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -57,7 +60,7 @@ class _VisaInfoFormScreenState extends State<VisaInfoFormScreen> {
     return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (_permissionDate == null || _expiryDate == null) {
@@ -67,11 +70,53 @@ class _VisaInfoFormScreenState extends State<VisaInfoFormScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('비자 정보가 저장되었습니다.')),
-    );
+    setState(() => _isSaving = true);
 
-    Navigator.pop(context);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그인이 필요합니다.')),
+        );
+        return;
+      }
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('visaInfo')
+          .doc('current')
+          .set({
+        'registrationNumber': _registrationNumberCtrl.text.trim(),
+        'name': _nameCtrl.text.trim(),
+        'country': _countryCtrl.text.trim(),
+        'visaType': _visaTypeCtrl.text.trim(),
+        'permissionDate': Timestamp.fromDate(_permissionDate!),
+        'expiryDate': Timestamp.fromDate(_expiryDate!),
+        'addressReportDate': _addressReportDateCtrl.text.trim(),
+        'address': _addressCtrl.text.trim(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('비자 정보가 저장되었습니다.')),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('저장 실패: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   @override
@@ -160,7 +205,7 @@ class _VisaInfoFormScreenState extends State<VisaInfoFormScreen> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: _save,
+                    onPressed: _isSaving ? null : _save,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: context.primary,
                       foregroundColor: Colors.white,
@@ -168,13 +213,22 @@ class _VisaInfoFormScreenState extends State<VisaInfoFormScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: Text(
-                      '저장하기',
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            '저장하기',
+                            style: GoogleFonts.notoSansKr(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                   ),
                 ),
               ],
