@@ -8,6 +8,8 @@ import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/providers/auth_provider.dart';
 
+import 'visa_info_form_screen.dart';
+
 const double _kCardRadius = 16.0;
 
 List<BoxShadow> _cardShadow(BuildContext context) => [
@@ -144,6 +146,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     _nameCtrl.text = _profile.fullName;
     _langCtrl.text = _profile.nativeLanguage;
     setState(() => _isEditMode = true);
+  }
+
+  void _openVisaInfoForm(){
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const VisaInfoFormScreen(),
+      ),
+    );
   }
 
   void _cancelEdit() => setState(() => _isEditMode = false);
@@ -307,6 +317,8 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                       ),
               ),
               if (!_isEditMode) ...[
+                const SizedBox(height: 20),
+                _VisaInfoBanner(onTap: _openVisaInfoForm),
                 const SizedBox(height: 20),
                 _LogoutButton(onTap: _confirmLogout),
               ],
@@ -1011,6 +1023,70 @@ class _PickerSheet extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _VisaInfoBanner extends StatelessWidget {
+  const _VisaInfoBanner({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: context.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: context.primary.withValues(alpha: 0.25),
+          ),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: context.primary,
+              child: const Icon(
+                Icons.assignment_ind_outlined,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '비자 정보 등록',
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: context.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '체류 만료 알림을 받기 위해 정보를 등록해주세요.',
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 12,
+                      color: context.onSurfaceVar,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: context.primary,
+            ),
+          ],
+        ),
       ),
     );
   }
