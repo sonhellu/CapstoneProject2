@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'widgets/visa_d_day_card.dart';
+
 import 'package:flutter/services.dart';
 
 import 'package:carousel_slider/carousel_slider.dart';
@@ -135,6 +137,12 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           SliverToBoxAdapter(child: _buildAppBar()),
           SliverToBoxAdapter(child: _buildBanner(userName)),
           // ── International horizontal section ──
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: VisaDDayCard(),
+            ),
+          ),
           SliverToBoxAdapter(
             child: _SectionHeader(
               title: l.homeIntlNews,
