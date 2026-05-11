@@ -5,6 +5,7 @@ from app.api.router import api_router
 from app.core.config import settings
 from app.db.session import engine
 from app.db.base import Base
+from app.api import posts
 
 Base.metadata.create_all(bind=engine)
 
@@ -24,6 +25,7 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix="/api")
+app.include_router(posts.router, prefix="/posts", tags=["posts"])
 
 
 @app.get("/", tags=["Health"])
