@@ -1,3 +1,11 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+
+from app.db.session import get_db
+
+router = APIRouter(prefix="/nearby", tags=["nearby"])
+
 @router.get("/nearby")
 def get_nearby_places(
     school_id: int, 

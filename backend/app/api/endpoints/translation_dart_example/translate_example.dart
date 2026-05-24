@@ -11,8 +11,6 @@ import 'package:http/http.dart' as http;
 
 // MLKit 관리 클래스
 class TranslationManager {
-  // 다운 받아야 할 언어 리스트(현재: 영어, 베트남어)
-  // 실제 앱에선 사용자 언어를 자동으로 다운받게 해야할 듯 함
   final List<TranslateLanguage> _requiredLanguages = [
     TranslateLanguage.vietnamese,
     TranslateLanguage.english,
@@ -27,8 +25,9 @@ class TranslationManager {
       final bool isDownloaded = await modelManager.isModelDownloaded(lang.bcpCode);
       if (!isDownloaded) {
         isAllDownloaded = false;
-        print('${lang.bcpCode} 모델 다운로드 시작...');
+        print('ℹ️ [ML Kit] ${lang.bcpCode} 모델 다운로드 시작...');
         await modelManager.downloadModel(lang.bcpCode);
+        print('✅ [ML Kit] ${lang.bcpCode} 모델 다운로드 완료!');
       }
     }
     return isAllDownloaded;
@@ -58,10 +57,7 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
   void initState() {
     super.initState();
 
-    // 앱 실행 후 온디바이스 번역 모델 준비 트리거
-    _initTranslationModel();
-
-    // 1. 플랫폼별 설정 생성
+    // 1. 플랫폼별 설정 생성 (이 작업들은 동기식이므로 멈추지 않습니다)
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is AndroidWebViewPlatform) {
       params = AndroidWebViewControllerCreationParams();
@@ -84,42 +80,50 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (String url) async {
+            print('🌐 웹 페이지 로딩 완료: $url');
             // 페이지 로딩 완료 후 잠시 대기했다가 번역 추출 프로세스 시작
-            await Future.delayed(const Duration(milliseconds: 500));
+            await Future.delayed(const Duration(milliseconds: 1000));
             _runExtraction();
           },
         ),
       )
       ..loadRequest(Uri.parse('https://www.kmu.ac.kr/'));
+
+    // ★ [핵심 수정] 웹뷰 세팅이 완벽히 끝나고 "화면이 1프레임 렌더링된 직후" 백그라운드에서 다운로드를 시작하게 만듭니다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initTranslationModel();
+    });
   }
 
   // 온디바이스 모델 체크 및 유저 알림
   Future<void> _initTranslationModel() async {
-    // 최초 다운로드 시 유저가 인지할 수 있도록 스낵바 제공 (플레이스토어 검수 및 UX 가점 요소)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('다국어 번역 리소스를 준비 중입니다... (최초 시 몇 분 소요)'),
-          duration: Duration(seconds: 3),
-        ),
-      );
-    });
+    // Scaffold가 확실히 안착한 후 스낵바를 안정적으로 띄웁니다.
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('다국어 번역 리소스를 검사 중입니다... (최초 다운로드 시 몇 분 소요)'),
+        duration: Duration(seconds: 3),
+      ),
+    );
 
     try {
+      // 💡 await가 걸려도 이미 웹뷰 화면은 켜진 상태이므로 앱이 블로킹되지 않고 백그라운드에서 다운로드됩니다.
       await _translationManager.prepareModels();
-      setState(() {
-        _isModelReady = true;
-      });
-      print('모든 온디바이스 번역 모델 준비 완료');
+      
+      if (mounted) {
+        setState(() {
+          _isModelReady = true;
+        });
+        print('🎉 모든 온디바이스 번역 모델 준비 완료 (이제 20자 미만 로컬 번역 작동 가능)');
+      }
     } catch (e) {
-      print('모델 다운로드 중 에러 발생: $e');
+      print('❌ 모델 다운로드 중 에러 발생: $e');
     }
   }
 
   // JS를 실행하여 텍스트를 추출하고 하이브리드로 번역하는 함수
   Future<void> _runExtraction() async {
     try {
-      // 1. JS로 {id, text} 리스트 추출 및 독립 태그(<kmu-tr>) 격리 작업 동시 진행
+      print('🔍 본문 텍스트 추출 JavaScript 실행...');
       final Object result = await _controller.runJavaScriptReturningResult('''
         (function() {
           var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
@@ -135,7 +139,6 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
           var nodesToReplace = [];
           var node;
 
-          // 탐색 노드 먼저 수집
           while (node = walker.nextNode()) {
             var cleanText = node.nodeValue.replace(/[\\x00-\\x1F\\x7F]/g, "").replace(/\\s+/g, " ").trim();
             if (cleanText.length > 1 && /[a-zA-Z가-힣]/.test(cleanText)) {
@@ -143,11 +146,10 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
             }
           }
 
-          // 부모 스타일 오염 및 겹침 방지를 위해 <kmu-tr>로 텍스트 각각을 감싸기
           nodesToReplace.forEach(item => {
             var wrapper = document.createElement('kmu-tr');
             wrapper.setAttribute('data-kmu-id', id);
-            wrapper.style.display = 'inline'; // 레이아웃 파괴 방지
+            wrapper.style.display = 'inline'; 
             
             item.node.parentNode.insertBefore(wrapper, item.node);
             wrapper.appendChild(item.node);
@@ -160,110 +162,99 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
         })();
       ''');
 
-      // 2. 데이터 파싱
       String rawJson = result.toString();
       if (rawJson.startsWith('"')) rawJson = jsonDecode(rawJson); 
       List<dynamic> extractedItems = jsonDecode(rawJson);
 
+      print('📊 추출된 총 텍스트 아이템 개수: ${extractedItems.length}개');
       if (extractedItems.isEmpty) return;
 
-      // 타겟 언어 설정 (베트남어)
       const targetLang = TranslateLanguage.vietnamese;
       final onDeviceTranslator = OnDeviceTranslator(
         sourceLanguage: TranslateLanguage.korean,
         targetLanguage: targetLang,
       );
 
-      List<dynamic> serverItems = []; // 백엔드로 일괄 전송할 긴 문장들 리스트
-
-      // 3. 데이터 엄격 분류 (날짜 필터링 + 글자 수 분기)
+      List<dynamic> serverItems = []; 
       final datePattern = RegExp(r'^\d{2,4}[\.\-/]\d{1,2}[\.\-/]\d{1,2}$');
 
       for (var item in extractedItems) {
         String text = item['text'].toString().trim();
 
-        // [필터 1] 날짜, 시간, 순수 숫자 기호는 토큰 아까우니 제외 (원문 유지)
         if (datePattern.hasMatch(text) || RegExp(r'^[0-9\s\.\:\-]+$').hasMatch(text)) {
           continue; 
         }
 
-        // [필터 2] 20자 미만은 기기 내부(ML Kit)에서 무료로 즉시 소화
+        // 20자 미만이고 모델이 완벽히 준비 완료되었을 때만 로컬 번역 실행
         if (text.length < 20 && _isModelReady) {
           try {
             String localTranslated = await onDeviceTranslator.translateText(text);
             await _applyTranslation([{'id': item['id'], 'translated': localTranslated}]);
           } catch (e) {
-            print('온디바이스 단어 번역 실패로 서버 이관: $e');
             serverItems.add(item); 
           }
         } else {
-          // [필터 3] 20자 이상의 긴 문장만 서버 전송 대상으로 축축
           serverItems.add(item);
         }
       }
 
-      // 4. [★ 핵심 개선 ★] 긴 문장들만 모아서 단 한 번의 HTTP POST로 서버에 일괄 요청
+      // 4. 긴 문장들 백엔드(FastAPI) 서버 일괄 전송
       if (serverItems.isNotEmpty) {
-        print('🚀 총 ${serverItems.length}개의 본문 문장을 서버로 일괄 전송합니다.');
+        print('🚀 총 ${serverItems.length}개의 문장을 FastAPI 서버(http://10.0.2.2:8000)로 전송합니다.');
 
         try {
           final response = await http.post(
             Uri.parse('http://10.0.2.2:8000/api/translate'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
-              'items': serverItems, // 청크로 쪼개지 않고 통째로 배열 전송
+              'items': serverItems, 
               'target_lang': 'vi',
             }),
-          ).timeout(const Duration(seconds: 25)); // 통 데이터이므로 타임아웃을 넉넉히 설정
+          ).timeout(const Duration(seconds: 15));
 
           if (response.statusCode == 200) {
             var data = jsonDecode(response.body);
-            // 전체 번역 데이터 화면에 한 번에 주입
             await _applyTranslation(data['results']);
-            print('✅ 서버 일괄 번역 및 반영 완료');
+            print('✅ 서버 일괄 번역본 웹뷰 주입 완료!');
           } else {
-            throw Exception('서버 응답 오류: ${response.statusCode}');
+            throw Exception('서버 응답 에러 코드: ${response.statusCode}');
           }
         } catch (e) {
-          // 5. 서버 API 초과 또는 장애 발생 시 -> 온디바이스(ML Kit) 긴급 Fallback 작동
-          print('⚠️ 유료 API 차단 또는 서버 장애 감지! 온디바이스 Fallback 긴급 기동: $e');
+          print('⚠️ 백엔드 호출 실패 -> 온디바이스 긴급 Fallback 모드 작동 시작: $e');
           
           List<dynamic> fallbackResults = [];
           for (var item in serverItems) {
             try {
-              String fallbackText = await onDeviceTranslator.translateText(item['text']);
+              // 모델이 아직 다운로드 중일 수도 있으므로 방어 코드 작동
+              String fallbackText = _isModelReady 
+                  ? await onDeviceTranslator.translateText(item['text'])
+                  : item['text'];
               fallbackResults.add({'id': item['id'], 'translated': fallbackText});
             } catch (_) {
-              // ML Kit 마저 안될 때의 최후의 안전장치: 원문 유지
               fallbackResults.add({'id': item['id'], 'translated': item['text']});
             }
           }
-          // 원문 혹은 복구된 데이터 주입
           await _applyTranslation(fallbackResults);
         }
       }
 
-      // 번역기 리소스 닫기
       onDeviceTranslator.close();
 
     } catch (e) {
-      print('전체 텍스트 추출 및 번역 흐름 오류: $e');
+      print('❌ 전체 텍스트 추출 및 번역 흐름 오류: $e');
     }
   }
 
   // 웹뷰에 번역 데이터를 안전하게 주입하는 함수
   Future<void> _applyTranslation(List<dynamic> translatedData) async {
     String jsonStr = jsonEncode(translatedData);
-    
     await _controller.runJavaScript('''
       (function() {
         var results = $jsonStr;
         results.forEach(item => {
-          // 부모가 아닌 격리된 커스텀 태그 <kmu-tr>만 정확히 타겟팅
           var el = document.querySelector('kmu-tr[data-kmu-id="' + item.id + '"]');
           if (el) {
             el.innerText = item.translated;
-            // 부모의 스타일 레이아웃 영역을 해치지 않고 텍스트를 줄바꿈 처리
             el.style.wordBreak = 'break-word';
           }
         });

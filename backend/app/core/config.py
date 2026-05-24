@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5433
     POSTGRES_DB: str = "hicampus"
 
+    GOOGLE_TRANSLATOR_API_KEY: str = ""
+
     @property
     def DATABASE_URL(self) -> str:
         return (
