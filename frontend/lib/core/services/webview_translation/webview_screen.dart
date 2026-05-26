@@ -1,63 +1,37 @@
-// 필요 dependencies
-// webview_flutter, webview_flutter_android
-// webview_flutter_wkwebview, http
-// google_mlkit_translation
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'dart:convert';
+import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-// MLKit 관리 클래스
-class TranslationManager {
-  final List<TranslateLanguage> _requiredLanguages = [
-    TranslateLanguage.vietnamese,
-    TranslateLanguage.english,
-  ];
+class WebViewScreen extends StatefulWidget {
+  final String targetLangStr;         // 💡 예: "vi", "en", "zh" (FastAPI 전송용 문자열)
+  final TranslateLanguage targetLanguage; // 💡 예: TranslateLanguage.vietnamese (ML Kit 매핑 객체)
+  final String jwtToken;              // 인증이 필요한 경우 확장용 토큰
 
-  // 모델이 모두 준비되었는지 확인하는 함수
-  Future<bool> prepareModels() async {
-    final modelManager = OnDeviceTranslatorModelManager();
-    bool isAllDownloaded = true;
-
-    for (var lang in _requiredLanguages) {
-      final bool isDownloaded = await modelManager.isModelDownloaded(lang.bcpCode);
-      if (!isDownloaded) {
-        isAllDownloaded = false;
-        print('ℹ️ [ML Kit] ${lang.bcpCode} 모델 다운로드 시작...');
-        await modelManager.downloadModel(lang.bcpCode);
-        print('✅ [ML Kit] ${lang.bcpCode} 모델 다운로드 완료!');
-      }
-    }
-    return isAllDownloaded;
-  }
-}
-
-void main() {
-  runApp(const MaterialApp(
-    home: WebViewTestScreen(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
-
-class WebViewTestScreen extends StatefulWidget {
-  const WebViewTestScreen({super.key});
+  const WebViewScreen({
+    super.key, 
+    required this.targetLangStr, 
+    required this.targetLanguage,
+    required this.jwtToken,
+  });
 
   @override
-  State<WebViewTestScreen> createState() => _WebViewTestScreenState();
+  State<WebViewScreen> createState() => _WebViewScreenState();
 }
 
-class _WebViewTestScreenState extends State<WebViewTestScreen> {
+class _WebViewScreenState extends State<WebViewScreen> {
   late final WebViewController _controller;
-  final TranslationManager _translationManager = TranslationManager();
-  bool _isModelReady = false;
+  
+  // 💡 컨트롤러가 앞단에서 다운로드를 완료해 주었으므로 true로 시작합니다.
+  final bool _isModelReady = true; 
 
   @override
   void initState() {
     super.initState();
 
-    // 1. 플랫폼별 설정 생성 (이 작업들은 동기식이므로 멈추지 않습니다)
+    // 1. 플랫폼별 설정 생성
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is AndroidWebViewPlatform) {
       params = AndroidWebViewControllerCreationParams();
@@ -88,36 +62,6 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
         ),
       )
       ..loadRequest(Uri.parse('https://www.kmu.ac.kr/'));
-
-    // ★ [핵심 수정] 웹뷰 세팅이 완벽히 끝나고 "화면이 1프레임 렌더링된 직후" 백그라운드에서 다운로드를 시작하게 만듭니다.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initTranslationModel();
-    });
-  }
-
-  // 온디바이스 모델 체크 및 유저 알림
-  Future<void> _initTranslationModel() async {
-    // Scaffold가 확실히 안착한 후 스낵바를 안정적으로 띄웁니다.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('다국어 번역 리소스를 검사 중입니다... (최초 다운로드 시 몇 분 소요)'),
-        duration: Duration(seconds: 3),
-      ),
-    );
-
-    try {
-      // 💡 await가 걸려도 이미 웹뷰 화면은 켜진 상태이므로 앱이 블로킹되지 않고 백그라운드에서 다운로드됩니다.
-      await _translationManager.prepareModels();
-      
-      if (mounted) {
-        setState(() {
-          _isModelReady = true;
-        });
-        print('🎉 모든 온디바이스 번역 모델 준비 완료 (이제 20자 미만 로컬 번역 작동 가능)');
-      }
-    } catch (e) {
-      print('❌ 모델 다운로드 중 에러 발생: $e');
-    }
   }
 
   // JS를 실행하여 텍스트를 추출하고 하이브리드로 번역하는 함수
@@ -169,10 +113,10 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
       print('📊 추출된 총 텍스트 아이템 개수: ${extractedItems.length}개');
       if (extractedItems.isEmpty) return;
 
-      const targetLang = TranslateLanguage.vietnamese;
+      // 💡 주입받은 타겟 객체 언어로 동적 세팅
       final onDeviceTranslator = OnDeviceTranslator(
         sourceLanguage: TranslateLanguage.korean,
-        targetLanguage: targetLang,
+        targetLanguage: widget.targetLanguage, 
       );
 
       List<dynamic> serverItems = []; 
@@ -185,7 +129,7 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
           continue; 
         }
 
-        // 20자 미만이고 모델이 완벽히 준비 완료되었을 때만 로컬 번역 실행
+        // 20자 미만 로컬 번역 실행
         if (text.length < 20 && _isModelReady) {
           try {
             String localTranslated = await onDeviceTranslator.translateText(text);
@@ -200,15 +144,15 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
 
       // 4. 긴 문장들 백엔드(FastAPI) 서버 일괄 전송
       if (serverItems.isNotEmpty) {
-        print('🚀 총 ${serverItems.length}개의 문장을 FastAPI 서버(http://10.0.2.2:8000)로 전송합니다.');
+        print('🚀 총 ${serverItems.length}개의 문장을 FastAPI 서버로 전송합니다. 타겟 언어: ${widget.targetLangStr}');
 
         try {
           final response = await http.post(
-            Uri.parse('http://10.0.2.2:8000/api/translate'),
+            Uri.parse('http://10.0.2.2:8000/api/translate'), // 팀의 엔드포인트에 맞게 조정 (앞단에 /api 가 붙어있다면 유지)
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'items': serverItems, 
-              'target_lang': 'vi',
+              'target_lang': widget.targetLangStr, // 💡 동적 변수 주입
             }),
           ).timeout(const Duration(seconds: 15));
 
@@ -225,7 +169,6 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
           List<dynamic> fallbackResults = [];
           for (var item in serverItems) {
             try {
-              // 모델이 아직 다운로드 중일 수도 있으므로 방어 코드 작동
               String fallbackText = _isModelReady 
                   ? await onDeviceTranslator.translateText(item['text'])
                   : item['text'];
@@ -278,7 +221,7 @@ class _WebViewTestScreenState extends State<WebViewTestScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Hicampus Translator')),
+        appBar: AppBar(title: Text('HiCampus Translator (${widget.targetLangStr.toUpperCase()})')),
         body: WebViewWidget(controller: _controller),
       ),
     );

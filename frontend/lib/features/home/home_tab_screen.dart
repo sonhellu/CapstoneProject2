@@ -20,6 +20,8 @@ import 'create_post_screen.dart';
 import 'models/post.dart';
 import 'post_list_screen.dart';
 import 'widgets/post_card.dart';
+import '../../core/services/webview_translation/webview_controller.dart';
+import '../../core/services/webview_translation/webview_screen.dart';
 
 const double _kBannerRadius = 16.0;
 
@@ -295,6 +297,7 @@ class _BannerCard extends StatelessWidget {
   final _BannerItem item;
   final String userName;
 
+  // ToDo: Needs onTap: () in 'Keimyung University' image
   @override
   Widget build(BuildContext context) {
     final p = context.primary;
