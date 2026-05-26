@@ -12,4 +12,7 @@ abstract final class ApiKeysExample {
 
   static const naverLocalSearchClientId = 'DEVELOPERS_CLIENT_ID';
   static const naverLocalSearchClientSecret = 'DEVELOPERS_CLIENT_SECRET';
+
+    static const papagoClientId = 'DEVELOPERS_CLIENT_ID';
+  static const papagoClientSecret = 'DEVELOPERS_CLIENT_SECRET';
 }

@@ -54,7 +54,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (String url) async {
-            print('🌐 웹 페이지 로딩 완료: $url');
+            debugPrint('🌐 웹 페이지 로딩 완료: $url');
             // 페이지 로딩 완료 후 잠시 대기했다가 번역 추출 프로세스 시작
             await Future.delayed(const Duration(milliseconds: 1000));
             _runExtraction();
@@ -67,7 +67,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   // JS를 실행하여 텍스트를 추출하고 하이브리드로 번역하는 함수
   Future<void> _runExtraction() async {
     try {
-      print('🔍 본문 텍스트 추출 JavaScript 실행...');
+      debugPrint('🔍 본문 텍스트 추출 JavaScript 실행...');
       final Object result = await _controller.runJavaScriptReturningResult('''
         (function() {
           var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
@@ -110,7 +110,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       if (rawJson.startsWith('"')) rawJson = jsonDecode(rawJson); 
       List<dynamic> extractedItems = jsonDecode(rawJson);
 
-      print('📊 추출된 총 텍스트 아이템 개수: ${extractedItems.length}개');
+      debugPrint('📊 추출된 총 텍스트 아이템 개수: ${extractedItems.length}개');
       if (extractedItems.isEmpty) return;
 
       // 💡 주입받은 타겟 객체 언어로 동적 세팅
@@ -144,7 +144,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
       // 4. 긴 문장들 백엔드(FastAPI) 서버 일괄 전송
       if (serverItems.isNotEmpty) {
-        print('🚀 총 ${serverItems.length}개의 문장을 FastAPI 서버로 전송합니다. 타겟 언어: ${widget.targetLangStr}');
+        debugPrint('🚀 총 ${serverItems.length}개의 문장을 FastAPI 서버로 전송합니다. 타겟 언어: ${widget.targetLangStr}');
 
         try {
           final response = await http.post(
@@ -159,12 +159,12 @@ class _WebViewScreenState extends State<WebViewScreen> {
           if (response.statusCode == 200) {
             var data = jsonDecode(response.body);
             await _applyTranslation(data['results']);
-            print('✅ 서버 일괄 번역본 웹뷰 주입 완료!');
+            debugPrint('✅ 서버 일괄 번역본 웹뷰 주입 완료!');
           } else {
             throw Exception('서버 응답 에러 코드: ${response.statusCode}');
           }
         } catch (e) {
-          print('⚠️ 백엔드 호출 실패 -> 온디바이스 긴급 Fallback 모드 작동 시작: $e');
+          debugPrint('⚠️ 백엔드 호출 실패 -> 온디바이스 긴급 Fallback 모드 작동 시작: $e');
           
           List<dynamic> fallbackResults = [];
           for (var item in serverItems) {
@@ -184,7 +184,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       onDeviceTranslator.close();
 
     } catch (e) {
-      print('❌ 전체 텍스트 추출 및 번역 흐름 오류: $e');
+      debugPrint('❌ 전체 텍스트 추출 및 번역 흐름 오류: $e');
     }
   }
 
