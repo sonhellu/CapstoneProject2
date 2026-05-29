@@ -1,5 +1,6 @@
+from typing import List, Optional
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import List
 
 
 class Settings(BaseSettings):
@@ -9,6 +10,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-in-production"
     ALLOWED_ORIGINS: List[str] = ["*"]
 
+    # Railway injects DATABASE_URL directly; fallback to individual vars for local dev.
+    DATABASE_URL: Optional[str] = None
+
     POSTGRES_USER: str = "hicampus"
     POSTGRES_PASSWORD: str = "hicampus"
     POSTGRES_HOST: str = "localhost"
@@ -16,17 +20,18 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "hicampus"
 
     GOOGLE_TRANSLATOR_API_KEY: str = ""
+    NAVER_MAP_CLIENT_ID: str = ""
+    NAVER_MAP_CLIENT_SECRET: str = ""
+    PUBLIC_DATA_SERVICE_KEY: str = ""
 
-    @property
-    def DATABASE_URL(self) -> str:
+    def get_database_url(self) -> str:
+        if self.DATABASE_URL:
+            # Railway uses postgres:// — SQLAlchemy requires postgresql://
+            return self.DATABASE_URL.replace("postgres://", "postgresql://", 1)
         return (
             f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
-
-    NAVER_MAP_CLIENT_ID: str = ""
-    NAVER_MAP_CLIENT_SECRET: str = ""
-    PUBLIC_DATA_SERVICE_KEY: str = ""
 
 
 settings = Settings()
