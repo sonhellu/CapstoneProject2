@@ -1,25 +1,21 @@
 {
   "@@locale": "ja",
-
   "appTitle": "Capstone",
   "homeTitle": "ホーム",
   "counterLabel": "ボタンを押した回数:",
   "incrementTooltip": "増やす",
   "languagePickerTooltip": "言語",
   "languageSheetTitle": "言語を選択",
-
   "navHome": "ホーム",
   "navMap": "マップ",
   "navCommunity": "コミュニティ",
   "navMyPage": "マイページ",
-
   "mapSearchHere": "このエリアを検索",
   "mapMyLocation": "現在地",
   "mapPinSpot": "ここをピン留め",
   "mapGetDirections": "ルートを検索",
   "mapDirections": "ルート",
   "mapPinSaved": "保存済み",
-
   "btnConfirm": "確認",
   "btnCancel": "キャンセル",
   "btnSave": "保存",
@@ -28,60 +24,61 @@
   "btnClose": "閉じる",
   "btnNext": "次へ",
   "btnBack": "戻る",
-
   "filterAll": "すべて",
   "filterRestaurants": "レストラン",
   "filterRealEstate": "不動産",
   "filterConvenience": "コンビニ",
   "filterAtm": "ATM",
   "filterPharmacy": "薬局",
-
   "statusLoadingMap": "マップ読み込み中…",
   "statusLocating": "位置情報取得中…",
   "statusPermissionDenied": "権限が拒否されました",
   "statusEnableGps": "GPSを有効にしてください",
-
   "foodMenu": "メニュー",
   "foodPrice": "料金",
   "foodHours": "営業時間",
   "foodHalal": "ハラール",
   "foodVeggie": "ベジ",
   "foodAuthentic": "本場の味",
-
   "housingRent": "家賃",
   "housingDeposit": "敷金",
   "housingFee": "管理費",
   "housingNoDeposit": "敷金なし",
   "housingStationNearby": "駅近",
-
   "actionCall": "電話",
   "actionMessage": "メッセージ",
   "actionReview": "レビュー",
   "actionShare": "シェア",
   "actionPhoto": "写真",
-
   "distanceAway": "{distance}先",
   "@distanceAway": {
-    "placeholders": { "distance": { "type": "String", "example": "500m" } }
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "500m"
+      }
+    }
   },
   "minWalk": "徒歩{time}分",
   "@minWalk": {
-    "placeholders": { "time": { "type": "String", "example": "5" } }
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "5"
+      }
+    }
   },
-
   "alertEnterName": "名前を入力",
   "alertWrongPhone": "番号が違います",
   "alertNotFound": "見つかりません",
   "alertTryAgain": "再試行",
   "alertLoginFirst": "ログインが必要",
-
   "profileMyProfile": "マイプロフィール",
   "profileEdit": "プロフィール編集",
   "profileMyPosts": "投稿一覧",
   "profileSavedPlaces": "保存済みの場所",
   "profileLogout": "ログアウト",
   "profileDeleteAccount": "アカウント削除",
-
   "chatMessages": "メッセージ",
   "chatTyping": "入力中…",
   "chatSent": "送信済み",
@@ -89,14 +86,12 @@
   "chatRead": "既読",
   "chatCall": "通話",
   "chatStartConversation": "会話を始めましょう",
-
   "communityPostStory": "投稿する",
   "communityWhatsOnMind": "今何を考えていますか？",
   "communityPublic": "公開",
   "communityPrivate": "非公開",
   "communityAnonymous": "匿名",
   "communityReport": "報告",
-
   "settingsLanguage": "言語",
   "settingsNotifications": "通知",
   "settingsDarkMode": "ダークモード",
@@ -104,22 +99,29 @@
   "settingsPrivacy": "プライバシーポリシー",
   "settingsHelp": "ヘルプセンター",
   "settingsVersion": "バージョン",
-
   "timeJustNow": "たった今",
   "timeMinAgo": "{count, plural, other{{count}分前}}",
   "@timeMinAgo": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "timeHourAgo": "{count, plural, other{{count}時間前}}",
   "@timeHourAgo": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "timeYesterday": "昨日",
-
   "homeViewAll": "すべて見る",
   "homeIntlNews": "国際ニュース 🌏",
   "homeCampusLife": "キャンパスライフ 🇰🇷",
-
   "profilePersonalInfo": "個人情報",
   "profileEditInfo": "情報編集",
   "profileNativeLang": "母国語",
@@ -131,17 +133,20 @@
   "profileVerified": "認証済み",
   "profileLogoutConfirm": "本当にサインアウトしますか？",
   "profileSaveChanges": "変更を保存",
-
   "communityBoardTitle": "コミュニティ掲示板",
   "communitySearchHint": "投稿、ユーザーを検索…",
   "communityPostCount": "{count, plural, other{{count}件の投稿}}",
   "@communityPostCount": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "communitySortRecent": "新着",
   "communitySortPopular": "人気",
   "communityNoPosts": "投稿が見つかりません",
-
   "createPostNew": "新規投稿",
   "createPostCategory": "カテゴリー",
   "createPostTitleLabel": "タイトル",
@@ -154,7 +159,6 @@
   "createPostGallery": "ギャラリー",
   "createPostCamera": "カメラ",
   "createPostPublish": "投稿する",
-
   "postCopied": "クリップボードにコピーしました",
   "postFollow": "フォロー",
   "postFollowing": "フォロー中",
@@ -173,7 +177,6 @@
   "reviewTimeUnitMinute": "分",
   "reviewTimeUnitHour": "時間",
   "reviewTimeUnitDay": "日",
-
   "authHeaderTitle": "留学生の皆さん、こんにちは！",
   "authHeaderSubtitle": "一緒にグローバルな学びの旅を歩みましょう。",
   "authLoginTitle": "ログイン",
@@ -195,10 +198,10 @@
   "authHintNameExample": "山田 太郎",
   "authButtonLogin": "ログイン",
   "authButtonRegister": "アカウント作成",
-  "authSocialGoogleLoginDemo": "Googleでログイン（デモ）",
-  "authSocialKakaoLoginDemo": "KakaoTalkでログイン（デモ）",
-  "authSocialGoogleRegisterDemo": "Googleで登録（デモ）",
-  "authSocialKakaoRegisterDemo": "KakaoTalkで登録（デモ）",
+  "authSocialGoogleLoginDemo": "Googleでログイン",
+  "authSocialKakaoLoginDemo": "KakaoTalkでログイン",
+  "authSocialGoogleRegisterDemo": "Googleで登録",
+  "authSocialKakaoRegisterDemo": "KakaoTalkで登録",
   "authSocialOr": "または",
   "authSocialContinueGoogle": "Googleで続ける",
   "authSocialKakaoLabel": "KakaoTalk ID",
@@ -215,12 +218,10 @@
   "authValidationNativeLanguageEmpty": "母国語を選択してください",
   "authRegisterSearchHint": "検索…",
   "authRegisterSelectPlaceholder": "選択…",
-  "authValidationConfirmMismatch":"パスワードが一致しません",
+  "authValidationConfirmMismatch": "パスワードが一致しません",
   "authTooltipShowPassword": "パスワードを表示",
   "authTooltipHidePassword": "パスワードを隠す",
-
   "languageSheetSubtitle": "表示言語を選んでください",
-
   "mapPinFormTitle": "場所を保存",
   "mapPinSectionVisibility": "公開範囲",
   "mapPinSectionType": "スポットの種類",
@@ -252,14 +253,18 @@
   "mapSdkInitializing": "Naver Map SDK を初期化中…",
   "mapSdkError": "エラー: {error}",
   "@mapSdkError": {
-    "placeholders": { "error": { "type": "String", "example": "network" } }
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network"
+      }
+    }
   },
   "mapPinInfoPublicShort": "公開",
   "pinTypeRestaurant": "グルメ",
   "pinTypeRealEstate": "住まい",
   "pinTypeUtility": "その他の施設",
   "pinTypePharmacy": "薬局",
-
   "partnerSearchTitle": "語学パートナー",
   "partnerGenderAny": "指定なし",
   "partnerGenderMale": "男性",
@@ -278,7 +283,6 @@
   "partnerRequestIncomingPending": "相手からすでにリクエストが届いています。チャットタブで承認してください。",
   "partnerRequestAlreadyAccepted": "すでに接続済みです。",
   "partnerRequestFailed": "リクエストを送信できませんでした。もう一度お試しください。",
-
   "chatSearchConversations": "会話を検索…",
   "chatEmptyTitle": "まだ会話がありません",
   "chatEmptySubtitle": "語学パートナーを見つけてチャットを始めましょう！",
@@ -307,8 +311,6 @@
   "chatReconnectSuccess": "Connection restored.",
   "chatShareLocation": "場所を共有",
   "chatOpenInMap": "地図で見る",
-
-
   "authSuccessLogin": "おかえりなさい！",
   "authSuccessRegister": "登録完了！メールを確認してください。",
   "authErrInvalidCredential": "メールアドレスまたはパスワードが正しくありません",
@@ -320,25 +322,34 @@
   "authErrWeakPassword": "パスワードが弱すぎます（最低6文字）",
   "authErrDefault": "認証に失敗しました: {message}",
   "@authErrDefault": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
-
   "verifyEmailTitle": "受信トレイを確認してください",
   "verifyEmailSubtitle": "{email}に確認リンクを送信しました。リンクをクリックしてアカウントを有効にしてください。",
   "@verifyEmailSubtitle": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "verifyEmailCheckButton": "確認済みです",
   "verifyEmailResendButton": "メールを再送信",
   "verifyEmailResendSent": "確認メールを送信しました！",
   "verifyEmailResendCooldown": "{seconds}秒後に再送信",
   "@verifyEmailResendCooldown": {
-    "placeholders": { "seconds": { "type": "int" } }
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
-
   "authSuccessVerified": "メールアドレスが確認されました！サインインしてください。",
   "verifyEmailNotYet": "まだメールが確認されていません。受信トレイをご確認ください。",
-
   "errorChatRequestNotFound": "このリクエストはもう存在しません。",
   "errorChatRequestNotPending": "このリクエストはすでに処理されました。",
   "errorTransactionAborted": "接続が混み合っています — もう一度お試しください。",
@@ -347,16 +358,22 @@
   "errorNotFound": "リクエストされたアイテムが見つかりません。",
   "errorDataConflict": "データの競合。更新してからもう一度お試しください。",
   "errorUnexpected": "予期しないエラーが発生しました。もう一度お試しください。",
-
   "mapDistanceFromYouMeters": "現在地から{meters}m",
   "@mapDistanceFromYouMeters": {
-    "placeholders": { "meters": { "type": "int" } }
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
   },
   "mapDistanceFromYouKilometers": "現在地から{km}km",
   "@mapDistanceFromYouKilometers": {
-    "placeholders": { "km": { "type": "String" } }
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
   },
-
   "postMenuEdit": "編集",
   "postMenuDelete": "削除",
   "postUpdateSuccess": "投稿を更新しました",
@@ -372,7 +389,6 @@
   "postTranslating": "翻訳中…",
   "postShowOriginal": "原文を表示",
   "postTranslate": "翻訳",
-
   "scheduleScreenTitle": "スケジュール",
   "scheduleTodayHeader": "今日の予定",
   "scheduleViewAll": "すべて表示",
@@ -394,5 +410,12 @@
   "scheduleDeleteConfirmTitle": "予定を削除しますか?",
   "scheduleDeleteConfirmMessage": "この予定は完全に削除されます。",
   "scheduleGoToToday": "今日",
-  "scheduleDeleteCancel": "キャンセル"
+  "scheduleDeleteCancel": "キャンセル",
+  "uniWebTranslateUnavailableTitle": "翻訳できません",
+  "uniWebTranslateUnavailableBody": "このサイトのセキュリティポリシー(CSP)により翻訳がブロックされています。ブラウザで開くと翻訳できます。",
+  "uniWebOpenInBrowser": "ブラウザで開く",
+  "visaInfoTitle": "ビザ情報登録",
+  "visaInfoSubtitle": "在留期限の通知を受けるために情報を登録してください。",
+  "profileGender": "性別",
+  "profileBio": "自己紹介"
 }

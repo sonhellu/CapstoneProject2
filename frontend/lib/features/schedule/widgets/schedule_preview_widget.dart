@@ -16,7 +16,7 @@ class SchedulePreviewWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final today = DateTime.now();
-    final items = context.watch<ScheduleProvider>().upcomingForDay(today);
+    final items = context.watch<ScheduleProvider>().homePreviewForDay(today);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,7 +123,10 @@ class _PreviewRow extends StatelessWidget {
                       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                       child: Row(
                         children: [
-                          Text(activity.emoji, style: const TextStyle(fontSize: 22)),
+                          Text(
+                            activity.emoji,
+                            style: const TextStyle(fontSize: 22),
+                          ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Column(

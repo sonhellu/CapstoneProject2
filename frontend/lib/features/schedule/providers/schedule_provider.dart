@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../auth/services/auth_service.dart';
 import '../models/schedule_activity.dart';
+import '../repository/schedule_repository.dart';
 
 DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -17,26 +18,30 @@ bool _sameDay(DateTime a, DateTime b) =>
 ///
 /// Collection path: users/{uid}/schedule_activities/{activityId}
 class ScheduleProvider extends ChangeNotifier {
-  ScheduleProvider() {
-    _authSub = FirebaseAuth.instance.authStateChanges().listen(_onAuthChanged);
+  ScheduleProvider({
+    AuthService? authService,
+    ScheduleRepository? scheduleRepository,
+  }) : _authService = authService ?? AuthService(),
+       _repository = scheduleRepository ?? ScheduleRepository() {
+    _authSub = _authService.authStateChanges.listen(_onAuthChanged);
   }
 
-  final _db   = FirebaseFirestore.instance;
-  final _auth = FirebaseAuth.instance;
+  final AuthService _authService;
+  final ScheduleRepository _repository;
 
   final List<ScheduleActivity> _items = [];
-  StreamSubscription<QuerySnapshot>? _firestoreSub;
-  StreamSubscription<User?>?         _authSub;
+  StreamSubscription<List<ScheduleActivity>>? _scheduleSub;
+  StreamSubscription<User?>? _authSub;
 
   // ── Public reads ──────────────────────────────────────────────────────────
 
   List<ScheduleActivity> get all => List.unmodifiable(_items);
 
-  bool get isLoading => _items.isEmpty && _auth.currentUser != null;
+  bool get isLoading => _items.isEmpty && _authService.currentUser != null;
 
   /// All activities for [day], sorted by start time.
   List<ScheduleActivity> activitiesFor(DateTime day) {
-    final d    = _dateOnly(day);
+    final d = _dateOnly(day);
     final list = _items.where((e) => _sameDay(e.date, d)).toList();
     list.sort((a, b) => a.startMinutes.compareTo(b.startMinutes));
     return list;
@@ -53,69 +58,101 @@ class ScheduleProvider extends ChangeNotifier {
     return list.length <= limit ? list : list.take(limit).toList();
   }
 
+  /// Home preview keeps today's schedule visible even after an activity ended.
+  /// Upcoming items are shown first, then the most recently finished items.
+  List<ScheduleActivity> homePreviewForDay(DateTime day, {int limit = 3}) {
+    final list = activitiesFor(day);
+    if (!_sameDay(day, DateTime.now()) || list.length <= limit) {
+      return list.length <= limit ? list : list.take(limit).toList();
+    }
+
+    final nowMins = TimeOfDay.now().hour * 60 + TimeOfDay.now().minute;
+    final upcoming = list.where((e) => e.endMinutes > nowMins);
+    final finished = list
+        .where((e) => e.endMinutes <= nowMins)
+        .toList()
+        .reversed;
+    return [...upcoming, ...finished].take(limit).toList(growable: false);
+  }
+
   // ── Mutations ─────────────────────────────────────────────────────────────
 
   Future<void> add(ScheduleActivity a) async {
-    final col = _collection();
-    if (col == null) return;
-    await col.doc(a.id).set(a.toJson());
+    final uid = _authService.currentUser?.uid;
+    if (uid == null) return;
+    final previous = List<ScheduleActivity>.of(_items);
+    _upsertLocal(a);
+    try {
+      await _repository.save(uid, a);
+    } catch (_) {
+      _replaceLocal(previous);
+      rethrow;
+    }
   }
 
   Future<void> update(ScheduleActivity a) async {
-    final col = _collection();
-    if (col == null) return;
-    await col.doc(a.id).set(a.toJson());
+    final uid = _authService.currentUser?.uid;
+    if (uid == null) return;
+    final previous = List<ScheduleActivity>.of(_items);
+    _upsertLocal(a);
+    try {
+      await _repository.save(uid, a);
+    } catch (_) {
+      _replaceLocal(previous);
+      rethrow;
+    }
   }
 
   Future<void> remove(String id) async {
-    final col = _collection();
-    if (col == null) return;
-    await col.doc(id).delete();
-  }
-
-  // ── Firestore helpers ─────────────────────────────────────────────────────
-
-  CollectionReference<Map<String, dynamic>>? _collection() {
-    final uid = _auth.currentUser?.uid;
-    if (uid == null) return null;
-    return _db.collection('users').doc(uid).collection('schedule_activities');
+    final uid = _authService.currentUser?.uid;
+    if (uid == null) return;
+    final previous = List<ScheduleActivity>.of(_items);
+    _items.removeWhere((e) => e.id == id);
+    notifyListeners();
+    try {
+      await _repository.delete(uid, id);
+    } catch (_) {
+      _replaceLocal(previous);
+      rethrow;
+    }
   }
 
   void _onAuthChanged(User? user) {
-    _firestoreSub?.cancel();
-    _firestoreSub = null;
+    _scheduleSub?.cancel();
+    _scheduleSub = null;
     _items.clear();
     notifyListeners();
 
     if (user == null) return;
 
-    _removeLegacyDemoData();
+    unawaited(_repository.removeLegacyDemoData(user.uid));
 
-    _firestoreSub = _collection()!
-        .orderBy('date')
-        .snapshots()
+    _scheduleSub = _repository
+        .watchActivities(user.uid)
         .listen(_onSnapshot, onError: _onError);
   }
 
-  /// Deletes demo documents that may have been written by a previous version.
-  Future<void> _removeLegacyDemoData() async {
-    final col = _collection();
-    if (col == null) return;
-    const demoIds = ['demo_1', 'demo_2', 'demo_3', 'demo_4'];
-    for (final id in demoIds) {
-      final doc = await col.doc(id).get();
-      if (doc.exists) await col.doc(id).delete();
-    }
-  }
-
-  void _onSnapshot(QuerySnapshot snapshot) {
+  void _onSnapshot(List<ScheduleActivity> activities) {
     _items
       ..clear()
-      ..addAll(
-        snapshot.docs.map(
-          (doc) => ScheduleActivity.fromJson(doc.data() as Map<String, dynamic>),
-        ),
-      );
+      ..addAll(activities);
+    notifyListeners();
+  }
+
+  void _upsertLocal(ScheduleActivity activity) {
+    final index = _items.indexWhere((e) => e.id == activity.id);
+    if (index == -1) {
+      _items.add(activity);
+    } else {
+      _items[index] = activity;
+    }
+    notifyListeners();
+  }
+
+  void _replaceLocal(List<ScheduleActivity> activities) {
+    _items
+      ..clear()
+      ..addAll(activities);
     notifyListeners();
   }
 
@@ -127,7 +164,7 @@ class ScheduleProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _firestoreSub?.cancel();
+    _scheduleSub?.cancel();
     _authSub?.cancel();
     super.dispose();
   }

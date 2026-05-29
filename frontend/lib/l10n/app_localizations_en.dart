@@ -532,16 +532,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authButtonRegister => 'Create account';
 
   @override
-  String get authSocialGoogleLoginDemo => 'Google sign-in (demo)';
+  String get authSocialGoogleLoginDemo => 'Sign in with Google';
 
   @override
-  String get authSocialKakaoLoginDemo => 'KakaoTalk sign-in (demo)';
+  String get authSocialKakaoLoginDemo => 'Sign in with KakaoTalk';
 
   @override
-  String get authSocialGoogleRegisterDemo => 'Google sign-up (demo)';
+  String get authSocialGoogleRegisterDemo => 'Sign up with Google';
 
   @override
-  String get authSocialKakaoRegisterDemo => 'KakaoTalk sign-up (demo)';
+  String get authSocialKakaoRegisterDemo => 'Sign up with KakaoTalk';
 
   @override
   String get authSocialOr => 'or';
@@ -1076,4 +1076,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduleDeleteCancel => 'Cancel';
+
+  @override
+  String get uniWebTranslateUnavailableTitle => 'Translation unavailable';
+
+  @override
+  String get uniWebTranslateUnavailableBody =>
+      'This site\'s security policy (CSP) blocks translation. Open in browser to translate.';
+
+  @override
+  String get uniWebOpenInBrowser => 'Open in browser';
+
+  @override
+  String get visaInfoTitle => 'Visa Information';
+
+  @override
+  String get visaInfoSubtitle =>
+      'Register your visa details to receive expiry alerts.';
+
+  @override
+  String get profileGender => 'Gender';
+
+  @override
+  String get profileBio => 'Bio';
 }

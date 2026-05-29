@@ -9,7 +9,10 @@ import 'core/theme/theme_controller.dart';
 import 'core/naver_map/naver_map_sdk_controller.dart';
 import 'core/services/notification_service.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'features/auth/services/auth_service.dart';
 import 'features/chat/chat_controller.dart';
+import 'features/home/providers/post_provider.dart';
+import 'features/schedule/repository/schedule_repository.dart';
 import 'features/schedule/providers/schedule_provider.dart';
 import 'firebase_options.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -43,19 +46,30 @@ Future<void> main() async {
     }
   }
 
+  final authService = AuthService();
+  final scheduleRepository = ScheduleRepository();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => ScheduleProvider()),
+        Provider<AuthService>.value(value: authService),
+        Provider<ScheduleRepository>.value(value: scheduleRepository),
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(authService: authService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ScheduleProvider(
+            authService: authService,
+            scheduleRepository: scheduleRepository,
+          ),
+        ),
+        ChangeNotifierProvider(create: (_) => PostProvider()),
         ChangeNotifierProvider(create: (_) => LocaleController()),
         ChangeNotifierProvider.value(value: themeCtrl),
         ChangeNotifierProvider.value(value: naverMapSdk),
         ChangeNotifierProxyProvider<AuthProvider, ChatController>(
-          create: (ctx) =>
-              ChatController(ctx.read<AuthProvider>()),
-          update: (_, auth, prev) =>
-              prev ?? ChatController(auth),
+          create: (ctx) => ChatController(ctx.read<AuthProvider>()),
+          update: (_, auth, prev) => prev ?? ChatController(auth),
         ),
       ],
       child: const CapstoneApp(),

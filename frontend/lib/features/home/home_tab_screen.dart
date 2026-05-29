@@ -1,10 +1,9 @@
 import 'dart:math' as math;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'widgets/visa_d_day_card.dart';
-
 import 'package:flutter/services.dart';
 
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,10 +14,12 @@ import '../../core/navigation/app_transitions.dart';
 import '../../core/theme/theme_ext.dart';
 import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/data/university_data.dart';
 import '../auth/providers/auth_provider.dart';
 import 'create_post_screen.dart';
 import 'models/post.dart';
 import 'post_list_screen.dart';
+import 'providers/post_provider.dart';
 import 'widgets/post_card.dart';
 import '../schedule/widgets/schedule_preview_widget.dart';
 import '../university_web/university_web_screen.dart';
@@ -35,26 +36,15 @@ class _BannerItem {
 
 const _banners = [
   _BannerItem(
-    'https://images.unsplash.com/photo-1541410965313-d53b3c16ef17?w=800',
+    'https://picsum.photos/seed/kmu/800/400',
     'Keimyung University',
     websiteUrl: 'https://www.kmu.ac.kr',
-  ),
-  _BannerItem(
-    'https://images.unsplash.com/photo-1607013251379-e6eecfffe234?w=800',
-    'Campus Life',
-  ),
-  _BannerItem(
-    'https://images.unsplash.com/photo-1562774053-701939374585?w=800',
-    'Study in Korea',
   ),
 ];
 
 // ─────────────────────────── Screen ───────────────────────────
 class HomeTabScreen extends StatefulWidget {
-  const HomeTabScreen({
-    super.key,
-    this.bannerCarouselAutoPlay = true,
-  });
+  const HomeTabScreen({super.key, this.bannerCarouselAutoPlay = true});
 
   /// When `false`, banner [CarouselSlider] does not auto-advance (e.g. widget
   /// tests, where autoPlay prevents [WidgetTester.pumpAndSettle] from idling).
@@ -66,18 +56,7 @@ class HomeTabScreen extends StatefulWidget {
 
 class _HomeTabScreenState extends State<HomeTabScreen> {
   final _scrollController = ScrollController();
-  int _bannerIndex = 0;
   double _fabScale = 1.0;
-
-  // Split mockPosts into sections
-  static final _internationalPosts = mockPosts
-      .where(
-        (p) => p.category == 'International' || p.category == 'Scholarship',
-      )
-      .toList();
-  static final _campusPosts = mockPosts
-      .where((p) => p.category == 'Campus' || p.category == 'Academic')
-      .toList();
 
   @override
   void initState() {
@@ -101,23 +80,36 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
   void _openCreatePost() {
     HapticFeedback.mediumImpact();
-    Navigator.of(context).push(
-      AppTransitions.fade(const CreatePostScreen()),
-    );
+    Navigator.of(context).push(AppTransitions.fade(const CreatePostScreen()));
   }
 
   void _openPostList() {
     HapticFeedback.lightImpact();
-    Navigator.of(context).push(
-      AppTransitions.fadeSlide(const PostListScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(AppTransitions.fadeSlide(const PostListScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final mq = MediaQuery.of(context);
-    final userName = context.watch<AuthProvider>().displayName ?? 'Student';
+    final auth = context.watch<AuthProvider>();
+    final userName = auth.displayName ?? 'Student';
+    final schoolName = auth.school ?? 'Keimyung University';
+    final uni = koreanUniversities.firstWhere(
+      (u) => u.name == schoolName,
+      orElse: () => koreanUniversities.first,
+    );
+    final posts = context.watch<PostProvider>().posts;
+    final internationalPosts = posts
+        .where(
+          (p) => p.category == 'International' || p.category == 'Scholarship',
+        )
+        .toList(growable: false);
+    final campusPosts = posts
+        .where((p) => p.category == 'Campus' || p.category == 'Academic')
+        .toList(growable: false);
     // viewPadding: physical safe area; not reduced when keyboard opens (unlike padding.bottom).
     final safeBottom = mq.viewPadding.bottom;
     final navBarHeight = kBottomNavigationBarHeight + safeBottom;
@@ -138,8 +130,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          SliverToBoxAdapter(child: _buildAppBar()),
-          SliverToBoxAdapter(child: _buildBanner(userName)),
+          SliverToBoxAdapter(child: _buildAppBar(schoolName)),
+          SliverToBoxAdapter(child: _buildBanner(userName, uni)),
           const SliverToBoxAdapter(child: SchedulePreviewWidget()),
           // ── International horizontal section ──
           const SliverToBoxAdapter(
@@ -155,9 +147,9 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             ),
           ),
           SliverToBoxAdapter(
-            child: _internationalPosts.isEmpty
+            child: internationalPosts.isEmpty
                 ? const _EmptySection()
-                : _buildInternationalList(),
+                : _buildInternationalList(internationalPosts),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 8)),
           // ── Campus vertical section ──
@@ -167,16 +159,16 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               onViewAll: _openPostList,
             ),
           ),
-          if (_campusPosts.isEmpty)
+          if (campusPosts.isEmpty)
             const SliverToBoxAdapter(child: _EmptySection())
           else
             SliverPadding(
               padding: EdgeInsets.fromLTRB(16, 0, 16, navBarHeight + 16),
               sliver: SliverList.separated(
-                itemCount: _campusPosts.length,
+                itemCount: campusPosts.length,
                 separatorBuilder: (context, i) => const SizedBox(height: 10),
                 itemBuilder: (context, i) =>
-                    PostCard(post: _campusPosts[i], style: PostCardStyle.list),
+                    PostCard(post: campusPosts[i], style: PostCardStyle.list),
               ),
             ),
         ],
@@ -185,7 +177,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   }
 
   // ─── App Bar ───
-  Widget _buildAppBar() {
+  Widget _buildAppBar(String schoolName) {
     final p = context.primary;
     final gv = context.onSurfaceVar;
     return SafeArea(
@@ -207,11 +199,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   ),
                 ),
                 Text(
-                  'Keimyung University',
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 12,
-                    color: gv,
-                  ),
+                  schoolName,
+                  style: GoogleFonts.notoSansKr(fontSize: 12, color: gv),
                 ),
               ],
             ),
@@ -234,59 +223,32 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   }
 
   // ─── Banner ───
-  Widget _buildBanner(String userName) {
-    final p = context.primary;
+  Widget _buildBanner(String userName, University uni) {
+    final item = _BannerItem(
+      _banners.first.imageUrl,
+      uni.name,
+      websiteUrl: uni.websiteUrl ?? 'https://www.${uni.defaultDomain}',
+    );
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        children: [
-          CarouselSlider(
-            options: CarouselOptions(
-              height: 200,
-              viewportFraction: 0.9,
-              enlargeCenterPage: true,
-              autoPlay: widget.bannerCarouselAutoPlay,
-              autoPlayInterval: const Duration(seconds: 4),
-              autoPlayCurve: Curves.easeInOutCubic,
-              onPageChanged: (i, _) => setState(() => _bannerIndex = i),
-            ),
-            items: _banners.map((b) => _BannerCard(item: b, userName: userName)).toList(),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              _banners.length,
-              (i) => AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: _bannerIndex == i ? 20 : 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: _bannerIndex == i
-                      ? p
-                      : p.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: SizedBox(
+        height: 200,
+        child: _BannerCard(item: item, userName: userName),
       ),
     );
   }
 
   // ─── International horizontal list ───
-  Widget _buildInternationalList() {
+  Widget _buildInternationalList(List<Post> posts) {
     return SizedBox(
       height: 230,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-        itemCount: _internationalPosts.length,
+        itemCount: posts.length,
         separatorBuilder: (context, i) => const SizedBox(width: 12),
         itemBuilder: (context, i) => PostCard(
-          post: _internationalPosts[i],
+          post: posts[i],
           style: PostCardStyle.horizontal,
         ),
       ),
@@ -308,66 +270,62 @@ class _BannerCard extends StatelessWidget {
       onTap: item.websiteUrl == null
           ? null
           : () => openUniversityWeb(
-                context,
-                url: item.websiteUrl!,
-                title: item.caption,
-              ),
+              context,
+              url: item.websiteUrl!,
+              title: item.caption,
+            ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(_kBannerRadius),
         child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.network(
-            item.imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (context, e, s) => Container(
-              color: p.withValues(alpha: 0.15),
-              child: Icon(
-                Icons.image_outlined,
-                color: p,
-                size: 48,
+          fit: StackFit.expand,
+          children: [
+            CachedNetworkImage(
+              imageUrl: item.imageUrl,
+              fit: BoxFit.cover,
+              errorWidget: (context, url, error) => Container(
+                color: p.withValues(alpha: 0.15),
+                child: Icon(Icons.image_outlined, color: p, size: 48),
               ),
             ),
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.black.withValues(alpha: 0.55),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.55),
+                  ],
+                  stops: const [0.45, 1.0],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 14,
+              bottom: 14,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome, $userName 👋',
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    item.caption,
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
-                stops: const [0.45, 1.0],
               ),
             ),
-          ),
-          Positioned(
-            left: 14,
-            bottom: 14,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Welcome, $userName 👋',
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 13,
-                    color: Colors.white.withValues(alpha: 0.85),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  item.caption,
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -386,9 +344,11 @@ class _EmptySection extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.article_outlined,
-                size: 36,
-                color: context.primary.withValues(alpha: 0.25)),
+            Icon(
+              Icons.article_outlined,
+              size: 36,
+              color: context.primary.withValues(alpha: 0.25),
+            ),
             const SizedBox(height: 8),
             Text(
               AppLocalizations.of(context)!.communityNoPosts,
@@ -453,21 +413,25 @@ class _Fab extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 52,
-               height: 52,
+        height: 52,
         decoration: BoxDecoration(
           color: context.primary,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
               color: context.primary.withValues(
-                  alpha: context.isDark ? 0.5 : 0.35),
+                alpha: context.isDark ? 0.5 : 0.35,
+              ),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: Icon(Icons.add_rounded,
-            color: Theme.of(context).colorScheme.onPrimary, size: 28),
+        child: Icon(
+          Icons.add_rounded,
+          color: Theme.of(context).colorScheme.onPrimary,
+          size: 28,
+        ),
       ),
     );
   }

@@ -529,16 +529,16 @@ class AppLocalizationsVi extends AppLocalizations {
   String get authButtonRegister => 'Tạo tài khoản';
 
   @override
-  String get authSocialGoogleLoginDemo => 'Đăng nhập Google (demo)';
+  String get authSocialGoogleLoginDemo => 'Đăng nhập với Google';
 
   @override
-  String get authSocialKakaoLoginDemo => 'Đăng nhập KakaoTalk (demo)';
+  String get authSocialKakaoLoginDemo => 'Đăng nhập với KakaoTalk';
 
   @override
-  String get authSocialGoogleRegisterDemo => 'Đăng ký với Google (demo)';
+  String get authSocialGoogleRegisterDemo => 'Đăng ký với Google';
 
   @override
-  String get authSocialKakaoRegisterDemo => 'Đăng ký với KakaoTalk (demo)';
+  String get authSocialKakaoRegisterDemo => 'Đăng ký với KakaoTalk';
 
   @override
   String get authSocialOr => 'hoặc';
@@ -1070,4 +1070,27 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get scheduleDeleteCancel => 'Hủy';
+
+  @override
+  String get uniWebTranslateUnavailableTitle => 'Không thể dịch';
+
+  @override
+  String get uniWebTranslateUnavailableBody =>
+      'Chính sách bảo mật (CSP) của trang này chặn tính năng dịch. Mở bằng trình duyệt để dịch.';
+
+  @override
+  String get uniWebOpenInBrowser => 'Mở bằng trình duyệt';
+
+  @override
+  String get visaInfoTitle => 'Thông tin Visa';
+
+  @override
+  String get visaInfoSubtitle =>
+      'Đăng ký thông tin visa để nhận thông báo hết hạn.';
+
+  @override
+  String get profileGender => 'Giới tính';
+
+  @override
+  String get profileBio => 'Giới thiệu';
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
 import 'models/post.dart';
+import 'providers/post_provider.dart';
 import 'widgets/post_card.dart';
 
 // ─────────────────────────── Screen ───────────────────────────
@@ -43,8 +45,8 @@ class _PostListScreenState extends State<PostListScreen> {
     super.dispose();
   }
 
-  List<Post> get _filtered {
-    var list = List<Post>.from(mockPosts);
+  List<Post> _filtered(List<Post> source) {
+    var list = List<Post>.from(source);
 
     // category filter
     if (_selectedCategory != 'All') {
@@ -72,7 +74,7 @@ class _PostListScreenState extends State<PostListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final posts = _filtered;
+    final posts = _filtered(context.watch<PostProvider>().posts);
 
     return Scaffold(
       backgroundColor: context.bg,
@@ -83,7 +85,7 @@ class _PostListScreenState extends State<PostListScreen> {
             _buildHeader(context),
             if (_isSearchOpen) _buildSearchBar(),
             _buildCategoryRow(),
-            _buildSortRow(),
+            _buildSortRow(posts.length),
             Expanded(
               child: posts.isEmpty
                   ? _buildEmpty()
@@ -220,7 +222,7 @@ class _PostListScreenState extends State<PostListScreen> {
   }
 
   // ─── Sort Row ───
-  Widget _buildSortRow() {
+  Widget _buildSortRow(int postCount) {
     final l = AppLocalizations.of(context)!;
     return Container(
       color: context.cardFill,
@@ -228,7 +230,7 @@ class _PostListScreenState extends State<PostListScreen> {
       child: Row(
         children: [
           Text(
-            l.communityPostCount(_filtered.length),
+            l.communityPostCount(postCount),
             style: GoogleFonts.notoSansKr(
               fontSize: 12,
               color: context.hintColor,
@@ -326,4 +328,3 @@ class _SortChip extends StatelessWidget {
     );
   }
 }
-

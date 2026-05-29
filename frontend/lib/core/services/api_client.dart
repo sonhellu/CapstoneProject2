@@ -16,11 +16,10 @@ import 'package:http/http.dart' as http;
 class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
-  // ── Base URL — change to your FastAPI server address ──────────────────────
-  // For local development:  http://10.0.2.2:8000   (Android emulator → host)
-  //                         http://localhost:8000   (iOS simulator / web)
-  // For production:         https://api.yourserver.com
-  static const String baseUrl = 'http://10.0.2.2:8000';
+  // ── Base URL ───────────────────────────────────────────────────────────────
+  static const String baseUrl = 'https://hicampus-api.up.railway.app';
+
+  static const _kTimeout = Duration(seconds: 10);
 
   final http.Client _client;
 
@@ -32,7 +31,7 @@ class ApiClient {
   }) async {
     final uri = _uri(path, queryParams);
     final headers = await _authHeaders();
-    return _client.get(uri, headers: headers);
+    return _client.get(uri, headers: headers).timeout(_kTimeout);
   }
 
   Future<http.Response> post(
@@ -41,7 +40,9 @@ class ApiClient {
   }) async {
     final uri = _uri(path);
     final headers = await _authHeaders();
-    return _client.post(uri, headers: headers, body: jsonEncode(body ?? {}));
+    return _client
+        .post(uri, headers: headers, body: jsonEncode(body ?? {}))
+        .timeout(_kTimeout);
   }
 
   Future<http.Response> put(
@@ -50,7 +51,9 @@ class ApiClient {
   }) async {
     final uri = _uri(path);
     final headers = await _authHeaders();
-    return _client.put(uri, headers: headers, body: jsonEncode(body ?? {}));
+    return _client
+        .put(uri, headers: headers, body: jsonEncode(body ?? {}))
+        .timeout(_kTimeout);
   }
 
   Future<http.Response> patch(
@@ -59,13 +62,15 @@ class ApiClient {
   }) async {
     final uri = _uri(path);
     final headers = await _authHeaders();
-    return _client.patch(uri, headers: headers, body: jsonEncode(body ?? {}));
+    return _client
+        .patch(uri, headers: headers, body: jsonEncode(body ?? {}))
+        .timeout(_kTimeout);
   }
 
   Future<http.Response> delete(String path) async {
     final uri = _uri(path);
     final headers = await _authHeaders();
-    return _client.delete(uri, headers: headers);
+    return _client.delete(uri, headers: headers).timeout(_kTimeout);
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

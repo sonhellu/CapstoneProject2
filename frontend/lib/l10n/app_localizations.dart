@@ -1057,25 +1057,25 @@ abstract class AppLocalizations {
   /// No description provided for @authSocialGoogleLoginDemo.
   ///
   /// In en, this message translates to:
-  /// **'Google sign-in (demo)'**
+  /// **'Sign in with Google'**
   String get authSocialGoogleLoginDemo;
 
   /// No description provided for @authSocialKakaoLoginDemo.
   ///
   /// In en, this message translates to:
-  /// **'KakaoTalk sign-in (demo)'**
+  /// **'Sign in with KakaoTalk'**
   String get authSocialKakaoLoginDemo;
 
   /// No description provided for @authSocialGoogleRegisterDemo.
   ///
   /// In en, this message translates to:
-  /// **'Google sign-up (demo)'**
+  /// **'Sign up with Google'**
   String get authSocialGoogleRegisterDemo;
 
   /// No description provided for @authSocialKakaoRegisterDemo.
   ///
   /// In en, this message translates to:
-  /// **'KakaoTalk sign-up (demo)'**
+  /// **'Sign up with KakaoTalk'**
   String get authSocialKakaoRegisterDemo;
 
   /// No description provided for @authSocialOr.
@@ -2073,6 +2073,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get scheduleDeleteCancel;
+
+  /// No description provided for @uniWebTranslateUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation unavailable'**
+  String get uniWebTranslateUnavailableTitle;
+
+  /// No description provided for @uniWebTranslateUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This site\'s security policy (CSP) blocks translation. Open in browser to translate.'**
+  String get uniWebTranslateUnavailableBody;
+
+  /// No description provided for @uniWebOpenInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get uniWebOpenInBrowser;
+
+  /// No description provided for @visaInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa Information'**
+  String get visaInfoTitle;
+
+  /// No description provided for @visaInfoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Register your visa details to receive expiry alerts.'**
+  String get visaInfoSubtitle;
+
+  /// No description provided for @profileGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get profileGender;
+
+  /// No description provided for @profileBio.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get profileBio;
 }
 
 class _AppLocalizationsDelegate

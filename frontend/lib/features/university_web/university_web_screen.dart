@@ -1,29 +1,32 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/services/translation_service.dart';
 import '../../core/theme/theme_ext.dart';
+import '../../l10n/app_localizations.dart';
 
 // ─────────────────────────── Entry point ─────────────────────────────────────
 
-void openUniversityWeb(BuildContext context, {required String url, String? title}) {
-  Navigator.of(context).push(MaterialPageRoute(
-    builder: (_) => UniversityWebScreen(url: url, title: title),
-  ));
+void openUniversityWeb(
+  BuildContext context, {
+  required String url,
+  String? title,
+}) {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => UniversityWebScreen(url: url, title: title),
+    ),
+  );
 }
+
+// ─────────────────────────── State enum ──────────────────────────────────────
+
+enum _TxState { idle, loading, active }
 
 // ─────────────────────────── Screen ──────────────────────────────────────────
 
 class UniversityWebScreen extends StatefulWidget {
-  const UniversityWebScreen({
-    super.key,
-    required this.url,
-    this.title,
-  });
+  const UniversityWebScreen({super.key, required this.url, this.title});
 
   final String url;
   final String? title;
@@ -34,155 +37,138 @@ class UniversityWebScreen extends StatefulWidget {
 
 class _UniversityWebScreenState extends State<UniversityWebScreen> {
   InAppWebViewController? _webCtrl;
+  final _safariBrowser = ChromeSafariBrowser();
 
-  double  _loadProgress  = 0;
-  bool    _isTranslating = false;
-  bool    _isTranslated  = false;
-  String  _targetLang    = LangCode.en;
+  double _loadProgress = 0;
   String? _pageTitle;
+  _TxState _txState = _TxState.idle;
 
-  // Supported languages for translation (Papago supported)
-  static const _langs = [
-    (code: LangCode.en,   label: 'English'),
-    (code: LangCode.vi,   label: 'Tiếng Việt'),
-    (code: LangCode.ja,   label: '日本語'),
-    (code: LangCode.zhCn, label: '中文'),
-  ];
+  static const _gtLangMap = {
+    'ko': 'ko',
+    'en': 'en',
+    'vi': 'vi',
+    'ja': 'ja',
+    'zh': 'zh-CN',
+    'my': 'my',
+  };
 
-  // ── JS: extract all visible text nodes ────────────────────────────────────
-  static const _jsExtract = r"""
-    (function() {
-      const results = [];
-      let id = 0;
+  static const _allLangs = 'ko,en,vi,ja,zh-CN,my';
 
-      function walk(node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-          const text = node.textContent.trim();
-          if (text.length < 2) return;
-          // Skip already-translated nodes
-          if (node.parentElement && node.parentElement.dataset.tid) return;
-          // Skip script / style / noscript content
-          const tag = node.parentElement?.tagName?.toLowerCase() ?? '';
-          if (['script','style','noscript','code','pre','svg'].includes(tag)) return;
+  bool get _pageLoaded => _loadProgress >= 1.0;
 
-          node.parentElement.dataset.tid = 'n' + id;
-          results.push({ id: 'n' + (id++), text: text });
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-          for (const child of node.childNodes) walk(child);
-        }
-      }
-
-      walk(document.body);
-      return JSON.stringify(results);
-    })();
-  """;
-
-  // ── JS: replace text by tid map ────────────────────────────────────────────
-  static String _jsReplace(Map<String, String> map) {
-    final json = jsonEncode(map);
-    return """
-      (function() {
-        const map = $json;
-        document.querySelectorAll('[data-tid]').forEach(el => {
-          const translated = map[el.dataset.tid];
-          if (translated) el.textContent = translated;
-        });
-      })();
-    """;
+  void _openInBrowser() {
+    _safariBrowser.open(
+      url: WebUri(widget.url),
+      settings: ChromeSafariBrowserSettings(
+        shareState: CustomTabsShareState.SHARE_STATE_OFF,
+        showTitle: true,
+      ),
+    );
   }
 
-  // ── JS: restore original text ─────────────────────────────────────────────
-  static const _jsRestore = r"""
-    (function() {
-      document.querySelectorAll('[data-tid]').forEach(el => {
-        const orig = el.dataset.original;
-        if (orig) { el.textContent = orig; }
-        delete el.dataset.tid;
-      });
-    })();
-  """;
+  void _showFallbackSnackbar() {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.uniWebTranslateUnavailableTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              l10n.uniWebTranslateUnavailableBody,
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: l10n.uniWebOpenInBrowser,
+          onPressed: _openInBrowser,
+        ),
+        duration: const Duration(seconds: 6),
+      ),
+    );
+  }
 
-  // ── JS: save originals before first translate ─────────────────────────────
-  static const _jsSaveOriginals = r"""
-    (function() {
-      document.querySelectorAll('[data-tid]').forEach(el => {
-        if (!el.dataset.original) el.dataset.original = el.textContent.trim();
-      });
-    })();
-  """;
+  Future<void> _toggleTranslate() async {
+    final ctrl = _webCtrl;
+    if (ctrl == null || _txState == _TxState.loading) return;
 
-  // ── Translate ──────────────────────────────────────────────────────────────
-
-  Future<void> _translate() async {
-    if (_webCtrl == null || _isTranslating) return;
-
-    // If already translated → restore
-    if (_isTranslated) {
-      await _webCtrl!.evaluateJavascript(source: _jsRestore);
-      setState(() => _isTranslated = false);
+    if (_txState == _TxState.active) {
+      await ctrl.reload();
+      setState(() => _txState = _TxState.idle);
       return;
     }
 
-    setState(() => _isTranslating = true);
+    setState(() => _txState = _TxState.loading);
 
-    try {
-      // 1. Extract text nodes
-      final raw = await _webCtrl!.evaluateJavascript(source: _jsExtract);
-      if (raw == null) return;
+    final localeLang = Localizations.localeOf(context).languageCode;
+    final targetLang = _gtLangMap[localeLang] ?? 'en';
 
-      final List<dynamic> nodes = jsonDecode(raw as String);
-      if (nodes.isEmpty) return;
+    ctrl.addJavaScriptHandler(
+      handlerName: 'onGtSuccess',
+      callback: (_) {
+        if (mounted) setState(() => _txState = _TxState.active);
+      },
+    );
+    ctrl.addJavaScriptHandler(
+      handlerName: 'onGtFailed',
+      callback: (_) {
+        if (mounted) setState(() => _txState = _TxState.idle);
+        _showFallbackSnackbar();
+      },
+    );
 
-      // 2. Save originals
-      await _webCtrl!.evaluateJavascript(source: _jsSaveOriginals);
+    // Detect page language from HTML lang attribute or meta tag, fallback 'ko'.
+    await ctrl.evaluateJavascript(source: '''
+      (function() {
+        if (document.getElementById('__gt_injected')) return;
 
-      // 3. Batch translate — chunk by ~3000 chars to stay within Papago limit
-      final Map<String, String> translated = {};
-      final List<Map<String, String>> batch = [];
-      int batchLen = 0;
+        var pageLang = (document.documentElement.lang ||
+          (document.querySelector('meta[http-equiv="content-language"]') || {}).content ||
+          'ko').split('-')[0].toLowerCase();
+        if (!['ko','en','vi','ja','zh','my'].includes(pageLang)) pageLang = 'ko';
 
-      Future<void> flushBatch() async {
-        if (batch.isEmpty) return;
-        // Join with separator, translate as one call, split back
-        const sep = '\n||||\n';
-        final combined = batch.map((e) => e['text']!).join(sep);
-        final result = await TranslationService.instance.translateText(
-          combined,
-          from: LangCode.ko,
-          to: _targetLang,
-        );
-        final parts = result.split(sep);
-        for (int i = 0; i < batch.length && i < parts.length; i++) {
-          translated[batch[i]['id']!] = parts[i].trim();
-        }
-        batch.clear();
-        batchLen = 0;
-      }
+        var bar = document.createElement('div');
+        bar.id = '__gt_injected';
+        bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999999;background:#fff;padding:4px 8px;box-shadow:0 2px 6px rgba(0,0,0,.3);';
+        document.body.insertBefore(bar, document.body.firstChild);
+        document.body.style.marginTop = '40px';
 
-      for (final node in nodes) {
-        final id   = node['id']  as String;
-        final text = node['text'] as String;
-        if (batchLen + text.length > 2000) await flushBatch();
-        batch.add({'id': id, 'text': text});
-        batchLen += text.length;
-      }
-      await flushBatch();
+        window.googleTranslateElementInit = function() {
+          new google.translate.TranslateElement({
+            pageLanguage: pageLang,
+            includedLanguages: '$_allLangs',
+            autoDisplay: true,
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+          }, '__gt_injected');
+        };
 
-      // 4. Inject translations
-      await _webCtrl!.evaluateJavascript(source: _jsReplace(translated));
-      setState(() => _isTranslated = true);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Translation failed: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isTranslating = false);
-    }
+        var s = document.createElement('script');
+        s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+        document.body.appendChild(s);
+
+        var attempts = 0;
+        var poll = setInterval(function() {
+          var sel = document.querySelector('.goog-te-combo');
+          if (sel) {
+            sel.value = '$targetLang';
+            sel.dispatchEvent(new Event('change'));
+            clearInterval(poll);
+            window.flutter_inappwebview.callHandler('onGtSuccess');
+          } else if (++attempts > 40) {
+            clearInterval(poll);
+            window.flutter_inappwebview.callHandler('onGtFailed');
+          }
+        }, 300);
+      })();
+    ''');
   }
-
-  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -193,40 +179,43 @@ class _UniversityWebScreenState extends State<UniversityWebScreen> {
       appBar: _buildAppBar(primary),
       body: Stack(
         children: [
-          InAppWebView(
-            initialUrlRequest: URLRequest(
-              url: WebUri(widget.url),
+          RepaintBoundary(
+            child: InAppWebView(
+              initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+              initialSettings: InAppWebViewSettings(
+                javaScriptEnabled: true,
+                userAgent:
+                    'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
+                    '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+                mediaPlaybackRequiresUserGesture: false,
+                allowsInlineMediaPlayback: true,
+              ),
+              onWebViewCreated: (ctrl) => _webCtrl = ctrl,
+              onLoadStart: (ctrl, url) {
+                setState(() {
+                  _loadProgress = 0;
+                  _txState = _TxState.idle;
+                });
+              },
+              onProgressChanged: (_, progress) {
+                setState(() => _loadProgress = progress / 100.0);
+              },
+              onLoadStop: (ctrl, url) {
+                setState(() => _loadProgress = 1.0);
+              },
+              onReceivedError: (ctrl, request, error) {
+                if (request.isForMainFrame == true && mounted) {
+                  _showFallbackSnackbar();
+                }
+              },
+              onTitleChanged: (_, title) {
+                if (title != null && title.isNotEmpty) {
+                  setState(() => _pageTitle = title);
+                }
+              },
             ),
-            initialSettings: InAppWebViewSettings(
-              javaScriptEnabled: true,
-              userAgent:
-                  'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
-                  '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
-              mediaPlaybackRequiresUserGesture: false,
-              allowsInlineMediaPlayback: true,
-            ),
-            onWebViewCreated: (ctrl) => _webCtrl = ctrl,
-            onLoadStart: (ctrl, url) {
-              setState(() {
-                _loadProgress = 0;
-                _isTranslated  = false;
-              });
-            },
-            onProgressChanged: (_, progress) {
-              setState(() => _loadProgress = progress / 100.0);
-            },
-            onLoadStop: (ctrl, url) {
-              setState(() => _loadProgress = 1.0);
-            },
-            onTitleChanged: (_, title) {
-              if (title != null && title.isNotEmpty) {
-                setState(() => _pageTitle = title);
-              }
-            },
           ),
-
-          // Loading bar
-          if (_loadProgress < 1.0)
+          if (!_pageLoaded)
             Positioned(
               top: 0,
               left: 0,
@@ -236,43 +225,6 @@ class _UniversityWebScreenState extends State<UniversityWebScreen> {
                 minHeight: 2,
                 backgroundColor: Colors.transparent,
                 color: primary,
-              ),
-            ),
-
-          // Translating overlay
-          if (_isTranslating)
-            Container(
-              color: Colors.black.withValues(alpha: 0.35),
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: context.cardFill,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: primary,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Translating…',
-                        style: GoogleFonts.notoSansKr(
-                          fontSize: 14,
-                          color: context.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ),
         ],
@@ -316,96 +268,43 @@ class _UniversityWebScreenState extends State<UniversityWebScreen> {
         ],
       ),
       actions: [
-        // Language picker
-        _LangPicker(
-          selected: _targetLang,
-          langs: _langs,
-          onChanged: (lang) {
-            setState(() {
-              _targetLang   = lang;
-              _isTranslated = false;
-            });
-          },
-        ),
-
-        // Translate / Restore button
-        Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: TextButton.icon(
-            onPressed: _loadProgress < 1.0 ? null : _translate,
-            icon: Icon(
-              _isTranslated
-                  ? Icons.undo_rounded
-                  : Icons.translate_rounded,
-              size: 16,
-            ),
-            label: Text(
-              _isTranslated ? 'Original' : 'Translate',
-              style: GoogleFonts.notoSansKr(fontSize: 12),
-            ),
-            style: TextButton.styleFrom(
-              foregroundColor: primary,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────── Language Picker ─────────────────────────────────
-
-class _LangPicker extends StatelessWidget {
-  const _LangPicker({
-    required this.selected,
-    required this.langs,
-    required this.onChanged,
-  });
-
-  final String selected;
-  final List<({String code, String label})> langs;
-  final void Function(String) onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final current = langs.firstWhere(
-      (l) => l.code == selected,
-      orElse: () => langs.first,
-    );
-    return PopupMenuButton<String>(
-      initialValue: selected,
-      onSelected: onChanged,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      itemBuilder: (_) => langs
-          .map((l) => PopupMenuItem(
-                value: l.code,
-                child: Text(
-                  l.label,
-                  style: GoogleFonts.notoSansKr(fontSize: 13),
-                ),
-              ))
-          .toList(),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.language_rounded,
-                size: 16, color: context.onSurfaceVar),
-            const SizedBox(width: 3),
-            Text(
-              current.label,
-              style: GoogleFonts.notoSansKr(
-                fontSize: 12,
-                color: context.onSurfaceVar,
+        if (_txState == _TxState.loading)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: primary,
               ),
             ),
-            Icon(Icons.arrow_drop_down_rounded,
-                size: 16, color: context.onSurfaceVar),
-          ],
+          )
+        else
+          IconButton(
+            tooltip: _txState == _TxState.active ? 'Show original' : 'Translate',
+            onPressed: _pageLoaded ? _toggleTranslate : null,
+            icon: Icon(
+              Icons.translate_rounded,
+              color: !_pageLoaded
+                  ? context.onSurfaceVar.withValues(alpha: 0.3)
+                  : _txState == _TxState.active
+                      ? primary
+                      : context.onSurfaceVar,
+            ),
+          ),
+        IconButton(
+          tooltip: 'Open in browser',
+          onPressed: _openInBrowser,
+          icon: Icon(Icons.open_in_browser_rounded, color: context.onSurfaceVar),
         ),
-      ),
+        IconButton(
+          tooltip: 'Reload',
+          onPressed: () => _webCtrl?.reload(),
+          icon: Icon(Icons.refresh_rounded, color: primary),
+        ),
+        const SizedBox(width: 4),
+      ],
     );
   }
 }

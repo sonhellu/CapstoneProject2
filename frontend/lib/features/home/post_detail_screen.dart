@@ -1,10 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/providers/auth_provider.dart';
 import 'models/post.dart';
+import 'providers/post_provider.dart';
 import 'widgets/post_card.dart' show postImageHeroTag, postAvatarHeroTag;
 import 'widgets/post_translator.dart';
 
@@ -24,21 +28,6 @@ const _categoryColors = <String, Color>{
   'Academic': Color(0xFF1565C0),
 };
 
-// ─────────────────────────── Mock Comment ───────────────────────────
-
-class _CommentModel {
-  const _CommentModel({
-    required this.authorName,
-    required this.avatarInitial,
-    required this.text,
-    required this.time,
-  });
-  final String authorName;
-  final String avatarInitial;
-  final String text;
-  final String time;
-}
-
 // ─────────────────────────── Screen ───────────────────────────
 class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({super.key, required this.post});
@@ -54,35 +43,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final _scrollCtrl = ScrollController();
   final _commentCtrl = TextEditingController();
   final _commentFocus = FocusNode();
-  bool _isFollowing = false;
-  late int _likeCount;
-  bool _isLiked = false;
-
-  late final List<_CommentModel> _comments = [
-    const _CommentModel(
-      authorName: 'Tanaka Yuki',
-      avatarInitial: 'T',
-      text: 'Really helpful! Thanks for sharing 🙏',
-      time: '1h ago',
-    ),
-    const _CommentModel(
-      authorName: 'Ahmed Hassan',
-      avatarInitial: 'A',
-      text: 'I wish I had this guide when I first came here...',
-      time: '3h ago',
-    ),
-    const _CommentModel(
-      authorName: 'Kim Jisoo',
-      avatarInitial: 'K',
-      text: '카카오뱅크 정말 추천해요! 외국인도 쉽게 만들 수 있어요.',
-      time: '5h ago',
-    ),
-  ];
 
   @override
   void initState() {
     super.initState();
-    _likeCount = widget.post.likes;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PostProvider>().loadComments(widget.post.id);
+    });
   }
 
   @override
@@ -97,18 +64,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   void _submitComment() {
     final text = _commentCtrl.text.trim();
     if (text.isEmpty) return;
-    setState(() {
-      _comments.insert(
-        0,
-        _CommentModel(
-          authorName: 'You',
-          avatarInitial: 'Y',
-          text: text,
-          time: 'Just now',
-        ),
-      );
-      _commentCtrl.clear();
-    });
+    final auth = context.read<AuthProvider>();
+    final name = auth.displayName ?? auth.userEmail?.split('@').first ?? 'User';
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
+    context.read<PostProvider>().addComment(
+      widget.post.id,
+      CommentData(
+        id: 'c_${DateTime.now().millisecondsSinceEpoch}',
+        authorName: name,
+        avatarInitial: initial,
+        text: text,
+        time: 'Just now',
+      ),
+      authorName: name,
+      avatarInitial: initial,
+    );
+    _commentCtrl.clear();
     _commentFocus.unfocus();
   }
 
@@ -118,8 +89,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded,
-                color: Colors.white, size: 16),
+            const Icon(
+              Icons.check_circle_rounded,
+              color: Colors.white,
+              size: 16,
+            ),
             const SizedBox(width: 8),
             Text(
               AppLocalizations.of(context)!.postCopied,
@@ -138,7 +112,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // ─────────────────────────── Build ───────────────────────────
   @override
   Widget build(BuildContext context) {
-    final post = widget.post;
+    final post = context.watch<PostProvider>().getById(widget.post.id) ?? widget.post;
     final hasImages = post.images.isNotEmpty;
 
     return Scaffold(
@@ -158,14 +132,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               onTap: () => Navigator.of(context).pop(),
             ),
             actions: [
-              _CircleNavButton(
-                icon: Icons.copy_rounded,
-                onTap: _copyContent,
-              ),
-              _CircleNavButton(
-                icon: Icons.share_rounded,
-                onTap: () {},
-              ),
+              _CircleNavButton(icon: Icons.copy_rounded, onTap: _copyContent),
+              _CircleNavButton(icon: Icons.share_rounded, onTap: () {}),
               const SizedBox(width: 4),
             ],
             flexibleSpace: hasImages
@@ -187,10 +155,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
-                                colors: [
-                                  Color(0x00000000),
-                                  Color(0x77000000),
-                                ],
+                                colors: [Color(0x00000000), Color(0x77000000)],
                               ),
                             ),
                           ),
@@ -232,10 +197,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     const SizedBox(height: 32),
                     Divider(height: 1, color: Theme.of(context).dividerColor),
                     const SizedBox(height: 20),
-                    _buildActionBar(),
-                    const SizedBox(height: 28),
-                    Divider(height: 1, color: Theme.of(context).dividerColor),
-                    const SizedBox(height: 20),
                     _buildCommentsSection(),
                     const SizedBox(height: 40),
                   ],
@@ -251,12 +212,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // ─── Meta Row: chips + time ───
   Widget _buildMetaRow(BuildContext context, Post post) {
     final catColor = _categoryColors[post.category] ?? context.primary;
-    final langCfg = _langConfig[post.language] ??
+    final langCfg =
+        _langConfig[post.language] ??
         _LangChip(context.subtleFill, context.onSurfaceVar);
 
     return Row(
       children: [
-        _Chip(label: post.category, bg: catColor.withValues(alpha: 0.1), fg: catColor),
+        _Chip(
+          label: post.category,
+          bg: catColor.withValues(alpha: 0.1),
+          fg: catColor,
+        ),
         const SizedBox(width: 8),
         _Chip(label: post.language, bg: langCfg.bg, fg: langCfg.fg),
         const Spacer(),
@@ -290,7 +256,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       children: [
         Hero(
           tag: postAvatarHeroTag(post.id),
-          child: _Avatar(initial: post.author.avatarInitial, size: 46, fontSize: 17),
+          child: _Avatar(
+            initial: post.author.avatarInitial,
+            size: 46,
+            fontSize: 17,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -313,7 +283,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     child: Text(
                       post.author.school,
                       style: GoogleFonts.notoSansKr(
-                          fontSize: 11, color: context.onSurfaceVar),
+                        fontSize: 11,
+                        color: context.onSurfaceVar,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -333,7 +305,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     child: Text(
                       post.author.major,
                       style: GoogleFonts.notoSansKr(
-                          fontSize: 11, color: context.onSurfaceVar),
+                        fontSize: 11,
+                        color: context.onSurfaceVar,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -342,11 +316,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               ),
             ],
           ),
-        ),
-        const SizedBox(width: 12),
-        _FollowButton(
-          isFollowing: _isFollowing,
-          onTap: () => setState(() => _isFollowing = !_isFollowing),
         ),
       ],
     );
@@ -376,40 +345,47 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   // ─── Comments Section ───
   Widget _buildCommentsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return Consumer<PostProvider>(
+      builder: (context, provider, _) {
+        final comments = provider.commentsFor(widget.post.id);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.chat_bubble_outline_rounded, size: 16, color: context.primary),
-            const SizedBox(width: 6),
-            Text(
-              'Comments (${_comments.length})',
-              style: GoogleFonts.notoSansKr(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: context.primary,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (_comments.isEmpty)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Text(
-                'Be the first to comment!',
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 13,
-                  color: context.hintColor,
+            Row(
+              children: [
+                Icon(
+                  Icons.chat_bubble_outline_rounded,
+                  size: 16,
+                  color: context.primary,
                 ),
-              ),
+                const SizedBox(width: 6),
+                Text(
+                  'Comments (${comments.length})',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: context.primary,
+                  ),
+                ),
+              ],
             ),
-          )
-        else
-          ...List.generate(_comments.length, (i) {
-            final c = _comments[i];
+            const SizedBox(height: 16),
+            if (comments.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Text(
+                    'Be the first to comment!',
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 13,
+                      color: context.hintColor,
+                    ),
+                  ),
+                ),
+              )
+            else
+              ...List.generate(comments.length, (i) {
+                final c = comments[i];
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Row(
@@ -473,8 +449,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 ],
               ),
             );
-          }),
-      ],
+              }),
+          ],
+        );
+      },
     );
   }
 
@@ -496,15 +474,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 child: TextField(
                   controller: _commentCtrl,
                   focusNode: _commentFocus,
-                  style: GoogleFonts.notoSansKr(fontSize: 14, color: context.onSurface),
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 14,
+                    color: context.onSurface,
+                  ),
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _submitComment(),
                   decoration: InputDecoration(
                     hintText: 'Write a comment…',
-                    hintStyle: GoogleFonts.notoSansKr(fontSize: 14, color: context.hintColor),
+                    hintStyle: GoogleFonts.notoSansKr(
+                      fontSize: 14,
+                      color: context.hintColor,
+                    ),
                     filled: true,
                     fillColor: context.subtleFill,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -522,7 +509,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     color: context.primary,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.send_rounded, color: cs.onPrimary, size: 18),
+                  child: Icon(
+                    Icons.send_rounded,
+                    color: cs.onPrimary,
+                    size: 18,
+                  ),
                 ),
               ),
             ],
@@ -532,146 +523,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
-  // ─── Action Bar ───
-  Widget _buildActionBar() {
-    final l10n = AppLocalizations.of(context)!;
-    final subtle = context.subtleFill;
-    final muted = context.onSurfaceVar;
-    return Row(
-      children: [
-        // Like
-        Expanded(
-          child: _ActionButton(
-            icon: _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-            label: '$_likeCount',
-            color: _isLiked ? Colors.redAccent : muted,
-            bg: _isLiked
-                ? Colors.redAccent.withValues(alpha: 0.12)
-                : subtle,
-            onTap: () => setState(() {
-              _isLiked = !_isLiked;
-              _likeCount += _isLiked ? 1 : -1;
-            }),
-          ),
-        ),
-        const SizedBox(width: 10),
-        // Comment
-        Expanded(
-          child: _ActionButton(
-            icon: Icons.chat_bubble_outline_rounded,
-            label: '${_comments.length}',
-            color: muted,
-            bg: subtle,
-            onTap: () {
-              _commentFocus.requestFocus();
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _scrollCtrl.animateTo(
-                  _scrollCtrl.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 400),
-                  curve: Curves.easeOut,
-                );
-              });
-            },
-          ),
-        ),
-        const SizedBox(width: 10),
-        // Save
-        Expanded(
-          child: _ActionButton(
-            icon: Icons.bookmark_border_rounded,
-            label: l10n.postActionSave,
-            color: muted,
-            bg: subtle,
-            onTap: () {},
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────── Action Button ───────────────────────────
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.bg,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final Color bg;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 17, color: color),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.notoSansKr(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────── Follow Button ───────────────────────────
-class _FollowButton extends StatelessWidget {
-  const _FollowButton({required this.isFollowing, required this.onTap});
-  final bool isFollowing;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final p = context.primary;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isFollowing ? context.subtleFill : p,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isFollowing ? context.outline : p,
-          ),
-        ),
-        child: Text(
-          isFollowing
-              ? AppLocalizations.of(context)!.postFollowing
-              : AppLocalizations.of(context)!.postFollow,
-          style: GoogleFonts.notoSansKr(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: isFollowing ? context.onSurfaceVar : cs.onPrimary,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // ─────────────────────────── Circle Nav Button ───────────────────────────
@@ -718,10 +569,10 @@ class _ImagePageView extends StatelessWidget {
       controller: controller,
       itemCount: images.length,
       onPageChanged: onPageChanged,
-      itemBuilder: (ctx, i) => Image.network(
-        images[i],
+      itemBuilder: (ctx, i) => CachedNetworkImage(
+        imageUrl: images[i],
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
+        errorWidget: (context, url, error) => Container(
           color: ctx.primary.withValues(alpha: 0.08),
           child: Icon(
             Icons.image_not_supported_outlined,
@@ -778,12 +629,17 @@ class _Chip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration:
-          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+      ),
       child: Text(
         label,
         style: GoogleFonts.notoSansKr(
-            fontSize: 10, fontWeight: FontWeight.w700, color: fg),
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: fg,
+        ),
       ),
     );
   }
@@ -806,9 +662,10 @@ class _Avatar extends StatelessWidget {
       child: Text(
         initial.toUpperCase(),
         style: GoogleFonts.notoSansKr(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w700,
-            color: cs.onPrimary),
+          fontSize: fontSize,
+          fontWeight: FontWeight.w700,
+          color: cs.onPrimary,
+        ),
       ),
     );
   }

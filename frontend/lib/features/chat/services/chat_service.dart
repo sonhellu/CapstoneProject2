@@ -33,6 +33,7 @@ class ChatService {
   final _auth = FirebaseAuth.instance;
 
   String? get _myUid => _auth.currentUser?.uid;
+  String get currentUid => _myUid ?? '';
 
   CollectionReference<Map<String, dynamic>> get _convCol =>
       _db.collection('conversations');
@@ -46,6 +47,8 @@ class ChatService {
   String _sortedId(String a, String b) =>
       a.compareTo(b) <= 0 ? '${a}_$b' : '${b}_$a';
 
+  String requestIdFor(String partnerId) => _sortedId(currentUid, partnerId);
+
   // ── Streams ───────────────────────────────────────────────────────────────
 
   /// Real-time list of active conversations for [uid].
@@ -55,10 +58,12 @@ class ChatService {
         .where('status', isEqualTo: 'active')
         .orderBy('lastMessageAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs
-            .map((doc) => _chatFromDoc(doc, uid))
-            .whereType<ChatModel>()
-            .toList());
+        .map(
+          (snap) => snap.docs
+              .map((doc) => _chatFromDoc(doc, uid))
+              .whereType<ChatModel>()
+              .toList(),
+        );
   }
 
   /// Real-time list of pending incoming requests for [uid].
@@ -68,10 +73,12 @@ class ChatService {
         .where('status', isEqualTo: 'pending')
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs
-            .map(_requestFromDoc)
-            .whereType<ChatRequestModel>()
-            .toList());
+        .map(
+          (snap) => snap.docs
+              .map(_requestFromDoc)
+              .whereType<ChatRequestModel>()
+              .toList(),
+        );
   }
 
   // ── Messages ──────────────────────────────────────────────────────────────
@@ -88,7 +95,7 @@ class ChatService {
   /// Returns `(messages, cursor)`. If the list is empty the caller should set
   /// `hasMoreOlder = false`.
   Future<(List<MessageModel>, DocumentSnapshot<Map<String, dynamic>>?)>
-      getMessages(
+  getMessages(
     String chatId, {
     DocumentSnapshot<Map<String, dynamic>>? before,
     DateTime? since,
@@ -101,8 +108,7 @@ class ChatService {
 
     // Filter out messages before the last reconnect (soft history wipe).
     if (since != null) {
-      q = q.where('timestamp',
-          isGreaterThan: Timestamp.fromDate(since));
+      q = q.where('timestamp', isGreaterThan: Timestamp.fromDate(since));
     }
     if (before != null) q = q.startAfterDocument(before);
 
@@ -115,8 +121,10 @@ class ChatService {
   }
 
   /// Real-time stream of NEW messages arriving after subscription time.
-  Stream<MessageModel> incomingMessagesStream(String chatId,
-      {DateTime? since}) {
+  Stream<MessageModel> incomingMessagesStream(
+    String chatId, {
+    DateTime? since,
+  }) {
     // Use the later of `now` and `lastClearedAt` so reconnected chats never
     // surface history via the live stream either.
     final cutoff = since != null && since.isAfter(DateTime.now())
@@ -128,9 +136,11 @@ class ChatService {
         .where('timestamp', isGreaterThan: Timestamp.fromDate(cutoff))
         .orderBy('timestamp')
         .snapshots()
-        .expand((snap) => snap.docChanges
-            .where((c) => c.type == DocumentChangeType.added)
-            .map((c) => _messageFromDoc(c.doc)));
+        .expand(
+          (snap) => snap.docChanges
+              .where((c) => c.type == DocumentChangeType.added)
+              .map((c) => _messageFromDoc(c.doc)),
+        );
   }
 
   // ── Send ──────────────────────────────────────────────────────────────────
@@ -251,6 +261,50 @@ class ChatService {
         .toList();
   }
 
+  Future<Map<String, RequestStatus>> requestStatusesFor(
+    List<PartnerModel> partners,
+  ) async {
+    final myUid = _myUid;
+    if (myUid == null || partners.isEmpty) return const {};
+
+    final snaps = await Future.wait(
+      partners.map((p) => _requestsCol.doc(_sortedId(myUid, p.id)).get()),
+    );
+
+    final statuses = <String, RequestStatus>{};
+    for (var i = 0; i < partners.length; i++) {
+      final data = snaps[i].data();
+      if (data == null) continue;
+      final status = data['status'] as String?;
+      final senderId = data['senderId'] as String?;
+      if (status == 'active') {
+        statuses[partners[i].id] = RequestStatus.accepted;
+      } else if (status == 'pending' && senderId == myUid) {
+        statuses[partners[i].id] = RequestStatus.pending;
+      }
+    }
+    return statuses;
+  }
+
+  Stream<RequestStatus?> requestStatusStream(String partnerId) {
+    final myUid = _myUid;
+    if (myUid == null) return Stream<RequestStatus?>.value(null);
+
+    return _requestsCol.doc(_sortedId(myUid, partnerId)).snapshots().map((
+      snap,
+    ) {
+      final data = snap.data();
+      if (data == null) return null;
+      final status = data['status'] as String?;
+      final senderId = data['senderId'] as String?;
+      if (status == 'active') return RequestStatus.accepted;
+      if (status == 'pending' && senderId == myUid) {
+        return RequestStatus.pending;
+      }
+      return null;
+    });
+  }
+
   // ── Request lifecycle ─────────────────────────────────────────────────────
 
   /// Sends a connection request to [partnerId].
@@ -283,7 +337,8 @@ class ChatService {
       // Auto-create a minimal profile so the receiver can render the card.
       final authUser = _auth.currentUser;
       if (authUser == null) return SendChatRequestResult.notSignedIn;
-      final rawName = (authUser.displayName?.trim().isNotEmpty == true
+      final rawName =
+          (authUser.displayName?.trim().isNotEmpty == true
               ? authUser.displayName!
               : authUser.email?.split('@')[0]) ??
           'User';
@@ -329,23 +384,25 @@ class ChatService {
         switch (status) {
           case 'pending':
             final sender = snap.data()?['senderId'] as String? ?? '';
-            throw _RequestResultException(sender == myUid
-                ? SendChatRequestResult.alreadyPending
-                : SendChatRequestResult.incomingPendingExists);
+            throw _RequestResultException(
+              sender == myUid
+                  ? SendChatRequestResult.alreadyPending
+                  : SendChatRequestResult.incomingPendingExists,
+            );
 
           case 'active':
             throw _RequestResultException(
-                SendChatRequestResult.alreadyAccepted);
+              SendChatRequestResult.alreadyAccepted,
+            );
 
           case 'disconnected':
             // State: disconnected → pending (reconnect).
             // Reset ALL request fields so old data is not shown.
-            final prevSender =
-                snap.data()?['senderId'] as String? ?? '';
-            final prevReceiver =
-                snap.data()?['receiverId'] as String? ?? '';
-            final newReceiverId =
-                prevSender == myUid ? prevReceiver : prevSender;
+            final prevSender = snap.data()?['senderId'] as String? ?? '';
+            final prevReceiver = snap.data()?['receiverId'] as String? ?? '';
+            final newReceiverId = prevSender == myUid
+                ? prevReceiver
+                : prevSender;
             txn.update(reqRef, {
               'status': 'pending',
               'senderId': myUid,
@@ -411,10 +468,12 @@ class ChatService {
         throw ChatAcceptException(ChatAcceptFailure.requestNotPending);
       }
 
-      final senderInfo =
-          Map<String, dynamic>.from(data['senderInfo'] as Map? ?? {});
-      final receiverInfo =
-          Map<String, dynamic>.from(data['receiverInfo'] as Map? ?? {});
+      final senderInfo = Map<String, dynamic>.from(
+        data['senderInfo'] as Map? ?? {},
+      );
+      final receiverInfo = Map<String, dynamic>.from(
+        data['receiverInfo'] as Map? ?? {},
+      );
 
       final convId = _sortedId(senderId, receiverId);
       final chatRef = _convCol.doc(convId);
@@ -434,50 +493,30 @@ class ChatService {
 
       if (!convSnap.exists) {
         // 2a. New conversation.
-        txn.set(
-          chatRef,
-          {
-            'participants': participants,
-            'participantInfo': {
-              senderId: senderInfo,
-              receiverId: receiverInfo,
-            },
-            'lastMessage': '',
-            'lastMessageAt': FieldValue.serverTimestamp(),
-            'unreadCounts': {
-              participants[0]: 0,
-              participants[1]: 0,
-            },
-            'status': 'active',
-            'requestedBy': senderId,
-            'createdAt': FieldValue.serverTimestamp(),
-          },
-          SetOptions(merge: true),
-        );
+        txn.set(chatRef, {
+          'participants': participants,
+          'participantInfo': {senderId: senderInfo, receiverId: receiverInfo},
+          'lastMessage': '',
+          'lastMessageAt': FieldValue.serverTimestamp(),
+          'unreadCounts': {participants[0]: 0, participants[1]: 0},
+          'status': 'active',
+          'requestedBy': senderId,
+          'createdAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
         return (convId, true); // true = write welcome message after commit
       }
 
       // 2b. Reconnect — reactivate + mark a clean-slate timestamp so the UI
       //     shows an empty room (history stays in Firestore).
-      txn.set(
-        chatRef,
-        {
-          'participantInfo': {
-            senderId: senderInfo,
-            receiverId: receiverInfo,
-          },
-          'unreadCounts': {
-            participants[0]: 0,
-            participants[1]: 0,
-          },
-          'status': 'active',
-          'requestedBy': senderId,
-          'lastClearedAt': FieldValue.serverTimestamp(),
-          'disconnectedAt': FieldValue.delete(),
-          'disconnectedBy': FieldValue.delete(),
-        },
-        SetOptions(merge: true),
-      );
+      txn.set(chatRef, {
+        'participantInfo': {senderId: senderInfo, receiverId: receiverInfo},
+        'unreadCounts': {participants[0]: 0, participants[1]: 0},
+        'status': 'active',
+        'requestedBy': senderId,
+        'lastClearedAt': FieldValue.serverTimestamp(),
+        'disconnectedAt': FieldValue.delete(),
+        'disconnectedBy': FieldValue.delete(),
+      }, SetOptions(merge: true));
       return (convId, false);
     });
 
@@ -491,16 +530,13 @@ class ChatService {
           .doc(convId)
           .collection('messages')
           .doc('msg_welcome_$requestId')
-          .set(
-        {
-          'senderId': 'system',
-          'type': 'system',
-          'content': 'You are connected. Say hi and start practicing!',
-          'timestamp': FieldValue.serverTimestamp(),
-          'isRead': false,
-        },
-        SetOptions(merge: true),
-      );
+          .set({
+            'senderId': 'system',
+            'type': 'system',
+            'content': 'You are connected. Say hi and start practicing!',
+            'timestamp': FieldValue.serverTimestamp(),
+            'isRead': false,
+          }, SetOptions(merge: true));
     }
 
     return convId;
@@ -535,8 +571,9 @@ class ChatService {
       final reqSnap = await txn.get(reqRef);
 
       if (!convSnap.exists) return;
-      final parts =
-          List<String>.from(convSnap.data()!['participants'] as List? ?? []);
+      final parts = List<String>.from(
+        convSnap.data()!['participants'] as List? ?? [],
+      );
       if (!parts.contains(myUid)) return;
 
       // ── Writes ─────────────────────────────────────────────────────────
@@ -572,27 +609,29 @@ class ChatService {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
-  Map<String, dynamic> _userInfoPayload(
-      String uid, Map<String, dynamic>? raw) {
+  Map<String, dynamic> _userInfoPayload(String uid, Map<String, dynamic>? raw) {
     final m = Map<String, dynamic>.from(raw ?? {});
     m['uid'] = uid;
     return m;
   }
 
   ChatModel? _chatFromDoc(
-      DocumentSnapshot<Map<String, dynamic>> doc, String myUid) {
+    DocumentSnapshot<Map<String, dynamic>> doc,
+    String myUid,
+  ) {
     try {
       final data = doc.data()!;
-      final participants =
-          List<String>.from(data['participants'] as List? ?? []);
-      final partnerUid =
-          participants.firstWhere((p) => p != myUid, orElse: () => '');
+      final participants = List<String>.from(
+        data['participants'] as List? ?? [],
+      );
+      final partnerUid = participants.firstWhere(
+        (p) => p != myUid,
+        orElse: () => '',
+      );
       if (partnerUid.isEmpty) return null;
 
-      final participantInfo =
-          data['participantInfo'] as Map<String, dynamic>?;
-      final partnerData =
-          participantInfo?[partnerUid] as Map<String, dynamic>?;
+      final participantInfo = data['participantInfo'] as Map<String, dynamic>?;
+      final partnerData = participantInfo?[partnerUid] as Map<String, dynamic>?;
       final partner = partnerData != null
           ? _partnerFromMap(partnerUid, partnerData)
           : PartnerModel(
@@ -606,8 +645,7 @@ class ChatService {
               gender: Gender.any,
             );
 
-      final unreadCounts =
-          data['unreadCounts'] as Map<String, dynamic>? ?? {};
+      final unreadCounts = data['unreadCounts'] as Map<String, dynamic>? ?? {};
       final unread = (unreadCounts[myUid] as int?) ?? 0;
       final lastMessageAt = data['lastMessageAt'] as Timestamp?;
       final lastClearedAt = (data['lastClearedAt'] as Timestamp?)?.toDate();
@@ -616,8 +654,7 @@ class ChatService {
         id: doc.id,
         partner: partner,
         lastMessage: data['lastMessage'] as String? ?? '',
-        lastTime:
-            lastMessageAt != null ? _timeAgo(lastMessageAt.toDate()) : '',
+        lastTime: lastMessageAt != null ? _timeAgo(lastMessageAt.toDate()) : '',
         unreadCount: unread,
         status: _parseConversationStatus(data['status'] as String?),
         lastClearedAt: lastClearedAt,
@@ -628,12 +665,12 @@ class ChatService {
   }
 
   ChatRequestModel? _requestFromDoc(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
     try {
       final data = doc.data()!;
       final senderId = data['senderId'] as String? ?? '';
-      final senderInfo =
-          data['senderInfo'] as Map<String, dynamic>? ?? {};
+      final senderInfo = data['senderInfo'] as Map<String, dynamic>? ?? {};
       return ChatRequestModel(
         id: doc.id,
         sender: _partnerFromMap(senderId, senderInfo),
@@ -646,8 +683,7 @@ class ChatService {
     }
   }
 
-  MessageModel _messageFromDoc(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
+  MessageModel _messageFromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
     final typeStr = data['type'] as String? ?? 'text';
     final type = switch (typeStr) {
@@ -672,8 +708,7 @@ class ChatService {
       id: doc.id,
       senderId: data['senderId'] as String? ?? '',
       content: data['content'] as String? ?? '',
-      timestamp:
-          (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
       type: type,
       locationData: locationData,
     );
@@ -693,23 +728,23 @@ class ChatService {
       );
 
   Gender _parseGender(dynamic g) => switch (g?.toString()) {
-        'male' => Gender.male,
-        'female' => Gender.female,
-        _ => Gender.any,
-      };
+    'male' => Gender.male,
+    'female' => Gender.female,
+    _ => Gender.any,
+  };
 
   ChatSyncStatus _parseConversationStatus(String? s) => switch (s) {
-        'disconnected' => ChatSyncStatus.disconnected,
-        'active' => ChatSyncStatus.active,
-        _ => ChatSyncStatus.active,
-      };
+    'disconnected' => ChatSyncStatus.disconnected,
+    'active' => ChatSyncStatus.active,
+    _ => ChatSyncStatus.active,
+  };
 
   ChatSyncStatus _parseRequestStatus(String? s) => switch (s) {
-        'active' => ChatSyncStatus.active,
-        'disconnected' => ChatSyncStatus.disconnected,
-        'pending' => ChatSyncStatus.pending,
-        _ => ChatSyncStatus.none,
-      };
+    'active' => ChatSyncStatus.active,
+    'disconnected' => ChatSyncStatus.disconnected,
+    'pending' => ChatSyncStatus.pending,
+    _ => ChatSyncStatus.none,
+  };
 
   String _timeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);

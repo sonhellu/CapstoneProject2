@@ -6,15 +6,21 @@ from app.core.firebase import verify_token
 bearer_scheme = HTTPBearer()
 
 
-def get_current_uid(
+def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> str:
-    """Extract and verify Firebase UID from Bearer token."""
+) -> dict:
+    """Verify Firebase ID token and return decoded claims (uid, email, name, ...)."""
     try:
-        decoded = verify_token(credentials.credentials)
-        return decoded["uid"]
+        return verify_token(credentials.credentials)
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
         )
+
+
+def get_current_uid(
+    user: dict = Depends(get_current_user),
+) -> str:
+    """Shortcut — return only the uid from the verified token."""
+    return user["uid"]

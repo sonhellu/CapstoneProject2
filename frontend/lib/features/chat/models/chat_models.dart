@@ -1,5 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
-
 // ─────────────────────────── Enums ───────────────────────────
 
 enum Gender { male, female, any }
@@ -66,17 +64,17 @@ class PartnerModel {
   final RequestStatus requestStatus;
 
   PartnerModel copyWith({RequestStatus? requestStatus}) => PartnerModel(
-        id: id,
-        name: name,
-        avatarInitial: avatarInitial,
-        nativeLanguage: nativeLanguage,
-        learningLanguage: learningLanguage,
-        school: school,
-        bio: bio,
-        gender: gender,
-        isOnline: isOnline,
-        requestStatus: requestStatus ?? this.requestStatus,
-      );
+    id: id,
+    name: name,
+    avatarInitial: avatarInitial,
+    nativeLanguage: nativeLanguage,
+    learningLanguage: learningLanguage,
+    school: school,
+    bio: bio,
+    gender: gender,
+    isOnline: isOnline,
+    requestStatus: requestStatus ?? this.requestStatus,
+  );
 }
 
 // ─────────────────────────── Message ───────────────────────────
@@ -108,7 +106,7 @@ class MessageModel {
   /// True while the message is awaiting Firestore confirmation (optimistic UI).
   final bool isPending;
 
-  bool get isMe => senderId == FirebaseAuth.instance.currentUser?.uid;
+  bool isSentBy(String uid) => senderId == uid;
 }
 
 // ─────────────────────────── Chat Request ───────────────────────────

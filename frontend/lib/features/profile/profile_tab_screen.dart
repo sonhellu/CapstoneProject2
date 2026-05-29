@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +8,7 @@ import '../../core/theme/theme_ext.dart';
 import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/providers/auth_provider.dart';
+import '../chat/repository/user_repository.dart';
 
 import 'visa_info_form_screen.dart';
 
@@ -29,6 +31,8 @@ class _ProfileData {
   String major;
   String nationality;
   String email;
+  String bio;
+  String gender;
 
   _ProfileData({
     required this.fullName,
@@ -38,6 +42,8 @@ class _ProfileData {
     required this.major,
     required this.nationality,
     required this.email,
+    this.bio = '',
+    this.gender = 'other',
   });
 
   _ProfileData copyWith({
@@ -48,6 +54,8 @@ class _ProfileData {
     String? major,
     String? nationality,
     String? email,
+    String? bio,
+    String? gender,
   }) =>
       _ProfileData(
         fullName: fullName ?? this.fullName,
@@ -57,6 +65,8 @@ class _ProfileData {
         major: major ?? this.major,
         nationality: nationality ?? this.nationality,
         email: email ?? this.email,
+        bio: bio ?? this.bio,
+        gender: gender ?? this.gender,
       );
 }
 
@@ -78,6 +88,9 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   // Controllers
   late final TextEditingController _nameCtrl;
   late final TextEditingController _langCtrl;
+  late final TextEditingController _bioCtrl;
+
+  static const _genders = ['male', 'female', 'other'];
 
   static const _languages = [
     'Vietnamese', 'English', 'Korean', 'Japanese',
@@ -118,24 +131,52 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   @override
   void initState() {
     super.initState();
+    final firebaseUser = FirebaseAuth.instance.currentUser;
     _profile = _ProfileData(
-      fullName: 'Nguyen Van A',
-      username: 'nguyenvana',
+      fullName: firebaseUser?.displayName ?? '',
+      username: (firebaseUser?.email ?? '').split('@').first,
       nativeLanguage: 'Vietnamese',
       university: 'Keimyung University',
-      major: 'Computer Science',
+      major: '',
       nationality: 'Vietnamese',
-      email: 'nguyenvana@kmu.ac.kr',
+      email: firebaseUser?.email ?? '',
     );
     _editDraft = _profile.copyWith();
     _nameCtrl = TextEditingController(text: _profile.fullName);
     _langCtrl = TextEditingController(text: _profile.nativeLanguage);
+    _bioCtrl  = TextEditingController(text: _profile.bio);
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final data = await UserRepository.instance.getRawProfile(uid);
+    if (!mounted || data == null) return;
+    setState(() {
+      _profile = _ProfileData(
+        fullName: data['displayName'] as String? ?? _profile.fullName,
+        username: _profile.username,
+        nativeLanguage: data['nativeLanguage'] as String? ?? _profile.nativeLanguage,
+        university: data['school'] as String? ?? _profile.university,
+        major: data['major'] as String? ?? _profile.major,
+        nationality: data['nationality'] as String? ?? _profile.nationality,
+        email: data['email'] as String? ?? _profile.email,
+        bio: data['bio'] as String? ?? '',
+        gender: data['gender'] as String? ?? 'other',
+      );
+      _editDraft = _profile.copyWith();
+      _nameCtrl.text = _profile.fullName;
+      _langCtrl.text = _profile.nativeLanguage;
+      _bioCtrl.text  = _profile.bio;
+    });
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _langCtrl.dispose();
+    _bioCtrl.dispose();
     super.dispose();
   }
 
@@ -145,6 +186,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     _editDraft = _profile.copyWith();
     _nameCtrl.text = _profile.fullName;
     _langCtrl.text = _profile.nativeLanguage;
+    _bioCtrl.text  = _profile.bio;
     setState(() => _isEditMode = true);
   }
 
@@ -197,10 +239,25 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
   Future<void> _saveChanges() async {
     setState(() => _isSaving = true);
-    await Future.delayed(const Duration(milliseconds: 900));
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final newName = _nameCtrl.text.trim();
+    if (uid != null) {
+      await UserRepository.instance.updateProfile(
+        uid: uid,
+        displayName: newName.isNotEmpty ? newName : null,
+        nativeLanguage: _editDraft.nativeLanguage,
+        school: _editDraft.university,
+        nationality: _editDraft.nationality,
+        major: _editDraft.major,
+        bio: _bioCtrl.text.trim(),
+        gender: _editDraft.gender,
+      );
+    }
+    if (!mounted) return;
     setState(() {
       _profile = _editDraft.copyWith(
-        fullName: _nameCtrl.text.trim(),
+        fullName: newName.isNotEmpty ? newName : _editDraft.fullName,
+        bio: _bioCtrl.text.trim(),
       );
       _isEditMode = false;
       _isSaving = false;
@@ -269,10 +326,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                         draft: _editDraft,
                         nameCtrl: _nameCtrl,
                         langCtrl: _langCtrl,
+                        bioCtrl: _bioCtrl,
                         languages: _languages,
                         nationalities: _nationalities,
                         universities: _universities,
                         majors: _majors,
+                        genders: _genders,
                         isSaving: _isSaving,
                         onPickLanguage: () => _pickFromSheet(
                           title: l.profileNativeLang,
@@ -305,6 +364,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                           current: _editDraft.nationality,
                           onSelected: (v) => setState(() {
                             _editDraft = _editDraft.copyWith(nationality: v);
+                          }),
+                        ),
+                        onPickGender: () => _pickFromSheet(
+                          title: 'Gender',
+                          options: _genders,
+                          current: _editDraft.gender,
+                          onSelected: (v) => setState(() {
+                            _editDraft = _editDraft.copyWith(gender: v);
                           }),
                         ),
                         onCancel: _cancelEdit,
@@ -400,66 +467,47 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           ],
         ),
         const SizedBox(height: 8),
-        Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: primary, width: 2),
-                boxShadow: _cardShadow(context),
-              ),
-              child: CircleAvatar(
-                radius: 52,
-                backgroundColor: primary.withValues(alpha: 0.1),
-                child: Text(
-                  _profile.fullName.isNotEmpty
-                      ? _profile.fullName[0].toUpperCase()
-                      : '?',
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w700,
-                    color: primary,
-                  ),
-                ),
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: primary, width: 2),
+            boxShadow: _cardShadow(context),
+          ),
+          child: CircleAvatar(
+            radius: 52,
+            backgroundColor: primary.withValues(alpha: 0.1),
+            child: Text(
+              _profile.fullName.isNotEmpty
+                  ? _profile.fullName[0].toUpperCase()
+                  : '?',
+              style: GoogleFonts.notoSansKr(
+                fontSize: 36,
+                fontWeight: FontWeight.w700,
+                color: primary,
               ),
             ),
-            Positioned(
-              bottom: -4,
-              right: -4,
-              child: GestureDetector(
-                onTap: _isEditMode ? null : _enterEdit,
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: primary,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.surface,
-                      width: 2,
-                    ),
-                    boxShadow: _cardShadow(context),
-                  ),
-                  child: const Icon(
-                    Icons.edit_rounded,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
         const SizedBox(height: 16),
-        Text(
-          _profile.fullName,
-          style: GoogleFonts.notoSansKr(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: context.onSurface,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _profile.fullName,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: context.onSurface,
+              ),
+            ),
+            if (!_isEditMode) ...[
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _enterEdit,
+                child: Icon(Icons.edit_outlined, size: 18, color: primary),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 4),
         Text(
@@ -516,6 +564,20 @@ class _DisplayCard extends StatelessWidget {
           ),
           _divider(context),
           _InfoRow(
+            icon: Icons.wc_outlined,
+            label: l.profileGender,
+            value: profile.gender,
+          ),
+          if (profile.bio.isNotEmpty) ...[
+            _divider(context),
+            _InfoRow(
+              icon: Icons.info_outline_rounded,
+              label: l.profileBio,
+              value: profile.bio,
+            ),
+          ],
+          _divider(context),
+          _InfoRow(
             icon: Icons.email_outlined,
             label: l.profileEmail,
             value: profile.email,
@@ -536,15 +598,18 @@ class _EditForm extends StatelessWidget {
     required this.draft,
     required this.nameCtrl,
     required this.langCtrl,
+    required this.bioCtrl,
     required this.languages,
     required this.nationalities,
     required this.universities,
     required this.majors,
+    required this.genders,
     required this.isSaving,
     required this.onPickLanguage,
     required this.onPickUniversity,
     required this.onPickMajor,
     required this.onPickNationality,
+    required this.onPickGender,
     required this.onCancel,
     required this.onSave,
   });
@@ -552,15 +617,18 @@ class _EditForm extends StatelessWidget {
   final _ProfileData draft;
   final TextEditingController nameCtrl;
   final TextEditingController langCtrl;
+  final TextEditingController bioCtrl;
   final List<String> languages;
   final List<String> nationalities;
   final List<String> universities;
   final List<String> majors;
+  final List<String> genders;
   final bool isSaving;
   final VoidCallback onPickLanguage;
   final VoidCallback onPickUniversity;
   final VoidCallback onPickMajor;
   final VoidCallback onPickNationality;
+  final VoidCallback onPickGender;
   final VoidCallback onCancel;
   final VoidCallback onSave;
 
@@ -606,6 +674,20 @@ class _EditForm extends StatelessWidget {
                 label: l.profileNationality,
                 value: draft.nationality,
                 onTap: onPickNationality,
+              ),
+              const SizedBox(height: 16),
+              _TapField(
+                icon: Icons.wc_outlined,
+                label: l.profileGender,
+                value: draft.gender,
+                onTap: onPickGender,
+              ),
+              const SizedBox(height: 16),
+              _Field(
+                icon: Icons.info_outline_rounded,
+                label: l.profileBio,
+                controller: bioCtrl,
+                maxLines: 3,
               ),
               const SizedBox(height: 16),
               _Field(
@@ -777,12 +859,14 @@ class _Field extends StatelessWidget {
     required this.label,
     required this.controller,
     this.readOnly = false,
+    this.maxLines = 1,
   });
 
   final IconData icon;
   final String label;
   final TextEditingController controller;
   final bool readOnly;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -791,6 +875,7 @@ class _Field extends StatelessWidget {
     return TextField(
       controller: controller,
       readOnly: readOnly,
+      maxLines: maxLines,
       style: GoogleFonts.notoSansKr(
         fontSize: 14,
         color: readOnly ? context.onSurfaceVar : context.onSurface,
@@ -1064,7 +1149,7 @@ class _VisaInfoBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '비자 정보 등록',
+                    AppLocalizations.of(context)!.visaInfoTitle,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -1073,7 +1158,7 @@ class _VisaInfoBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '체류 만료 알림을 받기 위해 정보를 등록해주세요.',
+                    AppLocalizations.of(context)!.visaInfoSubtitle,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 12,
                       color: context.onSurfaceVar,

@@ -527,16 +527,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get authButtonRegister => '계정 만들기';
 
   @override
-  String get authSocialGoogleLoginDemo => 'Google 로그인 (데모)';
+  String get authSocialGoogleLoginDemo => 'Google 로그인';
 
   @override
-  String get authSocialKakaoLoginDemo => '카카오톡 로그인 (데모)';
+  String get authSocialKakaoLoginDemo => '카카오톡 로그인';
 
   @override
-  String get authSocialGoogleRegisterDemo => 'Google 회원가입 (데모)';
+  String get authSocialGoogleRegisterDemo => 'Google 회원가입';
 
   @override
-  String get authSocialKakaoRegisterDemo => '카카오톡 회원가입 (데모)';
+  String get authSocialKakaoRegisterDemo => '카카오톡 회원가입';
 
   @override
   String get authSocialOr => '또는';
@@ -1051,4 +1051,26 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get scheduleDeleteCancel => '취소';
+
+  @override
+  String get uniWebTranslateUnavailableTitle => '번역을 사용할 수 없습니다';
+
+  @override
+  String get uniWebTranslateUnavailableBody =>
+      '이 사이트의 보안 정책(CSP)으로 인해 번역이 차단되었습니다. 브라우저에서 열면 번역을 사용할 수 있습니다.';
+
+  @override
+  String get uniWebOpenInBrowser => '브라우저에서 열기';
+
+  @override
+  String get visaInfoTitle => '비자 정보 등록';
+
+  @override
+  String get visaInfoSubtitle => '체류 만료 알림을 받기 위해 정보를 등록해주세요.';
+
+  @override
+  String get profileGender => '성별';
+
+  @override
+  String get profileBio => '자기소개';
 }

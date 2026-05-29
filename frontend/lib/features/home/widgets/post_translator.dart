@@ -63,7 +63,12 @@ class _PostTranslatorState extends State<PostTranslator>
   late final Animation<double> _fadeAnim;
 
   String get _fromIso => LangCode.fromTag(widget.postLangTag);
-  bool get _canTranslate => _fromIso != widget.deviceLangCode;
+  String get _toIso => LangCode.normalize(widget.deviceLangCode);
+  bool get _canTranslate => TranslationService.instance.canTranslate(
+    text: widget.text,
+    from: _fromIso,
+    to: _toIso,
+  );
   bool get _isTranslated => _state == _TxState.done;
 
   @override
@@ -108,7 +113,7 @@ class _PostTranslatorState extends State<PostTranslator>
     final result = await TranslationService.instance.translateText(
       widget.text,
       from: _fromIso,
-      to: widget.deviceLangCode,
+      to: _toIso,
     );
 
     if (!mounted) return;

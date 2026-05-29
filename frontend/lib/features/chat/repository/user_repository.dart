@@ -65,6 +65,8 @@ class UserRepository {
     String? learningLanguage,
     String? gender,
     String? school,
+    String? nationality,
+    String? major,
     String? bio,
   }) async {
     final data = <String, dynamic>{};
@@ -77,8 +79,17 @@ class UserRepository {
     if (learningLanguage != null) data['learningLanguage'] = learningLanguage;
     if (gender != null) data['gender'] = gender;
     if (school != null) data['school'] = school;
+    if (nationality != null) data['nationality'] = nationality;
+    if (major != null) data['major'] = major;
     if (bio != null) data['bio'] = bio;
     if (data.isNotEmpty) await _col.doc(uid).update(data);
+  }
+
+  /// Returns the raw Firestore document for [uid], or null if not found.
+  Future<Map<String, dynamic>?> getRawProfile(String uid) async {
+    final snap = await _col.doc(uid).get();
+    if (!snap.exists || snap.data() == null) return null;
+    return snap.data();
   }
 
   Future<void> setOnlineStatus(String uid, {required bool isOnline}) async {

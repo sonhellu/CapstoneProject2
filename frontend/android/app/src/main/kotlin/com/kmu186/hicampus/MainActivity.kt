@@ -1,4 +1,4 @@
-package com.capstone.capstone_frontend
+package com.kmu186.hicampus
 
 import io.flutter.embedding.android.FlutterActivity
 

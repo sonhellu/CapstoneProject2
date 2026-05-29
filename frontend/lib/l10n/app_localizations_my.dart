@@ -530,18 +530,16 @@ class AppLocalizationsMy extends AppLocalizations {
   String get authButtonRegister => 'အကောင့်ဖန်တီးမည်';
 
   @override
-  String get authSocialGoogleLoginDemo => 'Google ဖြင့် ဝင်ရောက်မည် (ဒမို)';
+  String get authSocialGoogleLoginDemo => 'Google ဖြင့် ဝင်ရောက်မည်';
 
   @override
-  String get authSocialKakaoLoginDemo => 'KakaoTalk ဖြင့် ဝင်ရောက်မည် (ဒမို)';
+  String get authSocialKakaoLoginDemo => 'KakaoTalk ဖြင့် ဝင်ရောက်မည်';
 
   @override
-  String get authSocialGoogleRegisterDemo =>
-      'Google ဖြင့် မှတ်ပုံတင်မည် (ဒမို)';
+  String get authSocialGoogleRegisterDemo => 'Google ဖြင့် မှတ်ပုံတင်မည်';
 
   @override
-  String get authSocialKakaoRegisterDemo =>
-      'KakaoTalk ဖြင့် မှတ်ပုံတင်မည် (ဒမို)';
+  String get authSocialKakaoRegisterDemo => 'KakaoTalk ဖြင့် မှတ်ပုံတင်မည်';
 
   @override
   String get authSocialOr => 'သို့မဟုတ်';
@@ -1076,4 +1074,27 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get scheduleDeleteCancel => 'မလုပ်တော့';
+
+  @override
+  String get uniWebTranslateUnavailableTitle => 'ဘာသာပြန်၍မရပါ';
+
+  @override
+  String get uniWebTranslateUnavailableBody =>
+      'ဤဆိုဒ်၏ လုံခြုံရေးမူဝါဒ (CSP) ကြောင့် ဘာသာပြန်ဆိုမှု ပိတ်ဆို့ထားသည်။ ဘရောက်ဆာဖြင့် ဖွင့်၍ ဘာသာပြန်နိုင်သည်။';
+
+  @override
+  String get uniWebOpenInBrowser => 'ဘရောက်ဆာဖြင့် ဖွင့်ရန်';
+
+  @override
+  String get visaInfoTitle => 'ဗီဇာ အချက်အလက်';
+
+  @override
+  String get visaInfoSubtitle =>
+      'သက်တမ်းကုန်ဆုံးသတိပေးချက် ရရန် ဗီဇာ အချက်အလက် ထည့်သွင်းပါ။';
+
+  @override
+  String get profileGender => 'ကျား/မ';
+
+  @override
+  String get profileBio => 'မိတ်ဆက်';
 }

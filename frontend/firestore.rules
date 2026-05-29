@@ -217,6 +217,56 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
+    // ─────────────────────────── /pins/{pinId} ───────────────────────────────
+
+    match /pins/{pinId} {
+      function visiblePin() {
+        return signedIn()
+          && (resource.data.isPublic == true || resource.data.authorId == uid());
+      }
+
+      allow read: if visiblePin();
+
+      allow create: if signedIn()
+          && request.resource.data.authorId == uid()
+          && request.resource.data.keys().hasAll([
+               'id', 'lat', 'lng', 'name', 'notes', 'type', 'isPublic',
+               'rating', 'createdAt', 'authorId', 'authorName', 'reviewCount'
+             ]);
+
+      allow update: if signedIn()
+          && (
+               (
+                 resource.data.authorId == uid()
+                 && request.resource.data.authorId == resource.data.authorId
+               )
+               || request.resource.data.diff(resource.data).affectedKeys()
+                    .hasOnly(['rating', 'reviewCount', 'updatedAt'])
+             );
+
+      allow delete: if signedIn() && resource.data.authorId == uid();
+
+      match /reviews/{reviewId} {
+        function parentVisible() {
+          let pin = get(/databases/$(database)/documents/pins/$(pinId));
+          return signedIn()
+            && exists(/databases/$(database)/documents/pins/$(pinId))
+            && (pin.data.isPublic == true || pin.data.authorId == uid());
+        }
+
+        allow read: if parentVisible();
+
+        allow create: if parentVisible()
+            && request.resource.data.pinId == pinId
+            && request.resource.data.authorId == uid()
+            && request.resource.data.rating is int
+            && request.resource.data.rating >= 1
+            && request.resource.data.rating <= 5;
+
+        allow update, delete: if signedIn() && resource.data.authorId == uid();
+      }
+    }
+
     // ─────────────────────────── Catch-all deny ──────────────────────────────
 
     match /{document=**} {

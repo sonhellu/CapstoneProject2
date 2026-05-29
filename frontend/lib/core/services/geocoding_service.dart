@@ -45,7 +45,11 @@ class GeocodingService {
     // ── 1. Try Naver (returns Korean) ──────────────────────────────────────
     final korean = await _reverseGeocodeNaver(lat, lng);
     if (korean.isNotEmpty) {
-      if (targetLang == LangCode.ko) {
+      if (!TranslationService.instance.canTranslate(
+        text: korean,
+        from: LangCode.ko,
+        to: targetLang,
+      )) {
         return LocalizedAddress(localized: korean, korean: korean);
       }
       final localized = await TranslationService.instance.translateText(

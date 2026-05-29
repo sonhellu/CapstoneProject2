@@ -5,4 +5,6 @@ CLAUDE.md
 # Backend secrets — never commit these
 backend/.env
 backend/firebase-service-account.json
+backend/hicampus-firebase.json
+backend/*firebase*.json
 backend/.venv/

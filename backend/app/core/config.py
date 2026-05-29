@@ -26,6 +26,7 @@ class Settings(BaseSettings):
 
     NAVER_MAP_CLIENT_ID: str = ""
     NAVER_MAP_CLIENT_SECRET: str = ""
+    PUBLIC_DATA_SERVICE_KEY: str = ""
 
 
 settings = Settings()

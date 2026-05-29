@@ -1,25 +1,21 @@
 {
   "@@locale": "ko",
-
   "appTitle": "Capstone",
   "homeTitle": "홈",
   "counterLabel": "버튼을 누른 횟수:",
   "incrementTooltip": "증가",
   "languagePickerTooltip": "언어",
   "languageSheetTitle": "언어 선택",
-
   "navHome": "홈",
   "navMap": "지도",
   "navCommunity": "커뮤니티",
   "navMyPage": "마이페이지",
-
   "mapSearchHere": "이 지역 검색",
   "mapMyLocation": "내 위치",
   "mapPinSpot": "이 장소 저장",
   "mapGetDirections": "길 찾기",
   "mapDirections": "길 찾기",
   "mapPinSaved": "저장됨",
-
   "btnConfirm": "확인",
   "btnCancel": "취소",
   "btnSave": "저장",
@@ -28,60 +24,61 @@
   "btnClose": "닫기",
   "btnNext": "다음",
   "btnBack": "뒤로",
-
   "filterAll": "전체",
   "filterRestaurants": "식당",
   "filterRealEstate": "부동산",
   "filterConvenience": "편의점",
   "filterAtm": "ATM",
   "filterPharmacy": "약국",
-
   "statusLoadingMap": "지도 불러오는 중…",
   "statusLocating": "위치 확인 중…",
   "statusPermissionDenied": "권한이 거부되었습니다",
   "statusEnableGps": "GPS를 켜주세요",
-
   "foodMenu": "메뉴",
   "foodPrice": "가격",
   "foodHours": "영업시간",
   "foodHalal": "할랄",
   "foodVeggie": "채식",
   "foodAuthentic": "현지맛",
-
   "housingRent": "월세",
   "housingDeposit": "보증금",
   "housingFee": "관리비",
   "housingNoDeposit": "무보증금",
   "housingStationNearby": "역 근처",
-
   "actionCall": "전화",
   "actionMessage": "메시지",
   "actionReview": "리뷰",
   "actionShare": "공유",
   "actionPhoto": "사진",
-
   "distanceAway": "{distance} 거리",
   "@distanceAway": {
-    "placeholders": { "distance": { "type": "String", "example": "500m" } }
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "500m"
+      }
+    }
   },
   "minWalk": "도보 {time}분",
   "@minWalk": {
-    "placeholders": { "time": { "type": "String", "example": "5" } }
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "5"
+      }
+    }
   },
-
   "alertEnterName": "이름 입력",
   "alertWrongPhone": "잘못된 번호",
   "alertNotFound": "찾을 수 없음",
   "alertTryAgain": "다시 시도",
   "alertLoginFirst": "로그인 필요",
-
   "profileMyProfile": "내 프로필",
   "profileEdit": "프로필 수정",
   "profileMyPosts": "내 게시물",
   "profileSavedPlaces": "저장한 장소",
   "profileLogout": "로그아웃",
   "profileDeleteAccount": "계정 삭제",
-
   "chatMessages": "메시지",
   "chatTyping": "입력 중…",
   "chatSent": "전송됨",
@@ -89,14 +86,12 @@
   "chatRead": "읽음",
   "chatCall": "통화",
   "chatStartConversation": "대화를 시작해보세요",
-
   "communityPostStory": "게시물 올리기",
   "communityWhatsOnMind": "무슨 생각을 하고 있나요?",
   "communityPublic": "전체 공개",
   "communityPrivate": "나만 보기",
   "communityAnonymous": "익명",
   "communityReport": "신고",
-
   "settingsLanguage": "언어",
   "settingsNotifications": "알림",
   "settingsDarkMode": "다크 모드",
@@ -104,22 +99,29 @@
   "settingsPrivacy": "개인정보 처리방침",
   "settingsHelp": "고객센터",
   "settingsVersion": "버전",
-
   "timeJustNow": "방금",
   "timeMinAgo": "{count, plural, other{{count}분 전}}",
   "@timeMinAgo": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "timeHourAgo": "{count, plural, other{{count}시간 전}}",
   "@timeHourAgo": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "timeYesterday": "어제",
-
   "homeViewAll": "전체보기",
   "homeIntlNews": "국제 뉴스 🌏",
   "homeCampusLife": "캠퍼스 라이프 🇰🇷",
-
   "profilePersonalInfo": "개인 정보",
   "profileEditInfo": "정보 수정",
   "profileNativeLang": "모국어",
@@ -131,17 +133,20 @@
   "profileVerified": "인증됨",
   "profileLogoutConfirm": "로그아웃하시겠습니까?",
   "profileSaveChanges": "변경 사항 저장",
-
   "communityBoardTitle": "커뮤니티 게시판",
   "communitySearchHint": "게시물, 작성자 검색…",
   "communityPostCount": "{count, plural, other{{count}개 게시물}}",
   "@communityPostCount": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "communitySortRecent": "최신",
   "communitySortPopular": "인기",
   "communityNoPosts": "게시물이 없습니다",
-
   "createPostNew": "새 게시물",
   "createPostCategory": "카테고리",
   "createPostTitleLabel": "제목",
@@ -154,7 +159,6 @@
   "createPostGallery": "갤러리",
   "createPostCamera": "카메라",
   "createPostPublish": "게시하기",
-
   "postCopied": "클립보드에 복사됨",
   "postFollow": "팔로우",
   "postFollowing": "팔로잉",
@@ -173,7 +177,6 @@
   "reviewTimeUnitMinute": "분",
   "reviewTimeUnitHour": "시간",
   "reviewTimeUnitDay": "일",
-
   "authHeaderTitle": "안녕하세요, 유학생 여러분!",
   "authHeaderSubtitle": "함께 글로벌 학습 여정을 완성해요.",
   "authLoginTitle": "로그인",
@@ -195,10 +198,10 @@
   "authHintNameExample": "홍길동",
   "authButtonLogin": "로그인",
   "authButtonRegister": "계정 만들기",
-  "authSocialGoogleLoginDemo": "Google 로그인 (데모)",
-  "authSocialKakaoLoginDemo": "카카오톡 로그인 (데모)",
-  "authSocialGoogleRegisterDemo": "Google 회원가입 (데모)",
-  "authSocialKakaoRegisterDemo": "카카오톡 회원가입 (데모)",
+  "authSocialGoogleLoginDemo": "Google 로그인",
+  "authSocialKakaoLoginDemo": "카카오톡 로그인",
+  "authSocialGoogleRegisterDemo": "Google 회원가입",
+  "authSocialKakaoRegisterDemo": "카카오톡 회원가입",
   "authSocialOr": "또는",
   "authSocialContinueGoogle": "Google로 계속",
   "authSocialKakaoLabel": "카카오톡 ID",
@@ -215,12 +218,10 @@
   "authValidationNativeLanguageEmpty": "모국어를 선택하세요",
   "authRegisterSearchHint": "검색…",
   "authRegisterSelectPlaceholder": "선택…",
-  "authValidationConfirmMismatch":"비밀번호가 일치하지 않습니다",
+  "authValidationConfirmMismatch": "비밀번호가 일치하지 않습니다",
   "authTooltipShowPassword": "비밀번호 표시",
   "authTooltipHidePassword": "비밀번호 숨기기",
-
   "languageSheetSubtitle": "원하는 앱 언어를 선택하세요",
-
   "mapPinFormTitle": "장소 저장",
   "mapPinSectionVisibility": "공개 범위",
   "mapPinSectionType": "장소 유형",
@@ -252,14 +253,18 @@
   "mapSdkInitializing": "네이버 지도 SDK 초기화 중…",
   "mapSdkError": "오류: {error}",
   "@mapSdkError": {
-    "placeholders": { "error": { "type": "String", "example": "network" } }
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network"
+      }
+    }
   },
   "mapPinInfoPublicShort": "공개",
   "pinTypeRestaurant": "맛집",
   "pinTypeRealEstate": "하우징",
   "pinTypeUtility": "기타 편의시설",
   "pinTypePharmacy": "약국",
-
   "partnerSearchTitle": "언어 파트너",
   "partnerGenderAny": "전체",
   "partnerGenderMale": "남성",
@@ -271,7 +276,6 @@
   "partnerPending": "대기 중…",
   "partnerAccepted": "수락됨!",
   "partnerOpenChat": "메시지 보내기",
-
   "partnerRequestSentSuccess": "요청을 보냈습니다.",
   "partnerRequestNotSignedIn": "로그인한 후 요청을 보내세요.",
   "partnerRequestProfileMissing": "이 사용자의 프로필이 없습니다.",
@@ -279,7 +283,6 @@
   "partnerRequestIncomingPending": "상대방이 이미 요청을 보냈습니다. Chat 탭에서 수락하세요.",
   "partnerRequestAlreadyAccepted": "이미 연결되어 있습니다.",
   "partnerRequestFailed": "요청을 보낼 수 없습니다. 다시 시도하세요.",
-
   "chatSearchConversations": "대화 검색…",
   "chatEmptyTitle": "아직 대화가 없습니다",
   "chatEmptySubtitle": "언어 파트너를 찾아 대화를 시작하세요!",
@@ -308,8 +311,6 @@
   "chatReconnectSuccess": "Connection restored.",
   "chatShareLocation": "위치 공유",
   "chatOpenInMap": "지도에서 보기",
-
-
   "authSuccessLogin": "다시 오신 것을 환영합니다!",
   "authSuccessRegister": "가입 완료! 이메일을 인증해 주세요.",
   "authErrInvalidCredential": "이메일 또는 비밀번호가 올바르지 않습니다",
@@ -321,25 +322,34 @@
   "authErrWeakPassword": "비밀번호가 너무 약합니다 (최소 6자)",
   "authErrDefault": "인증 실패: {message}",
   "@authErrDefault": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
-
   "verifyEmailTitle": "받은 편지함을 확인하세요",
   "verifyEmailSubtitle": "{email}로 인증 링크를 보냈습니다. 링크를 클릭하여 계정을 활성화하세요.",
   "@verifyEmailSubtitle": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "verifyEmailCheckButton": "이미 인증했습니다",
   "verifyEmailResendButton": "이메일 재전송",
   "verifyEmailResendSent": "인증 이메일이 전송되었습니다!",
   "verifyEmailResendCooldown": "{seconds}초 후 재전송",
   "@verifyEmailResendCooldown": {
-    "placeholders": { "seconds": { "type": "int" } }
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
-
   "authSuccessVerified": "이메일이 인증되었습니다! 로그인하세요.",
   "verifyEmailNotYet": "아직 이메일이 인증되지 않았습니다. 받은 편지함을 확인하세요.",
-
   "errorChatRequestNotFound": "이 요청이 더 이상 존재하지 않습니다.",
   "errorChatRequestNotPending": "이 요청은 이미 처리되었습니다.",
   "errorTransactionAborted": "연결이 바쁩니다 — 다시 시도해 주세요.",
@@ -348,16 +358,22 @@
   "errorNotFound": "요청한 항목을 찾을 수 없습니다.",
   "errorDataConflict": "데이터 충돌. 새로고침 후 다시 시도해 주세요.",
   "errorUnexpected": "예기치 않은 오류가 발생했습니다. 다시 시도해 주세요.",
-
   "mapDistanceFromYouMeters": "내 위치에서 {meters}m",
   "@mapDistanceFromYouMeters": {
-    "placeholders": { "meters": { "type": "int" } }
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
   },
   "mapDistanceFromYouKilometers": "내 위치에서 {km}km",
   "@mapDistanceFromYouKilometers": {
-    "placeholders": { "km": { "type": "String" } }
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
   },
-
   "postMenuEdit": "수정",
   "postMenuDelete": "삭제",
   "postUpdateSuccess": "게시물이 수정되었습니다",
@@ -373,7 +389,6 @@
   "postTranslating": "번역 중…",
   "postShowOriginal": "원문 보기",
   "postTranslate": "번역",
-
   "scheduleScreenTitle": "일정",
   "scheduleTodayHeader": "오늘 일정",
   "scheduleViewAll": "전체 보기",
@@ -395,5 +410,12 @@
   "scheduleDeleteConfirmTitle": "일정 삭제?",
   "scheduleDeleteConfirmMessage": "이 일정이 영구적으로 삭제됩니다.",
   "scheduleGoToToday": "오늘",
-  "scheduleDeleteCancel": "취소"
+  "scheduleDeleteCancel": "취소",
+  "uniWebTranslateUnavailableTitle": "번역을 사용할 수 없습니다",
+  "uniWebTranslateUnavailableBody": "이 사이트의 보안 정책(CSP)으로 인해 번역이 차단되었습니다. 브라우저에서 열면 번역을 사용할 수 있습니다.",
+  "uniWebOpenInBrowser": "브라우저에서 열기",
+  "visaInfoTitle": "비자 정보 등록",
+  "visaInfoSubtitle": "체류 만료 알림을 받기 위해 정보를 등록해주세요.",
+  "profileGender": "성별",
+  "profileBio": "자기소개"
 }

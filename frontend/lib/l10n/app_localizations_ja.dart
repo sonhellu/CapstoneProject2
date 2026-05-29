@@ -527,16 +527,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get authButtonRegister => 'アカウント作成';
 
   @override
-  String get authSocialGoogleLoginDemo => 'Googleでログイン（デモ）';
+  String get authSocialGoogleLoginDemo => 'Googleでログイン';
 
   @override
-  String get authSocialKakaoLoginDemo => 'KakaoTalkでログイン（デモ）';
+  String get authSocialKakaoLoginDemo => 'KakaoTalkでログイン';
 
   @override
-  String get authSocialGoogleRegisterDemo => 'Googleで登録（デモ）';
+  String get authSocialGoogleRegisterDemo => 'Googleで登録';
 
   @override
-  String get authSocialKakaoRegisterDemo => 'KakaoTalkで登録（デモ）';
+  String get authSocialKakaoRegisterDemo => 'KakaoTalkで登録';
 
   @override
   String get authSocialOr => 'または';
@@ -1050,4 +1050,26 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get scheduleDeleteCancel => 'キャンセル';
+
+  @override
+  String get uniWebTranslateUnavailableTitle => '翻訳できません';
+
+  @override
+  String get uniWebTranslateUnavailableBody =>
+      'このサイトのセキュリティポリシー(CSP)により翻訳がブロックされています。ブラウザで開くと翻訳できます。';
+
+  @override
+  String get uniWebOpenInBrowser => 'ブラウザで開く';
+
+  @override
+  String get visaInfoTitle => 'ビザ情報登録';
+
+  @override
+  String get visaInfoSubtitle => '在留期限の通知を受けるために情報を登録してください。';
+
+  @override
+  String get profileGender => '性別';
+
+  @override
+  String get profileBio => '自己紹介';
 }

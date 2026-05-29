@@ -527,16 +527,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authButtonRegister => '创建账号';
 
   @override
-  String get authSocialGoogleLoginDemo => 'Google 登录（演示）';
+  String get authSocialGoogleLoginDemo => 'Google 登录';
 
   @override
-  String get authSocialKakaoLoginDemo => 'KakaoTalk 登录（演示）';
+  String get authSocialKakaoLoginDemo => 'KakaoTalk 登录';
 
   @override
-  String get authSocialGoogleRegisterDemo => 'Google 注册（演示）';
+  String get authSocialGoogleRegisterDemo => 'Google 注册';
 
   @override
-  String get authSocialKakaoRegisterDemo => 'KakaoTalk 注册（演示）';
+  String get authSocialKakaoRegisterDemo => 'KakaoTalk 注册';
 
   @override
   String get authSocialOr => '或';
@@ -1049,4 +1049,26 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get scheduleDeleteCancel => '取消';
+
+  @override
+  String get uniWebTranslateUnavailableTitle => '无法翻译';
+
+  @override
+  String get uniWebTranslateUnavailableBody =>
+      '该网站的安全策略(CSP)阻止了翻译功能。请在浏览器中打开以使用翻译。';
+
+  @override
+  String get uniWebOpenInBrowser => '在浏览器中打开';
+
+  @override
+  String get visaInfoTitle => '签证信息';
+
+  @override
+  String get visaInfoSubtitle => '请注册签证信息以接收到期提醒。';
+
+  @override
+  String get profileGender => '性别';
+
+  @override
+  String get profileBio => '简介';
 }

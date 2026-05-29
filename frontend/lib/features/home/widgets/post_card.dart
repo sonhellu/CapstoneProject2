@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -392,6 +393,8 @@ class _ListCard extends StatelessWidget {
 }
 
 // ─────────────────────────── Network Image with Shimmer + Error ───────────────────────────
+// Uses CachedNetworkImage: images are stored on disk after the first download.
+// Subsequent renders (e.g. scroll back up) load instantly from cache — no network call.
 class _NetImage extends StatelessWidget {
   const _NetImage({
     required this.url,
@@ -405,56 +408,44 @@ class _NetImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.network(
-      url,
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final muted = Theme.of(context).colorScheme.outline;
+    final fill = Theme.of(context).colorScheme.surfaceContainerHighest;
+
+    return CachedNetworkImage(
+      imageUrl: url,
       width: width,
       height: height,
       fit: BoxFit.cover,
       // ── Shimmer while loading ──
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        final dark = Theme.of(context).brightness == Brightness.dark;
-        return Shimmer.fromColors(
-          baseColor: dark ? const Color(0xFF2A2A2A) : const Color(0xFFE8ECF0),
-          highlightColor:
-              dark ? const Color(0xFF3D3D3D) : const Color(0xFFF5F7FA),
-          child: Container(
-            width: width,
-            height: height,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          ),
-        );
-      },
+      placeholder: (context, _) => Shimmer.fromColors(
+        baseColor: dark ? const Color(0xFF2A2A2A) : const Color(0xFFE8ECF0),
+        highlightColor: dark ? const Color(0xFF3D3D3D) : const Color(0xFFF5F7FA),
+        child: Container(width: width, height: height, color: fill),
+      ),
       // ── Elegant error placeholder ──
-      errorBuilder: (context, error, stackTrace) {
-        final muted = Theme.of(context).colorScheme.outline;
-        final fill = Theme.of(context).colorScheme.surfaceContainerHighest;
-        return Container(
-          width: width,
-          height: height,
-          color: fill,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.image_not_supported_outlined,
-                size: (height ?? 84) * 0.35,
-                color: muted,
+      errorWidget: (context, _, err) => Container(
+        width: width,
+        height: height,
+        color: fill,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.image_not_supported_outlined,
+              size: (height ?? 84) * 0.35,
+              color: muted,
+            ),
+            if ((height ?? 0) > 60) ...[
+              const SizedBox(height: 4),
+              Text(
+                AppLocalizations.of(context)!.postNoImage,
+                style: GoogleFonts.notoSansKr(fontSize: 10, color: muted),
               ),
-              if ((height ?? 0) > 60) ...[
-                const SizedBox(height: 4),
-                Text(
-                  AppLocalizations.of(context)!.postNoImage,
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 10,
-                    color: muted,
-                  ),
-                ),
-              ],
             ],
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 }
