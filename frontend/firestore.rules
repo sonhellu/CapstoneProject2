@@ -211,6 +211,12 @@ service cloud.firestore {
       }
     }
 
+    // ─────────────────────── /users/{uid}/visaInfo ──────────────────────────────
+
+    match /users/{userId}/visaInfo/{docId} {
+      allow read, write: if isOwner(userId);
+    }
+
     // ─────────────────────── /users/{uid}/schedule_activities ───────────────────
 
     match /users/{userId}/schedule_activities/{activityId} {
