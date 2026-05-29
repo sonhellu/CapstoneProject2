@@ -1057,25 +1057,25 @@ abstract class AppLocalizations {
   /// No description provided for @authSocialGoogleLoginDemo.
   ///
   /// In en, this message translates to:
-  /// **'Google sign-in (demo)'**
+  /// **'Sign in with Google'**
   String get authSocialGoogleLoginDemo;
 
   /// No description provided for @authSocialKakaoLoginDemo.
   ///
   /// In en, this message translates to:
-  /// **'KakaoTalk sign-in (demo)'**
+  /// **'Sign in with KakaoTalk'**
   String get authSocialKakaoLoginDemo;
 
   /// No description provided for @authSocialGoogleRegisterDemo.
   ///
   /// In en, this message translates to:
-  /// **'Google sign-up (demo)'**
+  /// **'Sign up with Google'**
   String get authSocialGoogleRegisterDemo;
 
   /// No description provided for @authSocialKakaoRegisterDemo.
   ///
   /// In en, this message translates to:
-  /// **'KakaoTalk sign-up (demo)'**
+  /// **'Sign up with KakaoTalk'**
   String get authSocialKakaoRegisterDemo;
 
   /// No description provided for @authSocialOr.
@@ -1155,6 +1155,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Only letters, numbers, . _ - are allowed'**
   String get authValidationLocalPart;
+
+  /// No description provided for @authValidationNationalityEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your nationality'**
+  String get authValidationNationalityEmpty;
+
+  /// No description provided for @authValidationNativeLanguageEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your native language'**
+  String get authValidationNativeLanguageEmpty;
+
+  /// No description provided for @authRegisterSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search…'**
+  String get authRegisterSearchHint;
+
+  /// No description provided for @authRegisterSelectPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Select…'**
+  String get authRegisterSelectPlaceholder;
 
   /// No description provided for @authTooltipShowPassword.
   ///
@@ -1917,6 +1941,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Translate'**
   String get postTranslate;
+
+  /// No description provided for @scheduleScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get scheduleScreenTitle;
+
+  /// No description provided for @scheduleTodayHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s schedule'**
+  String get scheduleTodayHeader;
+
+  /// No description provided for @scheduleViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get scheduleViewAll;
+
+  /// No description provided for @scheduleNoActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities for this day'**
+  String get scheduleNoActivities;
+
+  /// No description provided for @scheduleNoActivitiesToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing scheduled today — tap View all to add one.'**
+  String get scheduleNoActivitiesToday;
+
+  /// No description provided for @scheduleAddActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Add activity'**
+  String get scheduleAddActivity;
+
+  /// No description provided for @scheduleEditActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit activity'**
+  String get scheduleEditActivity;
+
+  /// No description provided for @scheduleTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get scheduleTitleLabel;
+
+  /// No description provided for @scheduleLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get scheduleLocationLabel;
+
+  /// No description provided for @scheduleStartTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get scheduleStartTime;
+
+  /// No description provided for @scheduleEndTime.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get scheduleEndTime;
+
+  /// No description provided for @scheduleSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get scheduleSave;
+
+  /// No description provided for @scheduleEmojiLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get scheduleEmojiLabel;
+
+  /// No description provided for @scheduleColorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get scheduleColorLabel;
+
+  /// No description provided for @scheduleTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a title.'**
+  String get scheduleTitleRequired;
+
+  /// No description provided for @scheduleEndAfterStart.
+  ///
+  /// In en, this message translates to:
+  /// **'End time must be after start time.'**
+  String get scheduleEndAfterStart;
+
+  /// No description provided for @scheduleNotesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get scheduleNotesLabel;
+
+  /// No description provided for @scheduleDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get scheduleDelete;
+
+  /// No description provided for @scheduleDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete activity?'**
+  String get scheduleDeleteConfirmTitle;
+
+  /// No description provided for @scheduleDeleteConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This activity will be permanently removed.'**
+  String get scheduleDeleteConfirmMessage;
+
+  /// No description provided for @scheduleGoToToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get scheduleGoToToday;
+
+  /// No description provided for @scheduleDeleteCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get scheduleDeleteCancel;
+
+  /// No description provided for @uniWebTranslateUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation unavailable'**
+  String get uniWebTranslateUnavailableTitle;
+
+  /// No description provided for @uniWebTranslateUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This site\'s security policy (CSP) blocks translation. Open in browser to translate.'**
+  String get uniWebTranslateUnavailableBody;
+
+  /// No description provided for @uniWebOpenInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get uniWebOpenInBrowser;
+
+  /// No description provided for @visaInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa Information'**
+  String get visaInfoTitle;
+
+  /// No description provided for @visaInfoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Register your visa details to receive expiry alerts.'**
+  String get visaInfoSubtitle;
+
+  /// No description provided for @profileGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get profileGender;
+
+  /// No description provided for @profileBio.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get profileBio;
 }
 
 class _AppLocalizationsDelegate

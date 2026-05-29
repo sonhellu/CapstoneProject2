@@ -1,25 +1,21 @@
 {
   "@@locale": "zh",
-
   "appTitle": "Capstone",
   "homeTitle": "首页",
   "counterLabel": "您已按下按钮的次数：",
   "incrementTooltip": "增加",
   "languagePickerTooltip": "语言",
   "languageSheetTitle": "选择语言",
-
   "navHome": "首页",
   "navMap": "地图",
   "navCommunity": "社区",
   "navMyPage": "我的",
-
   "mapSearchHere": "搜索此处",
   "mapMyLocation": "我的位置",
   "mapPinSpot": "标记此地",
   "mapGetDirections": "获取路线",
   "mapDirections": "导航",
   "mapPinSaved": "已收藏",
-
   "btnConfirm": "确认",
   "btnCancel": "取消",
   "btnSave": "保存",
@@ -28,60 +24,61 @@
   "btnClose": "关闭",
   "btnNext": "下一步",
   "btnBack": "返回",
-
   "filterAll": "全部",
   "filterRestaurants": "餐厅",
   "filterRealEstate": "房产",
   "filterConvenience": "便利店",
   "filterAtm": "ATM",
   "filterPharmacy": "药店",
-
   "statusLoadingMap": "地图加载中…",
   "statusLocating": "定位中…",
   "statusPermissionDenied": "权限被拒绝",
   "statusEnableGps": "请开启GPS",
-
   "foodMenu": "菜单",
   "foodPrice": "价格",
   "foodHours": "营业时间",
   "foodHalal": "清真",
   "foodVeggie": "素食",
   "foodAuthentic": "正宗",
-
   "housingRent": "月租",
   "housingDeposit": "押金",
   "housingFee": "管理费",
   "housingNoDeposit": "免押金",
   "housingStationNearby": "近地铁",
-
   "actionCall": "拨打",
   "actionMessage": "发消息",
   "actionReview": "评价",
   "actionShare": "分享",
   "actionPhoto": "照片",
-
   "distanceAway": "距此{distance}",
   "@distanceAway": {
-    "placeholders": { "distance": { "type": "String", "example": "500m" } }
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "500m"
+      }
+    }
   },
   "minWalk": "步行{time}分钟",
   "@minWalk": {
-    "placeholders": { "time": { "type": "String", "example": "5" } }
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "5"
+      }
+    }
   },
-
   "alertEnterName": "请输入姓名",
   "alertWrongPhone": "号码有误",
   "alertNotFound": "未找到",
   "alertTryAgain": "请重试",
   "alertLoginFirst": "请先登录",
-
   "profileMyProfile": "我的主页",
   "profileEdit": "编辑资料",
   "profileMyPosts": "我的帖子",
   "profileSavedPlaces": "收藏地点",
   "profileLogout": "退出登录",
   "profileDeleteAccount": "注销账号",
-
   "chatMessages": "消息",
   "chatTyping": "正在输入…",
   "chatSent": "已发送",
@@ -89,14 +86,12 @@
   "chatRead": "已读",
   "chatCall": "通话",
   "chatStartConversation": "开始聊天吧",
-
   "communityPostStory": "发布动态",
   "communityWhatsOnMind": "你在想什么？",
   "communityPublic": "公开",
   "communityPrivate": "仅自己",
   "communityAnonymous": "匿名",
   "communityReport": "举报",
-
   "settingsLanguage": "语言",
   "settingsNotifications": "通知",
   "settingsDarkMode": "深色模式",
@@ -104,22 +99,29 @@
   "settingsPrivacy": "隐私政策",
   "settingsHelp": "帮助中心",
   "settingsVersion": "版本",
-
   "timeJustNow": "刚刚",
   "timeMinAgo": "{count, plural, other{{count}分钟前}}",
   "@timeMinAgo": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "timeHourAgo": "{count, plural, other{{count}小时前}}",
   "@timeHourAgo": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "timeYesterday": "昨天",
-
   "homeViewAll": "查看全部",
   "homeIntlNews": "国际资讯 🌏",
   "homeCampusLife": "校园生活 🇰🇷",
-
   "profilePersonalInfo": "个人信息",
   "profileEditInfo": "编辑信息",
   "profileNativeLang": "母语",
@@ -131,17 +133,20 @@
   "profileVerified": "已认证",
   "profileLogoutConfirm": "确定要退出登录吗？",
   "profileSaveChanges": "保存更改",
-
   "communityBoardTitle": "社区公告板",
   "communitySearchHint": "搜索帖子、作者…",
   "communityPostCount": "{count, plural, other{{count}篇帖子}}",
   "@communityPostCount": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "communitySortRecent": "最新",
   "communitySortPopular": "热门",
   "communityNoPosts": "未找到帖子",
-
   "createPostNew": "新帖子",
   "createPostCategory": "分类",
   "createPostTitleLabel": "标题",
@@ -154,7 +159,6 @@
   "createPostGallery": "相册",
   "createPostCamera": "拍照",
   "createPostPublish": "发布",
-
   "postCopied": "已复制到剪贴板",
   "postFollow": "关注",
   "postFollowing": "已关注",
@@ -173,7 +177,6 @@
   "reviewTimeUnitMinute": "分钟",
   "reviewTimeUnitHour": "小时",
   "reviewTimeUnitDay": "天",
-
   "authHeaderTitle": "你好，留学生！",
   "authHeaderSubtitle": "一起开启你的全球学习之旅。",
   "authLoginTitle": "登录",
@@ -195,10 +198,10 @@
   "authHintNameExample": "张三",
   "authButtonLogin": "登录",
   "authButtonRegister": "创建账号",
-  "authSocialGoogleLoginDemo": "Google 登录（演示）",
-  "authSocialKakaoLoginDemo": "KakaoTalk 登录（演示）",
-  "authSocialGoogleRegisterDemo": "Google 注册（演示）",
-  "authSocialKakaoRegisterDemo": "KakaoTalk 注册（演示）",
+  "authSocialGoogleLoginDemo": "Google 登录",
+  "authSocialKakaoLoginDemo": "KakaoTalk 登录",
+  "authSocialGoogleRegisterDemo": "Google 注册",
+  "authSocialKakaoRegisterDemo": "KakaoTalk 注册",
   "authSocialOr": "或",
   "authSocialContinueGoogle": "使用 Google 继续",
   "authSocialKakaoLabel": "KakaoTalk ID",
@@ -211,12 +214,14 @@
   "authValidationConfirmEmpty": "请确认密码",
   "authValidationUniversityEmail": "请使用合作大学的 .ac.kr 邮箱",
   "authValidationLocalPart": "只能使用字母、数字、. _ -",
-  "authValidationConfirmMismatch":"两次密码不一致",
+  "authValidationNationalityEmpty": "请选择国籍",
+  "authValidationNativeLanguageEmpty": "请选择母语",
+  "authRegisterSearchHint": "搜索…",
+  "authRegisterSelectPlaceholder": "选择…",
+  "authValidationConfirmMismatch": "两次密码不一致",
   "authTooltipShowPassword": "显示密码",
   "authTooltipHidePassword": "隐藏密码",
-
   "languageSheetSubtitle": "选择你偏好的应用显示语言",
-
   "mapPinFormTitle": "标记地点",
   "mapPinSectionVisibility": "可见范围",
   "mapPinSectionType": "地点类型",
@@ -248,14 +253,18 @@
   "mapSdkInitializing": "正在初始化 Naver 地图 SDK…",
   "mapSdkError": "错误：{error}",
   "@mapSdkError": {
-    "placeholders": { "error": { "type": "String", "example": "network" } }
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network"
+      }
+    }
   },
   "mapPinInfoPublicShort": "公开",
   "pinTypeRestaurant": "美食",
   "pinTypeRealEstate": "房源",
   "pinTypeUtility": "其他设施",
   "pinTypePharmacy": "药店",
-
   "partnerSearchTitle": "语言伙伴",
   "partnerGenderAny": "不限",
   "partnerGenderMale": "男",
@@ -274,7 +283,6 @@
   "partnerRequestIncomingPending": "对方已向您发送请求。请打开“聊天”标签接受。",
   "partnerRequestAlreadyAccepted": "你们已连接。",
   "partnerRequestFailed": "无法发送请求，请重试。",
-
   "chatSearchConversations": "搜索会话…",
   "chatEmptyTitle": "暂无会话",
   "chatEmptySubtitle": "寻找语言伙伴开始聊天吧！",
@@ -303,8 +311,6 @@
   "chatReconnectSuccess": "Connection restored.",
   "chatShareLocation": "分享位置",
   "chatOpenInMap": "在地图中查看",
-
-
   "authSuccessLogin": "欢迎回来！",
   "authSuccessRegister": "注册成功！请验证您的电子邮件。",
   "authErrInvalidCredential": "电子邮件或密码不正确",
@@ -316,25 +322,34 @@
   "authErrWeakPassword": "密码太弱（最少6个字符）",
   "authErrDefault": "验证失败：{message}",
   "@authErrDefault": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
-
   "verifyEmailTitle": "请查看您的收件箱",
   "verifyEmailSubtitle": "我们已向 {email} 发送了验证链接，请点击链接激活您的账户。",
   "@verifyEmailSubtitle": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "verifyEmailCheckButton": "我已验证",
   "verifyEmailResendButton": "重新发送邮件",
   "verifyEmailResendSent": "验证邮件已发送！",
   "verifyEmailResendCooldown": "{seconds}秒后重新发送",
   "@verifyEmailResendCooldown": {
-    "placeholders": { "seconds": { "type": "int" } }
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
-
   "authSuccessVerified": "邮箱已验证！请登录。",
   "verifyEmailNotYet": "邮箱尚未验证，请检查您的收件箱。",
-
   "errorChatRequestNotFound": "此请求已不存在。",
   "errorChatRequestNotPending": "此请求已被处理。",
   "errorTransactionAborted": "连接繁忙 — 请重试。",
@@ -343,16 +358,22 @@
   "errorNotFound": "未找到请求的内容。",
   "errorDataConflict": "数据冲突，请刷新后重试。",
   "errorUnexpected": "发生意外错误，请重试。",
-
   "mapDistanceFromYouMeters": "距您{meters}m",
   "@mapDistanceFromYouMeters": {
-    "placeholders": { "meters": { "type": "int" } }
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
   },
   "mapDistanceFromYouKilometers": "距您{km}km",
   "@mapDistanceFromYouKilometers": {
-    "placeholders": { "km": { "type": "String" } }
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
   },
-
   "postMenuEdit": "编辑",
   "postMenuDelete": "删除",
   "postUpdateSuccess": "帖子已更新",
@@ -367,5 +388,34 @@
   "postDeleteConfirm": "删除",
   "postTranslating": "翻译中…",
   "postShowOriginal": "显示原文",
-  "postTranslate": "翻译"
+  "postTranslate": "翻译",
+  "scheduleScreenTitle": "日程",
+  "scheduleTodayHeader": "今日日程",
+  "scheduleViewAll": "查看全部",
+  "scheduleNoActivities": "当天没有活动",
+  "scheduleNoActivitiesToday": "今天没有安排，可在查看全部中添加。",
+  "scheduleAddActivity": "添加活动",
+  "scheduleEditActivity": "编辑活动",
+  "scheduleTitleLabel": "标题",
+  "scheduleLocationLabel": "地点",
+  "scheduleStartTime": "开始",
+  "scheduleEndTime": "结束",
+  "scheduleSave": "保存",
+  "scheduleEmojiLabel": "图标",
+  "scheduleColorLabel": "颜色",
+  "scheduleTitleRequired": "请输入标题。",
+  "scheduleEndAfterStart": "结束时间必须晚于开始时间。",
+  "scheduleNotesLabel": "备注",
+  "scheduleDelete": "删除",
+  "scheduleDeleteConfirmTitle": "删除活动?",
+  "scheduleDeleteConfirmMessage": "该活动将被永久删除。",
+  "scheduleGoToToday": "今天",
+  "scheduleDeleteCancel": "取消",
+  "uniWebTranslateUnavailableTitle": "无法翻译",
+  "uniWebTranslateUnavailableBody": "该网站的安全策略(CSP)阻止了翻译功能。请在浏览器中打开以使用翻译。",
+  "uniWebOpenInBrowser": "在浏览器中打开",
+  "visaInfoTitle": "签证信息",
+  "visaInfoSubtitle": "请注册签证信息以接收到期提醒。",
+  "profileGender": "性别",
+  "profileBio": "简介"
 }

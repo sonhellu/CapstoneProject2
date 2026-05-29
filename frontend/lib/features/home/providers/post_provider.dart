@@ -1,22 +1,20 @@
 import 'package:flutter/foundation.dart';
 
 import '../models/post.dart';
-import '../services/mock_post_service.dart';
+import '../services/post_api_service.dart';
 
-/// Single source of truth for the community post feed.
-///
-/// [isLoading] is true briefly on cold start so list UIs can show shimmer.
-/// Backed by [MockPostService] today; swap for remote API when ready.
 class PostProvider extends ChangeNotifier {
   PostProvider() {
     _bootstrap();
   }
 
   bool _loading = true;
+  String? _error;
   final List<Post> _posts = [];
+  final Map<String, List<CommentData>> _commentsMap = {};
 
   bool get isLoading => _loading;
-
+  String? get error => _error;
   List<Post> get posts => List.unmodifiable(_posts);
 
   Post? getById(String id) {
@@ -27,19 +25,62 @@ class PostProvider extends ChangeNotifier {
     }
   }
 
+  List<CommentData> commentsFor(String postId) =>
+      List.unmodifiable(_commentsMap[postId] ?? []);
+
   Future<void> _bootstrap() async {
-    await Future<void>.delayed(const Duration(milliseconds: 420));
-    _posts
-      ..clear()
-      ..addAll(List<Post>.from(mockPosts));
-    _loading = false;
-    notifyListeners();
+    try {
+      final fetched = await PostApiService.instance.fetchPosts();
+      _posts
+        ..clear()
+        ..addAll(fetched);
+    } catch (_) {
+      // Fallback to mock data when backend is unreachable
+      _posts
+        ..clear()
+        ..addAll(List<Post>.from(mockPosts));
+      _seedComments();
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
+  }
+
+  void _seedComments() {
+    _commentsMap['p1'] = [
+      CommentData(id: 'c1_1', authorName: 'Tanaka Yuki', avatarInitial: 'T', text: 'Really helpful! Thanks for sharing 🙏', time: '1h ago'),
+      CommentData(id: 'c1_2', authorName: 'Ahmed Hassan', avatarInitial: 'A', text: 'I wish I had this guide when I first came here...', time: '3h ago'),
+    ];
+    _commentsMap['p2'] = [
+      CommentData(id: 'c2_1', authorName: 'Linh Pham', avatarInitial: 'L', text: 'Thank you so much! This is exactly what I needed.', time: '2h ago'),
+    ];
+  }
+
+  Future<void> loadComments(String postId) async {
+    if (_commentsMap.containsKey(postId)) return;
+    try {
+      final comments = await PostApiService.instance.fetchComments(postId);
+      _commentsMap[postId] = comments;
+      notifyListeners();
+    } catch (_) {
+      _commentsMap[postId] = [];
+    }
   }
 
   Future<void> addPost(Post post) async {
-    final saved = await MockPostService.instance.createPost(post);
-    _posts.insert(0, saved);
+    // Add locally immediately so UI updates without waiting for API
+    _posts.insert(0, post);
     notifyListeners();
+
+    // Sync to backend in background — failures are silent
+    try {
+      final saved = await PostApiService.instance.createPost(post);
+      final idx = _posts.indexWhere((p) => p.id == post.id);
+      if (idx != -1 && saved.id != post.id) {
+        _posts[idx] = saved;
+        notifyListeners();
+      }
+    } catch (_) {}
   }
 
   Future<void> updatePost(
@@ -55,7 +96,7 @@ class PostProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await MockPostService.instance.deletePost('__noop__');
+      await PostApiService.instance.updatePost(id, title: title, content: content);
     } catch (_) {
       _posts[idx] = previous;
       notifyListeners();
@@ -64,9 +105,37 @@ class PostProvider extends ChangeNotifier {
   }
 
   Future<void> deletePost(String id) async {
-    await MockPostService.instance.deletePost(id);
     _posts.removeWhere((p) => p.id == id);
     notifyListeners();
+    try {
+      await PostApiService.instance.deletePost(id);
+    } catch (_) {}
+  }
+
+  Future<void> addComment(
+    String postId,
+    CommentData comment, {
+    String authorName = 'You',
+    String avatarInitial = 'Y',
+  }) async {
+    final current = List<CommentData>.from(_commentsMap[postId] ?? []);
+    current.insert(0, comment);
+    _commentsMap[postId] = current;
+
+    final idx = _posts.indexWhere((p) => p.id == postId);
+    if (idx != -1) {
+      _posts[idx] = _posts[idx].copyWith(comments: current.length);
+    }
+    notifyListeners();
+
+    try {
+      await PostApiService.instance.addComment(
+        postId,
+        comment.text,
+        authorName: authorName,
+        avatarInitial: avatarInitial,
+      );
+    } catch (_) {}
   }
 
   void toggleLike(String id) {

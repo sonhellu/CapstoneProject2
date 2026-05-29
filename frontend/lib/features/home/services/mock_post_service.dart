@@ -17,18 +17,14 @@ class MockPostService {
     return post; // server would return the saved object with a real id
   }
 
-  /// Overwrites the [title] and/or [content] of an existing post.
-  Future<Post> updatePost(
+  /// Simulates a PATCH /posts request.
+  Future<void> updatePost(
     String id, {
     required String title,
     required String content,
   }) async {
     await Future<void>.delayed(_kDelay);
     // In production: PATCH /api/posts/{id}  { title, content }
-    throw UnimplementedError(
-      'Server response not available in mock mode — '
-      'PostProvider handles the list update locally.',
-    );
   }
 
   /// Removes the post with [id] from the "server".

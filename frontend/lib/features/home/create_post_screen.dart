@@ -1,9 +1,17 @@
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/providers/auth_provider.dart';
+import 'models/post.dart';
+import 'providers/post_provider.dart';
 
 const Color _kWarningOrange = Color(0xFFE65100);
 
@@ -11,7 +19,7 @@ const Color _kWarningOrange = Color(0xFFE65100);
 abstract final class _Cfg {
   static const titleMax   = 100;
   static const contentMax = 2000;
-  static const maxPhotos  = 5;
+  static const maxPhotos  = 1;
 
   static const categories = [
     'International 🌏',
@@ -50,10 +58,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final _titleFocus   = FocusNode();
   final _contentFocus = FocusNode();
 
-  String _category     = _Cfg.categories[0];
-  String _language     = 'Vietnamese';
-  bool   _isPublishing = false;
-  int    _photoCount   = 0;
+  String _category = _Cfg.categories[0];
+  String _language = 'Vietnamese';
+  final List<XFile> _images = [];
+  bool _isPublishing = false;
 
   // Only the Publish button + CharCounter rebuild on text change.
   late final ValueNotifier<bool> _canPublish;
@@ -89,25 +97,96 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Future<void> _publish() async {
-    if (!_canPublish.value) return;
+    if (!_canPublish.value || _isPublishing) return;
     HapticFeedback.mediumImpact();
     setState(() => _isPublishing = true);
-    await Future<void>.delayed(const Duration(milliseconds: 1200));
-    if (!mounted) return;
-    setState(() => _isPublishing = false);
-    Navigator.of(context).pop();
+
+    try {
+      final auth = context.read<AuthProvider>();
+      final uid = auth.uid ?? 'anon';
+      final authorName = auth.displayName?.trim().isNotEmpty == true
+          ? auth.displayName!.trim()
+          : 'Demo User';
+
+      // Upload picked images to Firebase Storage.
+      final imageUrls = await _uploadImages(uid);
+
+      if (!mounted) return;
+
+      final post = Post(
+        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
+        title: _titleCtrl.text.trim(),
+        content: _contentCtrl.text.trim(),
+        author: PostAuthor(
+          name: authorName,
+          school: auth.school ?? 'Keimyung University',
+          major: 'International Student',
+          avatarInitial: authorName.characters.first.toUpperCase(),
+        ),
+        time: 'Just now',
+        category: _normalizeCategory(_category),
+        images: imageUrls,
+        language: _normalizeLanguage(_language),
+        likes: 0,
+        comments: 0,
+        userId: uid,
+      );
+
+      context.read<PostProvider>().addPost(post);
+      if (mounted) Navigator.of(context).pop();
+    } catch (_) {
+      if (mounted) setState(() => _isPublishing = false);
+    }
   }
 
-  void _addPhoto() {
-    if (_photoCount >= _Cfg.maxPhotos) return;
-    HapticFeedback.lightImpact();
-    setState(() => _photoCount++);
+  Future<List<String>> _uploadImages(String uid) async {
+    if (_images.isEmpty) return const [];
+    final storage = FirebaseStorage.instance;
+    final ts = DateTime.now().millisecondsSinceEpoch;
+    final urls = <String>[];
+    for (var i = 0; i < _images.length; i++) {
+      final ref = storage.ref('posts/$uid/${ts}_$i.jpg');
+      await ref.putFile(
+        File(_images[i].path),
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+      urls.add(await ref.getDownloadURL());
+    }
+    return urls;
   }
 
-  void _removePhoto() {
-    if (_photoCount <= 0) return;
+  String _normalizeCategory(String category) => switch (category) {
+        'International 🌏' => 'International',
+        'Campus 🇰🇷' => 'Campus',
+        'Scholarship 🎓' => 'Scholarship',
+        'Housing 🏠' => 'Housing',
+        'Academic 📚' => 'Academic',
+        'Lost & Found 🔍' => 'Campus',
+        _ => 'Campus',
+      };
+
+  String _normalizeLanguage(String language) => switch (language) {
+        'Korean' => 'KR',
+        'Vietnamese' => 'VN',
+        'English' => 'EN',
+        'Japanese' => 'JA',
+        'Chinese' => 'ZH',
+        'Myanmar' => 'MY',
+        _ => 'EN',
+      };
+
+  Future<void> _pickImage(ImageSource source) async {
+    if (_images.length >= _Cfg.maxPhotos) return;
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: source, imageQuality: 85);
+    if (file == null) return;
     HapticFeedback.lightImpact();
-    setState(() => _photoCount--);
+    setState(() => _images.add(file));
+  }
+
+  void _removeImage(int index) {
+    HapticFeedback.lightImpact();
+    setState(() => _images.removeAt(index));
   }
 
   void _openLanguagePicker() {
@@ -215,9 +294,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       // bottomNavigationBar is automatically pushed above the keyboard
       // when resizeToAvoidBottomInset: true — no custom animation needed.
       bottomNavigationBar: _BottomBar(
-        canAddPhoto: _photoCount < _Cfg.maxPhotos,
-        onGallery: _addPhoto,
-        onCamera: _addPhoto,
+        canAddPhoto: _images.length < _Cfg.maxPhotos,
+        onGallery: () => _pickImage(ImageSource.gallery),
+        onCamera: () => _pickImage(ImageSource.camera),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
@@ -307,7 +386,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           const SizedBox(height: 20),
 
           // ── Photos ──
-          _Label('${l.createPostPhotos}  ($_photoCount/${_Cfg.maxPhotos})'),
+          _Label('${l.createPostPhotos}  (${_images.length}/${_Cfg.maxPhotos})'),
           const SizedBox(height: 10),
           _buildPhotoWrap(),
           const SizedBox(height: 32),
@@ -364,79 +443,63 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       spacing: 10,
       runSpacing: 10,
       children: [
-        if (_photoCount < _Cfg.maxPhotos)
+        ...List.generate(_images.length, (i) => Stack(
+          clipBehavior: Clip.none,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Image.file(
+                File(_images[i].path),
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              top: -6,
+              right: -6,
+              child: GestureDetector(
+                onTap: () => _removeImage(i),
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.error,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.close_rounded,
+                      size: 13,
+                      color: Theme.of(context).colorScheme.onError),
+                ),
+              ),
+            ),
+          ],
+        )),
+        if (_images.length < _Cfg.maxPhotos)
           GestureDetector(
-            onTap: _addPhoto,
+            onTap: () => _pickImage(ImageSource.gallery),
             child: Container(
               width: 80,
               height: 80,
               decoration: BoxDecoration(
                 color: context.cardFill,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: p.withValues(alpha: 0.35),
-                  width: 1.5,
-                ),
+                border: Border.all(color: p.withValues(alpha: 0.35), width: 1.5),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.add_photo_alternate_outlined,
-                      color: p, size: 26),
+                  Icon(Icons.add_photo_alternate_outlined, color: p, size: 26),
                   const SizedBox(height: 4),
                   Text(
                     AppLocalizations.of(context)!.createPostAddPhoto,
                     style: GoogleFonts.notoSansKr(
-                      fontSize: 10,
-                      color: p,
-                      fontWeight: FontWeight.w700,
-                    ),
+                        fontSize: 10, color: p, fontWeight: FontWeight.w700),
                   ),
                 ],
               ),
             ),
           ),
-        ...List.generate(
-          _photoCount,
-          (_) => Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: p.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: p.withValues(alpha: 0.15)),
-                ),
-                child: Icon(
-                  Icons.image_rounded,
-                  color: p.withValues(alpha: 0.4),
-                  size: 32,
-                ),
-              ),
-              Positioned(
-                top: -6,
-                right: -6,
-                child: GestureDetector(
-                  onTap: _removePhoto,
-                  child: Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.close_rounded,
-                        size: 13,
-                        color: Theme.of(context).colorScheme.onError),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }

@@ -82,6 +82,53 @@ class UserPinModel {
   /// Human-readable label shown on the marker caption.
   String get markerCaption => '${type.emoji} $name';
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'lat': latLng.latitude,
+    'lng': latLng.longitude,
+    'name': name,
+    'notes': notes,
+    'type': type.name,
+    'isPublic': isPublic,
+    'rating': rating,
+    'createdAt': createdAt.millisecondsSinceEpoch,
+    'authorId': authorId,
+    'authorName': authorName,
+    'isVerified': isVerified,
+    'reviewCount': reviewCount,
+    'addressKorean': addressKorean,
+    'addressLocalized': addressLocalized,
+  };
+
+  factory UserPinModel.fromJson(Map<String, dynamic> json) {
+    final lat = (json['lat'] as num?)?.toDouble() ?? 0;
+    final lng = (json['lng'] as num?)?.toDouble() ?? 0;
+    final typeName = json['type'] as String?;
+    final createdAtRaw = json['createdAt'];
+
+    return UserPinModel(
+      id: json['id'] as String? ?? '',
+      latLng: NLatLng(lat, lng),
+      name: json['name'] as String? ?? '',
+      notes: json['notes'] as String? ?? '',
+      type: PinType.values.firstWhere(
+        (e) => e.name == typeName,
+        orElse: () => PinType.utility,
+      ),
+      isPublic: json['isPublic'] as bool? ?? true,
+      rating: (json['rating'] as num?)?.round().clamp(0, 5).toInt() ?? 0,
+      createdAt: createdAtRaw is int
+          ? DateTime.fromMillisecondsSinceEpoch(createdAtRaw)
+          : DateTime.now(),
+      authorId: json['authorId'] as String? ?? '',
+      authorName: json['authorName'] as String? ?? '',
+      isVerified: json['isVerified'] as bool? ?? false,
+      reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
+      addressKorean: json['addressKorean'] as String? ?? '',
+      addressLocalized: json['addressLocalized'] as String? ?? '',
+    );
+  }
+
   UserPinModel copyWith({
     String? id,
     NLatLng? latLng,

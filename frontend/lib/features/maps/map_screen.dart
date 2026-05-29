@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -16,9 +16,11 @@ import '../../core/services/geocoding_service.dart';
 import '../../core/services/place_search_service.dart';
 import '../../core/services/translation_service.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/providers/auth_provider.dart';
 import '../shell/theme/shell_theme.dart';
 import 'map_focus_controller.dart';
 import 'models/user_pin_model.dart';
+import 'repository/pin_repository.dart';
 import 'widgets/pin_bottom_sheet.dart';
 import 'widgets/review_modal.dart';
 import 'widgets/route_layer.dart';
@@ -65,15 +67,16 @@ class _MapScreenState extends State<MapScreen>
 
   /// true  → use Keimyung University coords as mock position.
   /// false → use real GPS via geolocator (set when GPS is ready).
-  static const bool _isMockLocation = true;
+  static const bool _isMockLocation = false;
 
   // ── UI state ────────────────────────────────────────────────────
   bool _isMapReady = false;
   bool _overlayVisible = true;
 
   // ── Community pins ───────────────────────────────────────────────
-  /// In-memory list of pins saved this session.
+  /// Realtime visible pins from Firestore.
   final List<UserPinModel> _pins = [];
+  StreamSubscription<List<UserPinModel>>? _pinSub;
 
   /// Live NMarker references keyed by pin.id — used for visibility toggling.
   final Map<String, NMarker> _markers = {};
@@ -117,6 +120,10 @@ class _MapScreenState extends State<MapScreen>
     });
     MapFocusController.instance.addListener(_onMapFocusRequest);
     _routeCtrl.addListener(_onRouteStateChanged);
+    _pinSub = PinRepository.instance.watchVisiblePins().listen(
+      _onPinsChanged,
+      onError: (e) => debugPrint('[Map] pin stream error: $e'),
+    );
   }
 
   @override
@@ -124,6 +131,7 @@ class _MapScreenState extends State<MapScreen>
     MapFocusController.instance.removeListener(_onMapFocusRequest);
     _routeCtrl.removeListener(_onRouteStateChanged);
     _routeCtrl.dispose();
+    _pinSub?.cancel();
     _debounce?.cancel();
     _loadingTimeout?.cancel();
     _searchCtrl.dispose();
@@ -135,6 +143,31 @@ class _MapScreenState extends State<MapScreen>
     final loc = MapFocusController.instance.consume();
     if (loc == null) return;
     _flyToPosition(NLatLng(loc.lat, loc.lng));
+  }
+
+  Future<void> _onPinsChanged(List<UserPinModel> pins) async {
+    if (!mounted) return;
+    setState(() {
+      _pins
+        ..clear()
+        ..addAll(pins);
+    });
+    _refreshSearchResults();
+    if (_isMapReady) {
+      await _rebuildPinMarkers();
+    }
+  }
+
+  Future<void> _rebuildPinMarkers() async {
+    final ctrl = _mapCtrl;
+    if (ctrl == null) return;
+
+    for (final id in _markers.keys.toList()) {
+      await ctrl.deleteOverlay(NOverlayInfo(type: NOverlayType.marker, id: id));
+    }
+    _markers.clear();
+    await Future.wait(_pins.map(_addMarkerForPin));
+    await _updateVisibleMarkers(_selectedFilter);
   }
 
   // ────────────────────────────────────────────────────────────────
@@ -164,7 +197,7 @@ class _MapScreenState extends State<MapScreen>
 
   /// Called on every keystroke — debounces Naver API, filters local pins immediately.
   void _onSearch(String query) {
-    debugPrint('[Map] search: "$query"');
+    if (kDebugMode) debugPrint('[Map] search: "$query"');
     setState(() => _searchActive = query.isNotEmpty);
     _refreshSearchResults();
 
@@ -398,7 +431,7 @@ class _MapScreenState extends State<MapScreen>
       _applyLocationOverlay(target);
       await _flyToPosition(target);
     } catch (e) {
-      debugPrint('[Map] Location error: $e');
+      if (kDebugMode) debugPrint('[Map] Location error: $e');
     } finally {
       if (mounted) setState(() => _isLocating = false);
       _maybeDismissOverlay();
@@ -444,12 +477,12 @@ class _MapScreenState extends State<MapScreen>
     final s = _routeCtrl.state;
     if (s.isSuccess) {
       drawRouteOnMap(ctrl, s.result!).catchError((e) {
-        debugPrint('[Route] drawRouteOnMap error: $e');
+        if (kDebugMode) debugPrint('[Route] drawRouteOnMap error: $e');
       });
     }
     if (s.isIdle) {
       clearRouteFromMap(ctrl).catchError((e) {
-        debugPrint('[Route] clearRouteFromMap error: $e');
+        if (kDebugMode) debugPrint('[Route] clearRouteFromMap error: $e');
       });
     }
     if (mounted) setState(() {});
@@ -531,8 +564,11 @@ class _MapScreenState extends State<MapScreen>
     );
     if (pin == null || !mounted) return;
 
-    // Add marker immediately (optimistic), then show success toast.
-    setState(() => _pins.add(pin));
+    // Add marker immediately (optimistic); Firestore stream will reconcile.
+    setState(() {
+      _pins.removeWhere((p) => p.id == pin.id);
+      _pins.insert(0, pin);
+    });
     await _addMarkerForPin(pin);
     _showSuccessToast(pin);
   }
@@ -541,6 +577,14 @@ class _MapScreenState extends State<MapScreen>
   Future<void> _addMarkerForPin(UserPinModel pin) async {
     final ctrl = _mapCtrl;
     if (ctrl == null) return;
+
+    if (_markers.containsKey(pin.id)) {
+      await ctrl.deleteOverlay(
+        NOverlayInfo(type: NOverlayType.marker, id: pin.id),
+      );
+      _markers.remove(pin.id);
+    }
+    if (!mounted) return;
 
     final marker = NMarker(id: pin.id, position: pin.latLng);
 
@@ -659,7 +703,7 @@ class _MapScreenState extends State<MapScreen>
 
   void _showPinInfoSheet(UserPinModel pin) {
     final parentCtx = context;
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final currentUserId = context.read<AuthProvider>().uid ?? '';
     final isOwner = pin.authorId == currentUserId || pin.authorId.isEmpty;
 
     showModalBottomSheet<void>(
@@ -702,14 +746,19 @@ class _MapScreenState extends State<MapScreen>
   }
 
   Future<void> _deletePin(UserPinModel pin) async {
-    // Complete map work before updating Flutter state so UI and map stay in sync.
-    await _mapCtrl?.deleteOverlay(
-      NOverlayInfo(type: NOverlayType.marker, id: pin.id),
-    );
-    _markers.remove(pin.id);
-    if (!mounted) return;
-    setState(() => _pins.removeWhere((p) => p.id == pin.id));
-    _showSnack(AppLocalizations.of(context)!.mapPinDeletedToast);
+    try {
+      await PinRepository.instance.deletePin(pin.id);
+      await _mapCtrl?.deleteOverlay(
+        NOverlayInfo(type: NOverlayType.marker, id: pin.id),
+      );
+      _markers.remove(pin.id);
+      if (!mounted) return;
+      setState(() => _pins.removeWhere((p) => p.id == pin.id));
+      _showSnack(AppLocalizations.of(context)!.mapPinDeletedToast);
+    } catch (e) {
+      if (kDebugMode) debugPrint('[Map] delete pin failed: $e');
+      _showSnack(AppLocalizations.of(context)!.mapPinSaveFail);
+    }
   }
 
   Future<void> _updatePin(UserPinModel old, UserPinModel updated) async {
@@ -790,42 +839,6 @@ class _MapScreenState extends State<MapScreen>
               if (!mounted) return;
               setState(() => _isMapReady = true);
               await _goToCurrentLocation();
-
-              // ── TEST ONLY: remove before production ──
-              _pins.add(
-                UserPinModel(
-                  id: '',
-                  latLng: NLatLng(37.5560, 126.9723),
-                  name: 'Phở Hà Nội Ngon',
-                  notes: 'Quán ngon, giá rẻ, gần ga Seoul. Nên đến buổi trưa.',
-                  type: PinType.restaurant,
-                  isPublic: true,
-                  rating: 4,
-                  createdAt: DateTime(2025, 1, 1),
-                  authorId: 'other_user',
-                  authorName: 'kim_seoul',
-                  isVerified: true,
-                  reviewCount: 42,
-                ),
-              ); // 2. Cây ATM Global (Hỗ trợ thẻ Visa/Mastercard quốc tế)
-              _pins.add(
-                UserPinModel(
-                  id: 'public_atm_01',
-                  latLng: NLatLng(37.5570, 126.9260),
-                  name: 'Global pharmacy Woori Bank',
-                  notes:
-                      'Cây này rút được bằng thẻ Việt Nam, phí rẻ, có tiếng Anh.',
-                  type: PinType.pharmacy,
-                  isPublic: true,
-                  rating: 4,
-                  createdAt: DateTime(2026, 3, 20),
-                  authorId: 'admin_hicampus',
-                  authorName: 'Admin_Hicampus',
-                  isVerified: true,
-                  reviewCount: 89,
-                ),
-              );
-              // ─────────────────────────────────────────
 
               // Restore any pins that were saved before this onMapReady
               // (e.g. after tab switch rebuilds the platform view).
@@ -1006,7 +1019,11 @@ class _SymbolInfoSheetState extends State<_SymbolInfoSheet> {
 
     final targetLang = widget.targetLang;
 
-    if (targetLang == LangCode.ko || widget.symbol.caption.trim().isEmpty) {
+    if (!TranslationService.instance.canTranslate(
+      text: widget.symbol.caption,
+      from: LangCode.ko,
+      to: targetLang,
+    )) {
       _translationFuture = Future.value(widget.symbol.caption);
     } else {
       _translationFuture = TranslationService.instance.translateText(
@@ -1901,6 +1918,7 @@ class _PinInfoSheet extends StatelessWidget {
                   pin: pin,
                   onEditTap: onEditTap,
                   onConfirmDelete: () => _confirmDelete(context),
+                  onDirections: onDirections,
                   userPosition: userPosition,
                 )
               else
@@ -1928,11 +1946,13 @@ class _OwnerView extends StatelessWidget {
     required this.pin,
     required this.onEditTap,
     required this.onConfirmDelete,
+    required this.onDirections,
     this.userPosition,
   });
   final UserPinModel pin;
   final VoidCallback onEditTap;
   final VoidCallback onConfirmDelete;
+  final VoidCallback onDirections;
   final NLatLng? userPosition;
 
   @override
@@ -1972,6 +1992,15 @@ class _OwnerView extends StatelessWidget {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 10),
+        _InfoSheetButton(
+          label: l.mapDirections,
+          icon: Icons.directions_rounded,
+          backgroundColor: const Color(0xFF003478),
+          foregroundColor: Colors.white,
+          onTap: onDirections,
+          fullWidth: true,
         ),
       ],
     );
@@ -2170,7 +2199,8 @@ class _PublicView extends StatelessWidget {
 
         // ── Stars + review count (tap → open review modal) ──
         GestureDetector(
-          onTap: () => showReviewModal(context, pinName: pin.name),
+          onTap: () =>
+              showReviewModal(context, pinId: pin.id, pinName: pin.name),
           child: Row(
             children: [
               ...List.generate(
@@ -2352,43 +2382,100 @@ class _NotesBox extends StatelessWidget {
   }
 }
 
-class _CoordRow extends StatelessWidget {
+class _CoordRow extends StatefulWidget {
   const _CoordRow({required this.pin, required this.l, this.userPosition});
   final UserPinModel pin;
   final AppLocalizations l;
   final NLatLng? userPosition;
 
   @override
+  State<_CoordRow> createState() => _CoordRowState();
+}
+
+class _CoordRowState extends State<_CoordRow> {
+  late Future<String> _addressFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _addressFuture = _resolveAddress();
+  }
+
+  Future<String> _resolveAddress() async {
+    // 1. Use cached localized address if already stored on the pin
+    if (widget.pin.addressLocalized.isNotEmpty) {
+      return widget.pin.addressLocalized;
+    }
+    // 2. Fall back to Korean address stored on the pin
+    if (widget.pin.addressKorean.isNotEmpty) {
+      return widget.pin.addressKorean;
+    }
+    // 3. Fetch via reverse geocoding
+    try {
+      final targetLang = AppLocaleResolver.targetLang(context);
+      final result = await GeocodingService.instance.getLocalizedAddress(
+        widget.pin.latLng.latitude,
+        widget.pin.latLng.longitude,
+        targetLang,
+      );
+      if (result.localized.isNotEmpty) return result.localized;
+      if (result.korean.isNotEmpty) return result.korean;
+    } catch (_) {}
+    // 4. Last resort: raw coordinates
+    return '${widget.pin.latLng.latitude.toStringAsFixed(5)}, '
+        '${widget.pin.latLng.longitude.toStringAsFixed(5)}';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final dist = _distanceLabel(userPosition, pin.latLng, l);
+    final dist = _distanceLabel(
+      widget.userPosition,
+      widget.pin.latLng,
+      widget.l,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Icon(
-              pin.isPublic ? Icons.public_rounded : Icons.lock_outline_rounded,
+              widget.pin.isPublic
+                  ? Icons.public_rounded
+                  : Icons.lock_outline_rounded,
               size: 14,
               color: const Color(0xFFADB5BD),
             ),
             const SizedBox(width: 4),
             Text(
-              pin.isPublic
-                  ? l.mapPinInfoPublicShort
-                  : l.mapPinVisibilityPrivate,
+              widget.pin.isPublic
+                  ? widget.l.mapPinInfoPublicShort
+                  : widget.l.mapPinVisibilityPrivate,
               style: GoogleFonts.notoSansKr(
                 fontSize: 11,
                 color: const Color(0xFFADB5BD),
               ),
             ),
             const Spacer(),
-            Text(
-              '${pin.latLng.latitude.toStringAsFixed(5)}, '
-              '${pin.latLng.longitude.toStringAsFixed(5)}',
-              style: GoogleFonts.notoSansKr(
-                fontSize: 11,
-                color: const Color(0xFFADB5BD),
-              ),
+            FutureBuilder<String>(
+              future: _addressFuture,
+              builder: (context, snap) {
+                final address =
+                    snap.data ??
+                    '${widget.pin.latLng.latitude.toStringAsFixed(5)}, '
+                        '${widget.pin.latLng.longitude.toStringAsFixed(5)}';
+                return Flexible(
+                  child: Text(
+                    address,
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 11,
+                      color: const Color(0xFFADB5BD),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                  ),
+                );
+              },
             ),
           ],
         ),

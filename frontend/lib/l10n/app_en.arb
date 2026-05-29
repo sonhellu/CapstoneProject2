@@ -1,27 +1,27 @@
 {
   "@@locale": "en",
-
   "appTitle": "Capstone",
-  "@appTitle": { "description": "Application title in task switcher" },
+  "@appTitle": {
+    "description": "Application title in task switcher"
+  },
   "homeTitle": "Home",
   "counterLabel": "You have pushed the button this many times:",
   "incrementTooltip": "Increment",
   "languagePickerTooltip": "Language",
   "languageSheetTitle": "Choose language",
-
   "navHome": "Home",
   "navMap": "Map",
   "navCommunity": "Community",
   "navMyPage": "My Page",
-
   "mapSearchHere": "Search here",
   "mapMyLocation": "My Location",
   "mapPinSpot": "Pin this spot",
   "mapGetDirections": "Get directions",
   "mapDirections": "Directions",
   "mapPinSaved": "Saved",
-  "@mapPinSaved": { "description": "Save button: already saved state" },
-
+  "@mapPinSaved": {
+    "description": "Save button: already saved state"
+  },
   "btnConfirm": "Confirm",
   "btnCancel": "Cancel",
   "btnSave": "Save",
@@ -30,288 +30,477 @@
   "btnClose": "Close",
   "btnNext": "Next",
   "btnBack": "Back",
-
   "filterAll": "All",
   "filterRestaurants": "Restaurants",
   "filterRealEstate": "Real Estate",
   "filterConvenience": "Convenience",
   "filterAtm": "ATMs",
   "filterPharmacy": "Pharmacy",
-
   "statusLoadingMap": "Loading map…",
   "statusLocating": "Locating…",
   "statusPermissionDenied": "Permission denied",
   "statusEnableGps": "Please enable GPS",
-
   "foodMenu": "Menu",
-  "@foodMenu": { "description": "Food detail: menu label" },
+  "@foodMenu": {
+    "description": "Food detail: menu label"
+  },
   "foodPrice": "Price",
-  "@foodPrice": { "description": "Food detail: price label" },
+  "@foodPrice": {
+    "description": "Food detail: price label"
+  },
   "foodHours": "Hours",
-  "@foodHours": { "description": "Food detail: opening hours" },
+  "@foodHours": {
+    "description": "Food detail: opening hours"
+  },
   "foodHalal": "Halal",
-  "@foodHalal": { "description": "Food badge: halal certified" },
+  "@foodHalal": {
+    "description": "Food badge: halal certified"
+  },
   "foodVeggie": "Veggie",
-  "@foodVeggie": { "description": "Food badge: vegetarian options" },
+  "@foodVeggie": {
+    "description": "Food badge: vegetarian options"
+  },
   "foodAuthentic": "Authentic",
-  "@foodAuthentic": { "description": "Food badge: home-country cuisine" },
-
+  "@foodAuthentic": {
+    "description": "Food badge: home-country cuisine"
+  },
   "housingRent": "Rent",
-  "@housingRent": { "description": "Housing: monthly rent (월세)" },
+  "@housingRent": {
+    "description": "Housing: monthly rent (월세)"
+  },
   "housingDeposit": "Deposit",
-  "@housingDeposit": { "description": "Housing: security deposit (보증금)" },
+  "@housingDeposit": {
+    "description": "Housing: security deposit (보증금)"
+  },
   "housingFee": "Mgmt Fee",
-  "@housingFee": { "description": "Housing: management fee (관리비)" },
+  "@housingFee": {
+    "description": "Housing: management fee (관리비)"
+  },
   "housingNoDeposit": "No Deposit",
-  "@housingNoDeposit": { "description": "Housing badge: no deposit required" },
+  "@housingNoDeposit": {
+    "description": "Housing badge: no deposit required"
+  },
   "housingStationNearby": "Near Station",
-  "@housingStationNearby": { "description": "Housing badge: close to subway" },
-
+  "@housingStationNearby": {
+    "description": "Housing badge: close to subway"
+  },
   "actionCall": "Call",
-  "@actionCall": { "description": "Action button: phone call" },
+  "@actionCall": {
+    "description": "Action button: phone call"
+  },
   "actionMessage": "Message",
-  "@actionMessage": { "description": "Action button: send message" },
+  "@actionMessage": {
+    "description": "Action button: send message"
+  },
   "actionReview": "Review",
-  "@actionReview": { "description": "Action button: write review" },
+  "@actionReview": {
+    "description": "Action button: write review"
+  },
   "actionShare": "Share",
-  "@actionShare": { "description": "Action button: share place" },
+  "@actionShare": {
+    "description": "Action button: share place"
+  },
   "actionPhoto": "Photo",
-  "@actionPhoto": { "description": "Action button: view photos" },
-
+  "@actionPhoto": {
+    "description": "Action button: view photos"
+  },
   "distanceAway": "{distance} away",
   "@distanceAway": {
     "description": "Distance from current location",
     "placeholders": {
-      "distance": { "type": "String", "example": "500m" }
+      "distance": {
+        "type": "String",
+        "example": "500m"
+      }
     }
   },
   "minWalk": "{time} min walk",
   "@minWalk": {
     "description": "Walking time",
     "placeholders": {
-      "time": { "type": "String", "example": "5" }
+      "time": {
+        "type": "String",
+        "example": "5"
+      }
     }
   },
-
   "alertEnterName": "Enter name",
-  "@alertEnterName": { "description": "Validation: name field is empty" },
+  "@alertEnterName": {
+    "description": "Validation: name field is empty"
+  },
   "alertWrongPhone": "Wrong number",
-  "@alertWrongPhone": { "description": "Validation: phone number is invalid" },
+  "@alertWrongPhone": {
+    "description": "Validation: phone number is invalid"
+  },
   "alertNotFound": "Not found",
-  "@alertNotFound": { "description": "Search result: nothing found" },
+  "@alertNotFound": {
+    "description": "Search result: nothing found"
+  },
   "alertTryAgain": "Try again",
-  "@alertTryAgain": { "description": "Generic retry prompt" },
+  "@alertTryAgain": {
+    "description": "Generic retry prompt"
+  },
   "alertLoginFirst": "Login first",
-  "@alertLoginFirst": { "description": "Auth gate: must be logged in" },
-
+  "@alertLoginFirst": {
+    "description": "Auth gate: must be logged in"
+  },
   "@@section_profile": {},
-
   "profileMyProfile": "My Profile",
-  "@profileMyProfile": { "description": "Profile screen: section title" },
+  "@profileMyProfile": {
+    "description": "Profile screen: section title"
+  },
   "profileEdit": "Edit Profile",
-  "@profileEdit": { "description": "Profile: open edit mode" },
+  "@profileEdit": {
+    "description": "Profile: open edit mode"
+  },
   "profileMyPosts": "My Posts",
-  "@profileMyPosts": { "description": "Profile: user's own posts" },
+  "@profileMyPosts": {
+    "description": "Profile: user's own posts"
+  },
   "profileSavedPlaces": "Saved Places",
-  "@profileSavedPlaces": { "description": "Profile: bookmarked map pins" },
+  "@profileSavedPlaces": {
+    "description": "Profile: bookmarked map pins"
+  },
   "profileLogout": "Logout",
-  "@profileLogout": { "description": "Profile: sign out" },
+  "@profileLogout": {
+    "description": "Profile: sign out"
+  },
   "profileDeleteAccount": "Delete Account",
-  "@profileDeleteAccount": { "description": "Profile: permanently remove account" },
-
+  "@profileDeleteAccount": {
+    "description": "Profile: permanently remove account"
+  },
   "@@section_chat": {},
-
   "chatMessages": "Messages",
-  "@chatMessages": { "description": "Chat tab / inbox title" },
+  "@chatMessages": {
+    "description": "Chat tab / inbox title"
+  },
   "chatTyping": "Typing…",
-  "@chatTyping": { "description": "Chat: other user is composing" },
+  "@chatTyping": {
+    "description": "Chat: other user is composing"
+  },
   "chatSent": "Sent",
-  "@chatSent": { "description": "Message status: sent to server" },
+  "@chatSent": {
+    "description": "Message status: sent to server"
+  },
   "chatDelivered": "Delivered",
-  "@chatDelivered": { "description": "Message status: reached recipient device" },
+  "@chatDelivered": {
+    "description": "Message status: reached recipient device"
+  },
   "chatRead": "Read",
-  "@chatRead": { "description": "Message status: opened by recipient" },
+  "@chatRead": {
+    "description": "Message status: opened by recipient"
+  },
   "chatCall": "Call",
-  "@chatCall": { "description": "Chat: voice/video call button" },
+  "@chatCall": {
+    "description": "Chat: voice/video call button"
+  },
   "chatStartConversation": "Start a conversation",
-  "@chatStartConversation": { "description": "Empty chat state prompt" },
-
+  "@chatStartConversation": {
+    "description": "Empty chat state prompt"
+  },
   "@@section_community": {},
-
   "communityPostStory": "Post a story",
-  "@communityPostStory": { "description": "Community: create a new post CTA" },
+  "@communityPostStory": {
+    "description": "Community: create a new post CTA"
+  },
   "communityWhatsOnMind": "What's on your mind?",
-  "@communityWhatsOnMind": { "description": "Community: post input placeholder" },
+  "@communityWhatsOnMind": {
+    "description": "Community: post input placeholder"
+  },
   "communityPublic": "Public",
-  "@communityPublic": { "description": "Post visibility: everyone can see" },
+  "@communityPublic": {
+    "description": "Post visibility: everyone can see"
+  },
   "communityPrivate": "Private",
-  "@communityPrivate": { "description": "Post visibility: only me" },
+  "@communityPrivate": {
+    "description": "Post visibility: only me"
+  },
   "communityAnonymous": "Anonymous",
-  "@communityAnonymous": { "description": "Post option: hide identity" },
+  "@communityAnonymous": {
+    "description": "Post option: hide identity"
+  },
   "communityReport": "Report",
-  "@communityReport": { "description": "Community: flag content" },
-
+  "@communityReport": {
+    "description": "Community: flag content"
+  },
   "@@section_settings": {},
-
   "settingsLanguage": "Language",
-  "@settingsLanguage": { "description": "Settings: language picker row" },
+  "@settingsLanguage": {
+    "description": "Settings: language picker row"
+  },
   "settingsNotifications": "Notifications",
-  "@settingsNotifications": { "description": "Settings: push notification toggle" },
+  "@settingsNotifications": {
+    "description": "Settings: push notification toggle"
+  },
   "settingsDarkMode": "Dark Mode",
-  "@settingsDarkMode": { "description": "Settings: theme toggle" },
+  "@settingsDarkMode": {
+    "description": "Settings: theme toggle"
+  },
   "settingsTerms": "Terms of Service",
-  "@settingsTerms": { "description": "Settings: ToS link" },
+  "@settingsTerms": {
+    "description": "Settings: ToS link"
+  },
   "settingsPrivacy": "Privacy Policy",
-  "@settingsPrivacy": { "description": "Settings: privacy policy link" },
+  "@settingsPrivacy": {
+    "description": "Settings: privacy policy link"
+  },
   "settingsHelp": "Help Center",
-  "@settingsHelp": { "description": "Settings: support / FAQ" },
+  "@settingsHelp": {
+    "description": "Settings: support / FAQ"
+  },
   "settingsVersion": "Version",
-  "@settingsVersion": { "description": "Settings: app version label" },
-
+  "@settingsVersion": {
+    "description": "Settings: app version label"
+  },
   "@@section_time": {},
-
   "timeJustNow": "Just now",
-  "@timeJustNow": { "description": "Timestamp: posted seconds ago" },
-
+  "@timeJustNow": {
+    "description": "Timestamp: posted seconds ago"
+  },
   "timeMinAgo": "{count, plural, =1{1 min ago} other{{count} mins ago}}",
   "@timeMinAgo": {
     "description": "Timestamp: N minutes ago",
     "placeholders": {
-      "count": { "type": "num", "format": "compact" }
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
     }
   },
-
   "timeHourAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
   "@timeHourAgo": {
     "description": "Timestamp: N hours ago",
     "placeholders": {
-      "count": { "type": "num", "format": "compact" }
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
     }
   },
-
   "timeYesterday": "Yesterday",
-  "@timeYesterday": { "description": "Timestamp: posted yesterday" },
-
+  "@timeYesterday": {
+    "description": "Timestamp: posted yesterday"
+  },
   "homeViewAll": "View All",
-  "@homeViewAll": { "description": "Section header: link to see all posts" },
+  "@homeViewAll": {
+    "description": "Section header: link to see all posts"
+  },
   "homeIntlNews": "International News 🌏",
-  "@homeIntlNews": { "description": "Home screen: international section title" },
+  "@homeIntlNews": {
+    "description": "Home screen: international section title"
+  },
   "homeCampusLife": "Campus Life 🇰🇷",
-  "@homeCampusLife": { "description": "Home screen: campus section title" },
-
+  "@homeCampusLife": {
+    "description": "Home screen: campus section title"
+  },
   "profilePersonalInfo": "Personal Information",
-  "@profilePersonalInfo": { "description": "Profile card title" },
+  "@profilePersonalInfo": {
+    "description": "Profile card title"
+  },
   "profileEditInfo": "Edit Information",
-  "@profileEditInfo": { "description": "Profile edit card title" },
+  "@profileEditInfo": {
+    "description": "Profile edit card title"
+  },
   "profileNativeLang": "Native Language",
-  "@profileNativeLang": { "description": "Profile field label" },
+  "@profileNativeLang": {
+    "description": "Profile field label"
+  },
   "profileUniversity": "University",
-  "@profileUniversity": { "description": "Profile field label" },
+  "@profileUniversity": {
+    "description": "Profile field label"
+  },
   "profileMajor": "Major",
-  "@profileMajor": { "description": "Profile field label" },
+  "@profileMajor": {
+    "description": "Profile field label"
+  },
   "profileNationality": "Nationality",
-  "@profileNationality": { "description": "Profile field label" },
+  "@profileNationality": {
+    "description": "Profile field label"
+  },
   "profileEmail": "Email",
-  "@profileEmail": { "description": "Profile field label" },
+  "@profileEmail": {
+    "description": "Profile field label"
+  },
   "profileFullName": "Full Name",
-  "@profileFullName": { "description": "Profile edit field label" },
+  "@profileFullName": {
+    "description": "Profile edit field label"
+  },
   "profileVerified": "Verified",
-  "@profileVerified": { "description": "Profile badge: university-verified email" },
+  "@profileVerified": {
+    "description": "Profile badge: university-verified email"
+  },
   "profileLogoutConfirm": "Are you sure you want to sign out?",
-  "@profileLogoutConfirm": { "description": "Logout confirmation dialog body" },
+  "@profileLogoutConfirm": {
+    "description": "Logout confirmation dialog body"
+  },
   "profileSaveChanges": "Save Changes",
-  "@profileSaveChanges": { "description": "Profile edit save button" },
-
+  "@profileSaveChanges": {
+    "description": "Profile edit save button"
+  },
   "communityBoardTitle": "Community Board",
-  "@communityBoardTitle": { "description": "Post list screen title" },
+  "@communityBoardTitle": {
+    "description": "Post list screen title"
+  },
   "communitySearchHint": "Search posts, authors…",
-  "@communitySearchHint": { "description": "Post list search field hint" },
+  "@communitySearchHint": {
+    "description": "Post list search field hint"
+  },
   "communityPostCount": "{count, plural, =1{1 post} other{{count} posts}}",
   "@communityPostCount": {
     "description": "Post count label",
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "communitySortRecent": "Recent",
-  "@communitySortRecent": { "description": "Sort chip: newest first" },
+  "@communitySortRecent": {
+    "description": "Sort chip: newest first"
+  },
   "communitySortPopular": "Popular",
-  "@communitySortPopular": { "description": "Sort chip: most likes" },
+  "@communitySortPopular": {
+    "description": "Sort chip: most likes"
+  },
   "communityNoPosts": "No posts found",
-  "@communityNoPosts": { "description": "Post list empty state" },
-
+  "@communityNoPosts": {
+    "description": "Post list empty state"
+  },
   "createPostNew": "New Post",
-  "@createPostNew": { "description": "Create post screen app bar title" },
+  "@createPostNew": {
+    "description": "Create post screen app bar title"
+  },
   "createPostCategory": "Category",
-  "@createPostCategory": { "description": "Create post: category section label" },
+  "@createPostCategory": {
+    "description": "Create post: category section label"
+  },
   "createPostTitleLabel": "Title",
-  "@createPostTitleLabel": { "description": "Create post: title field label" },
+  "@createPostTitleLabel": {
+    "description": "Create post: title field label"
+  },
   "createPostTitleHint": "Enter a clear, concise title…",
-  "@createPostTitleHint": { "description": "Create post: title field hint" },
+  "@createPostTitleHint": {
+    "description": "Create post: title field hint"
+  },
   "createPostLanguage": "Post Language",
-  "@createPostLanguage": { "description": "Create post: language picker label" },
+  "@createPostLanguage": {
+    "description": "Create post: language picker label"
+  },
   "createPostContent": "Content",
-  "@createPostContent": { "description": "Create post: content field label" },
+  "@createPostContent": {
+    "description": "Create post: content field label"
+  },
   "createPostContentHint": "Write your post here…",
-  "@createPostContentHint": { "description": "Create post: content field hint" },
+  "@createPostContentHint": {
+    "description": "Create post: content field hint"
+  },
   "createPostPhotos": "Photos",
-  "@createPostPhotos": { "description": "Create post: photos section label" },
+  "@createPostPhotos": {
+    "description": "Create post: photos section label"
+  },
   "createPostAddPhoto": "Add",
-  "@createPostAddPhoto": { "description": "Create post: add photo button" },
+  "@createPostAddPhoto": {
+    "description": "Create post: add photo button"
+  },
   "createPostGallery": "Gallery",
-  "@createPostGallery": { "description": "Create post: gallery bottom bar button" },
+  "@createPostGallery": {
+    "description": "Create post: gallery bottom bar button"
+  },
   "createPostCamera": "Camera",
-  "@createPostCamera": { "description": "Create post: camera bottom bar button" },
+  "@createPostCamera": {
+    "description": "Create post: camera bottom bar button"
+  },
   "createPostPublish": "Publish Post",
-  "@createPostPublish": { "description": "Create post: submit button" },
-
+  "@createPostPublish": {
+    "description": "Create post: submit button"
+  },
   "postCopied": "Copied to clipboard",
-  "@postCopied": { "description": "Snackbar after copying post content" },
+  "@postCopied": {
+    "description": "Snackbar after copying post content"
+  },
   "postFollow": "Follow",
-  "@postFollow": { "description": "Follow button: not yet following" },
+  "@postFollow": {
+    "description": "Follow button: not yet following"
+  },
   "postFollowing": "Following",
-  "@postFollowing": { "description": "Follow button: already following" },
+  "@postFollowing": {
+    "description": "Follow button: already following"
+  },
   "postActionCopy": "Copy",
-  "@postActionCopy": { "description": "Post detail action: copy text" },
+  "@postActionCopy": {
+    "description": "Post detail action: copy text"
+  },
   "postActionLike": "Like",
-  "@postActionLike": { "description": "Post detail action: like" },
+  "@postActionLike": {
+    "description": "Post detail action: like"
+  },
   "postActionComment": "Comment",
-  "@postActionComment": { "description": "Post detail action: comment" },
+  "@postActionComment": {
+    "description": "Post detail action: comment"
+  },
   "postActionSave": "Save",
-  "@postActionSave": { "description": "Post detail action: save/bookmark" },
+  "@postActionSave": {
+    "description": "Post detail action: save/bookmark"
+  },
   "postNoImage": "No image",
-  "@postNoImage": { "description": "Post card image error placeholder" },
-
+  "@postNoImage": {
+    "description": "Post card image error placeholder"
+  },
   "reviewsTitle": "Reviews",
-  "@reviewsTitle": { "description": "Review modal title" },
+  "@reviewsTitle": {
+    "description": "Review modal title"
+  },
   "reviewsCount": "{count} reviews",
   "@reviewsCount": {
     "description": "Total review count label",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "reviewNoItems": "No reviews yet. Be the first!",
-  "@reviewNoItems": { "description": "Empty state for review list" },
+  "@reviewNoItems": {
+    "description": "Empty state for review list"
+  },
   "reviewWriteHint": "Write a review…",
-  "@reviewWriteHint": { "description": "Review input placeholder" },
+  "@reviewWriteHint": {
+    "description": "Review input placeholder"
+  },
   "reviewSubmit": "Submit",
-  "@reviewSubmit": { "description": "Submit review button" },
+  "@reviewSubmit": {
+    "description": "Submit review button"
+  },
   "reviewSeeAll": "See all",
-  "@reviewSeeAll": { "description": "See all reviews button" },
+  "@reviewSeeAll": {
+    "description": "See all reviews button"
+  },
   "reviewTimeAgo": "{n} {unit} ago",
   "@reviewTimeAgo": {
     "description": "Relative time label e.g. '2 hours ago'",
     "placeholders": {
-      "n":    { "type": "int" },
-      "unit": { "type": "String" }
+      "n": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
     }
   },
   "reviewTimeUnitMinute": "min",
-  "@reviewTimeUnitMinute": { "description": "Time unit: minute(s)" },
+  "@reviewTimeUnitMinute": {
+    "description": "Time unit: minute(s)"
+  },
   "reviewTimeUnitHour": "hr",
-  "@reviewTimeUnitHour": { "description": "Time unit: hour(s)" },
+  "@reviewTimeUnitHour": {
+    "description": "Time unit: hour(s)"
+  },
   "reviewTimeUnitDay": "day",
-  "@reviewTimeUnitDay": { "description": "Time unit: day(s)" },
-
+  "@reviewTimeUnitDay": {
+    "description": "Time unit: day(s)"
+  },
   "@@section_auth": {},
-
   "authHeaderTitle": "Hello, international student!",
   "authHeaderSubtitle": "Together, let's conquer your global learning journey.",
   "authLoginTitle": "Sign in",
@@ -333,10 +522,10 @@
   "authHintNameExample": "Jane Doe",
   "authButtonLogin": "Sign in",
   "authButtonRegister": "Create account",
-  "authSocialGoogleLoginDemo": "Google sign-in (demo)",
-  "authSocialKakaoLoginDemo": "KakaoTalk sign-in (demo)",
-  "authSocialGoogleRegisterDemo": "Google sign-up (demo)",
-  "authSocialKakaoRegisterDemo": "KakaoTalk sign-up (demo)",
+  "authSocialGoogleLoginDemo": "Sign in with Google",
+  "authSocialKakaoLoginDemo": "Sign in with KakaoTalk",
+  "authSocialGoogleRegisterDemo": "Sign up with Google",
+  "authSocialKakaoRegisterDemo": "Sign up with KakaoTalk",
   "authSocialOr": "or",
   "authSocialContinueGoogle": "Continue with Google",
   "authSocialKakaoLabel": "KakaoTalk ID",
@@ -350,11 +539,13 @@
   "authValidationConfirmMismatch": "Passwords do not match",
   "authValidationUniversityEmail": "Please use a .ac.kr email from a supported Korean university",
   "authValidationLocalPart": "Only letters, numbers, . _ - are allowed",
+  "authValidationNationalityEmpty": "Please select your nationality",
+  "authValidationNativeLanguageEmpty": "Please select your native language",
+  "authRegisterSearchHint": "Search…",
+  "authRegisterSelectPlaceholder": "Select…",
   "authTooltipShowPassword": "Show password",
   "authTooltipHidePassword": "Hide password",
-
   "languageSheetSubtitle": "Choose your preferred app language",
-
   "mapPinFormTitle": "Pin location",
   "mapPinSectionVisibility": "Visibility",
   "mapPinSectionType": "Place type",
@@ -386,14 +577,18 @@
   "mapSdkInitializing": "Initializing Naver Map SDK…",
   "mapSdkError": "Error: {error}",
   "@mapSdkError": {
-    "placeholders": { "error": { "type": "String", "example": "network" } }
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network"
+      }
+    }
   },
   "mapPinInfoPublicShort": "Public",
   "pinTypeRestaurant": "Good eats",
   "pinTypeRealEstate": "Housing",
   "pinTypeUtility": "Other utilities",
   "pinTypePharmacy": "Pharmacy",
-
   "partnerSearchTitle": "Language partners",
   "partnerGenderAny": "Any",
   "partnerGenderMale": "Male",
@@ -412,7 +607,6 @@
   "partnerRequestIncomingPending": "They already sent you a request. Open Chat to accept it.",
   "partnerRequestAlreadyAccepted": "You are already connected with this person.",
   "partnerRequestFailed": "Could not send the request. Please try again.",
-
   "chatSearchConversations": "Search conversations…",
   "chatEmptyTitle": "No conversations yet",
   "chatEmptySubtitle": "Find a language partner to start chatting!",
@@ -441,7 +635,6 @@
   "chatReconnectSuccess": "Connection restored.",
   "chatShareLocation": "Share a Location",
   "chatOpenInMap": "View on Map",
-
   "authSuccessLogin": "Welcome back!",
   "authSuccessRegister": "Account created! Please verify your email.",
   "authErrInvalidCredential": "Incorrect email or password",
@@ -453,25 +646,34 @@
   "authErrWeakPassword": "Password is too weak (minimum 6 characters)",
   "authErrDefault": "Authentication failed: {message}",
   "@authErrDefault": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
-
   "verifyEmailTitle": "Check your inbox",
   "verifyEmailSubtitle": "We sent a verification link to {email}. Please click the link to activate your account.",
   "@verifyEmailSubtitle": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "verifyEmailCheckButton": "I already verified",
   "verifyEmailResendButton": "Resend email",
   "verifyEmailResendSent": "Verification email sent!",
   "verifyEmailResendCooldown": "Resend in {seconds}s",
   "@verifyEmailResendCooldown": {
-    "placeholders": { "seconds": { "type": "int" } }
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
-
   "authSuccessVerified": "Email verified! Please sign in.",
   "verifyEmailNotYet": "Email not yet verified. Please check your inbox.",
-
   "errorChatRequestNotFound": "This request no longer exists.",
   "errorChatRequestNotPending": "This request has already been handled.",
   "errorTransactionAborted": "Connection busy — please try again.",
@@ -480,16 +682,22 @@
   "errorNotFound": "The requested item was not found.",
   "errorDataConflict": "Data conflict. Please refresh and try again.",
   "errorUnexpected": "An unexpected error occurred. Please try again.",
-
   "mapDistanceFromYouMeters": "{meters}m from you",
   "@mapDistanceFromYouMeters": {
-    "placeholders": { "meters": { "type": "int" } }
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
   },
   "mapDistanceFromYouKilometers": "{km}km from you",
   "@mapDistanceFromYouKilometers": {
-    "placeholders": { "km": { "type": "String" } }
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
   },
-
   "postMenuEdit": "Edit",
   "postMenuDelete": "Delete",
   "postUpdateSuccess": "Post updated successfully",
@@ -504,5 +712,34 @@
   "postDeleteConfirm": "Delete",
   "postTranslating": "Translating…",
   "postShowOriginal": "Show original",
-  "postTranslate": "Translate"
+  "postTranslate": "Translate",
+  "scheduleScreenTitle": "Schedule",
+  "scheduleTodayHeader": "Today's schedule",
+  "scheduleViewAll": "View all",
+  "scheduleNoActivities": "No activities for this day",
+  "scheduleNoActivitiesToday": "Nothing scheduled today — tap View all to add one.",
+  "scheduleAddActivity": "Add activity",
+  "scheduleEditActivity": "Edit activity",
+  "scheduleTitleLabel": "Title",
+  "scheduleLocationLabel": "Location",
+  "scheduleStartTime": "Start",
+  "scheduleEndTime": "End",
+  "scheduleSave": "Save",
+  "scheduleEmojiLabel": "Icon",
+  "scheduleColorLabel": "Color",
+  "scheduleTitleRequired": "Please enter a title.",
+  "scheduleEndAfterStart": "End time must be after start time.",
+  "scheduleNotesLabel": "Notes",
+  "scheduleDelete": "Delete",
+  "scheduleDeleteConfirmTitle": "Delete activity?",
+  "scheduleDeleteConfirmMessage": "This activity will be permanently removed.",
+  "scheduleGoToToday": "Today",
+  "scheduleDeleteCancel": "Cancel",
+  "uniWebTranslateUnavailableTitle": "Translation unavailable",
+  "uniWebTranslateUnavailableBody": "This site's security policy (CSP) blocks translation. Open in browser to translate.",
+  "uniWebOpenInBrowser": "Open in browser",
+  "visaInfoTitle": "Visa Information",
+  "visaInfoSubtitle": "Register your visa details to receive expiry alerts.",
+  "profileGender": "Gender",
+  "profileBio": "Bio"
 }

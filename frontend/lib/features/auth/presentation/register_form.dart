@@ -6,13 +6,14 @@ import 'package:provider/provider.dart';
 import '../../../core/feedback/app_snackbar.dart';
 import '../../../core/theme/theme_ext.dart';
 import '../../../l10n/app_localizations.dart';
+import '../data/register_picklist_data.dart';
 import '../data/university_data.dart';
 import '../providers/auth_provider.dart';
 import '../theme/auth_theme.dart';
 import '../utils/auth_validators.dart';
 import 'widgets/auth_primary_button.dart';
 import 'widgets/auth_text_field.dart';
-import 'widgets/social_auth_buttons.dart';
+import 'widgets/searchable_option_sheet.dart';
 
 class RegisterForm extends HookWidget {
   const RegisterForm({super.key});
@@ -38,6 +39,9 @@ class RegisterForm extends HookWidget {
     final loading = useState(false);
     final selectedUniversity = useState<University?>(null);
     final selectedDomain = useState<String?>(null);
+    final selectedNationality = useState<String?>(null);
+    final selectedNativeLanguage = useState<String?>(null);
+    final showProfileFieldErrors = useState(false);
 
     // When university changes, reset domain to default
     useEffect(() {
@@ -54,6 +58,17 @@ class RegisterForm extends HookWidget {
 
     Future<void> submit() async {
       if (!(formKey.currentState?.validate() ?? false)) return;
+      final nat = selectedNationality.value?.trim();
+      final lang = selectedNativeLanguage.value?.trim();
+      if (nat == null || nat.isEmpty) {
+        showProfileFieldErrors.value = true;
+        return;
+      }
+      if (lang == null || lang.isEmpty) {
+        showProfileFieldErrors.value = true;
+        return;
+      }
+      showProfileFieldErrors.value = false;
       if (selectedUniversity.value == null) {
         _snack(context, l.authValidationUniversityEmail);
         return;
@@ -64,6 +79,8 @@ class RegisterForm extends HookWidget {
               name: name.text.trim(),
               email: fullEmail(),
               password: password.text,
+              nationality: nat,
+              nativeLanguage: lang,
             );
         if (context.mounted) {
           _snack(context, l.authSuccessRegister, success: true);
@@ -97,6 +114,60 @@ class RegisterForm extends HookWidget {
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.name],
             validator: (v) => AuthValidators.name(v, l),
+          ),
+          const SizedBox(height: 16),
+
+          RegisterSearchableField(
+            key: const Key('register_nationality'),
+            label: l.profileNationality,
+            value: selectedNationality.value,
+            placeholder: l.authRegisterSelectPlaceholder,
+            leadingIcon: Icons.flag_outlined,
+            errorText: showProfileFieldErrors.value &&
+                    (selectedNationality.value == null ||
+                        selectedNationality.value!.trim().isEmpty)
+                ? l.authValidationNationalityEmpty
+                : null,
+            onTap: () async {
+              final r = await showSearchableOptionSheet(
+                context,
+                title: l.profileNationality,
+                searchHint: l.authRegisterSearchHint,
+                options: kNationalityOptions,
+                selected: selectedNationality.value,
+              );
+              if (r != null) {
+                selectedNationality.value = r;
+                showProfileFieldErrors.value = false;
+              }
+            },
+          ),
+          const SizedBox(height: 16),
+
+          RegisterSearchableField(
+            key: const Key('register_native_language'),
+            label: l.profileNativeLang,
+            value: selectedNativeLanguage.value,
+            placeholder: l.authRegisterSelectPlaceholder,
+            leadingIcon: Icons.translate_rounded,
+            errorText: showProfileFieldErrors.value &&
+                    (selectedNativeLanguage.value == null ||
+                        selectedNativeLanguage.value!.trim().isEmpty)
+                ? l.authValidationNativeLanguageEmpty
+                : null,
+            onTap: () async {
+              final r = await showSearchableOptionSheet(
+                context,
+                title: l.profileNativeLang,
+                searchHint: l.authRegisterSearchHint,
+                options: kNativeLanguageOptions,
+                selected: selectedNativeLanguage.value,
+              );
+              if (r != null) {
+                selectedNativeLanguage.value = r;
+                showProfileFieldErrors.value = false;
+              }
+            },
           ),
           const SizedBox(height: 16),
 
@@ -154,11 +225,6 @@ class RegisterForm extends HookWidget {
             label: l.authButtonRegister,
             isLoading: loading.value,
             onPressed: submit,
-          ),
-          const SizedBox(height: 24),
-          SocialAuthButtons(
-            onGoogle: () => _snack(context, l.authSocialGoogleRegisterDemo),
-            onKakao: () => _snack(context, l.authSocialKakaoRegisterDemo),
           ),
         ],
       ),

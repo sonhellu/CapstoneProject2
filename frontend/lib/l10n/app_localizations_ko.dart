@@ -527,16 +527,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get authButtonRegister => '계정 만들기';
 
   @override
-  String get authSocialGoogleLoginDemo => 'Google 로그인 (데모)';
+  String get authSocialGoogleLoginDemo => 'Google 로그인';
 
   @override
-  String get authSocialKakaoLoginDemo => '카카오톡 로그인 (데모)';
+  String get authSocialKakaoLoginDemo => '카카오톡 로그인';
 
   @override
-  String get authSocialGoogleRegisterDemo => 'Google 회원가입 (데모)';
+  String get authSocialGoogleRegisterDemo => 'Google 회원가입';
 
   @override
-  String get authSocialKakaoRegisterDemo => '카카오톡 회원가입 (데모)';
+  String get authSocialKakaoRegisterDemo => '카카오톡 회원가입';
 
   @override
   String get authSocialOr => '또는';
@@ -576,6 +576,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get authValidationLocalPart => '영문자, 숫자, . _ - 만 사용 가능합니다';
+
+  @override
+  String get authValidationNationalityEmpty => '국적을 선택하세요';
+
+  @override
+  String get authValidationNativeLanguageEmpty => '모국어를 선택하세요';
+
+  @override
+  String get authRegisterSearchHint => '검색…';
+
+  @override
+  String get authRegisterSelectPlaceholder => '선택…';
 
   @override
   String get authTooltipShowPassword => '비밀번호 표시';
@@ -973,4 +985,92 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get postTranslate => '번역';
+
+  @override
+  String get scheduleScreenTitle => '일정';
+
+  @override
+  String get scheduleTodayHeader => '오늘 일정';
+
+  @override
+  String get scheduleViewAll => '전체 보기';
+
+  @override
+  String get scheduleNoActivities => '이 날 일정이 없습니다';
+
+  @override
+  String get scheduleNoActivitiesToday => '오늘 일정이 없습니다. 전체 보기에서 추가하세요.';
+
+  @override
+  String get scheduleAddActivity => '일정 추가';
+
+  @override
+  String get scheduleEditActivity => '일정 수정';
+
+  @override
+  String get scheduleTitleLabel => '제목';
+
+  @override
+  String get scheduleLocationLabel => '장소';
+
+  @override
+  String get scheduleStartTime => '시작';
+
+  @override
+  String get scheduleEndTime => '종료';
+
+  @override
+  String get scheduleSave => '저장';
+
+  @override
+  String get scheduleEmojiLabel => '아이콘';
+
+  @override
+  String get scheduleColorLabel => '색';
+
+  @override
+  String get scheduleTitleRequired => '제목을 입력하세요.';
+
+  @override
+  String get scheduleEndAfterStart => '종료 시간은 시작 시간보다 늦어야 합니다.';
+
+  @override
+  String get scheduleNotesLabel => '메모';
+
+  @override
+  String get scheduleDelete => '삭제';
+
+  @override
+  String get scheduleDeleteConfirmTitle => '일정 삭제?';
+
+  @override
+  String get scheduleDeleteConfirmMessage => '이 일정이 영구적으로 삭제됩니다.';
+
+  @override
+  String get scheduleGoToToday => '오늘';
+
+  @override
+  String get scheduleDeleteCancel => '취소';
+
+  @override
+  String get uniWebTranslateUnavailableTitle => '번역을 사용할 수 없습니다';
+
+  @override
+  String get uniWebTranslateUnavailableBody =>
+      '이 사이트의 보안 정책(CSP)으로 인해 번역이 차단되었습니다. 브라우저에서 열면 번역을 사용할 수 있습니다.';
+
+  @override
+  String get uniWebOpenInBrowser => '브라우저에서 열기';
+
+  @override
+  String get visaInfoTitle => '비자 정보 등록';
+
+  @override
+  String get visaInfoSubtitle => '체류 만료 알림을 받기 위해 정보를 등록해주세요.';
+
+  @override
+  String get profileGender => '성별';
+
+  @override
+  String get profileBio => '자기소개';
 }

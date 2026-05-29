@@ -5,14 +5,17 @@ import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../api_client.dart';
+
 class WebViewScreen extends StatefulWidget {
-  final String targetLangStr;         // 💡 예: "vi", "en", "zh" (FastAPI 전송용 문자열)
-  final TranslateLanguage targetLanguage; // 💡 예: TranslateLanguage.vietnamese (ML Kit 매핑 객체)
-  final String jwtToken;              // 인증이 필요한 경우 확장용 토큰
+  final String targetLangStr; // 💡 예: "vi", "en", "zh" (FastAPI 전송용 문자열)
+  final TranslateLanguage
+  targetLanguage; // 💡 예: TranslateLanguage.vietnamese (ML Kit 매핑 객체)
+  final String jwtToken; // 인증이 필요한 경우 확장용 토큰
 
   const WebViewScreen({
-    super.key, 
-    required this.targetLangStr, 
+    super.key,
+    required this.targetLangStr,
     required this.targetLanguage,
     required this.jwtToken,
   });
@@ -23,9 +26,9 @@ class WebViewScreen extends StatefulWidget {
 
 class _WebViewScreenState extends State<WebViewScreen> {
   late final WebViewController _controller;
-  
+
   // 💡 컨트롤러가 앞단에서 다운로드를 완료해 주었으므로 true로 시작합니다.
-  final bool _isModelReady = true; 
+  final bool _isModelReady = true;
 
   @override
   void initState() {
@@ -44,13 +47,16 @@ class _WebViewScreenState extends State<WebViewScreen> {
     // 2. 안드로이드 전용 설정
     if (_controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
-      (_controller.platform as AndroidWebViewController).setMediaPlaybackRequiresUserGesture(false);
+      (_controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
     }
 
     // 3. 컨트롤러 구성
     _controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setUserAgent("Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36")
+      ..setUserAgent(
+        "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (String url) async {
@@ -107,7 +113,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ''');
 
       String rawJson = result.toString();
-      if (rawJson.startsWith('"')) rawJson = jsonDecode(rawJson); 
+      if (rawJson.startsWith('"')) rawJson = jsonDecode(rawJson);
       List<dynamic> extractedItems = jsonDecode(rawJson);
 
       debugPrint('📊 추출된 총 텍스트 아이템 개수: ${extractedItems.length}개');
@@ -116,26 +122,31 @@ class _WebViewScreenState extends State<WebViewScreen> {
       // 💡 주입받은 타겟 객체 언어로 동적 세팅
       final onDeviceTranslator = OnDeviceTranslator(
         sourceLanguage: TranslateLanguage.korean,
-        targetLanguage: widget.targetLanguage, 
+        targetLanguage: widget.targetLanguage,
       );
 
-      List<dynamic> serverItems = []; 
+      List<dynamic> serverItems = [];
       final datePattern = RegExp(r'^\d{2,4}[\.\-/]\d{1,2}[\.\-/]\d{1,2}$');
 
       for (var item in extractedItems) {
         String text = item['text'].toString().trim();
 
-        if (datePattern.hasMatch(text) || RegExp(r'^[0-9\s\.\:\-]+$').hasMatch(text)) {
-          continue; 
+        if (datePattern.hasMatch(text) ||
+            RegExp(r'^[0-9\s\.\:\-]+$').hasMatch(text)) {
+          continue;
         }
 
         // 20자 미만 로컬 번역 실행
         if (text.length < 20 && _isModelReady) {
           try {
-            String localTranslated = await onDeviceTranslator.translateText(text);
-            await _applyTranslation([{'id': item['id'], 'translated': localTranslated}]);
+            String localTranslated = await onDeviceTranslator.translateText(
+              text,
+            );
+            await _applyTranslation([
+              {'id': item['id'], 'translated': localTranslated},
+            ]);
           } catch (e) {
-            serverItems.add(item); 
+            serverItems.add(item);
           }
         } else {
           serverItems.add(item);
@@ -144,17 +155,21 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
       // 4. 긴 문장들 백엔드(FastAPI) 서버 일괄 전송
       if (serverItems.isNotEmpty) {
-        debugPrint('🚀 총 ${serverItems.length}개의 문장을 FastAPI 서버로 전송합니다. 타겟 언어: ${widget.targetLangStr}');
+        debugPrint(
+          '🚀 총 ${serverItems.length}개의 문장을 FastAPI 서버로 전송합니다. 타겟 언어: ${widget.targetLangStr}',
+        );
 
         try {
-          final response = await http.post(
-            Uri.parse('http://10.0.2.2:8000/api/translate'), // 팀의 엔드포인트에 맞게 조정 (앞단에 /api 가 붙어있다면 유지)
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'items': serverItems, 
-              'target_lang': widget.targetLangStr, // 💡 동적 변수 주입
-            }),
-          ).timeout(const Duration(seconds: 15));
+          final response = await http
+              .post(
+                Uri.parse('${ApiClient.baseUrl}/api/translate'),
+                headers: {'Content-Type': 'application/json'},
+                body: jsonEncode({
+                  'items': serverItems,
+                  'target_lang': widget.targetLangStr, // 💡 동적 변수 주입
+                }),
+              )
+              .timeout(const Duration(seconds: 15));
 
           if (response.statusCode == 200) {
             var data = jsonDecode(response.body);
@@ -165,16 +180,22 @@ class _WebViewScreenState extends State<WebViewScreen> {
           }
         } catch (e) {
           debugPrint('⚠️ 백엔드 호출 실패 -> 온디바이스 긴급 Fallback 모드 작동 시작: $e');
-          
+
           List<dynamic> fallbackResults = [];
           for (var item in serverItems) {
             try {
-              String fallbackText = _isModelReady 
+              String fallbackText = _isModelReady
                   ? await onDeviceTranslator.translateText(item['text'])
                   : item['text'];
-              fallbackResults.add({'id': item['id'], 'translated': fallbackText});
+              fallbackResults.add({
+                'id': item['id'],
+                'translated': fallbackText,
+              });
             } catch (_) {
-              fallbackResults.add({'id': item['id'], 'translated': item['text']});
+              fallbackResults.add({
+                'id': item['id'],
+                'translated': item['text'],
+              });
             }
           }
           await _applyTranslation(fallbackResults);
@@ -182,7 +203,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
       }
 
       onDeviceTranslator.close();
-
     } catch (e) {
       debugPrint('❌ 전체 텍스트 추출 및 번역 흐름 오류: $e');
     }
@@ -221,7 +241,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text('HiCampus Translator (${widget.targetLangStr.toUpperCase()})')),
+        appBar: AppBar(
+          title: Text(
+            'HiCampus Translator (${widget.targetLangStr.toUpperCase()})',
+          ),
+        ),
         body: WebViewWidget(controller: _controller),
       ),
     );

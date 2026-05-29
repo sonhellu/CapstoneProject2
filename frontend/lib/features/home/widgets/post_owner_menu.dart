@@ -51,8 +51,10 @@ class PostOwnerMenu extends StatelessWidget {
         switch (action) {
           case _MenuAction.edit:
             _showEditSheet(context);
+            break;
           case _MenuAction.delete:
             _showDeleteDialog(context);
+            break;
         }
       },
       itemBuilder: (_) => [

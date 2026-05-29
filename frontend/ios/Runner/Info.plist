@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Capstone Frontend</string>
+	<string>HiCampus</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>capstone_frontend</string>
+	<string>HiCampus</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -26,12 +26,23 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>HiCampus cần truy cập camera để chụp ảnh đăng bài.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>HiCampus cần truy cập thư viện ảnh để chọn ảnh đăng bài.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>앱에서 현재 위치를 지도에 표시하기 위해 위치 권한이 필요합니다.</string>
+	<string>hicampus cần vị trí của bạn để hiển thị các địa điểm hỗ trợ sinh viên quanh đây.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>앱에서 현재 위치를 지도에 표시하기 위해 위치 권한이 필요합니다.</string>
+	<string>hicampus cần vị trí của bạn để hiển thị các địa điểm hỗ trợ sinh viên quanh đây.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>hicampus cần vị trí của bạn để gửi thông báo về các địa điểm hữu ích gần bạn.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -49,9 +60,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSLocationWhenInUseUsageDescription</key>
-		<string>hicampus cần vị trí của bạn để hiển thị các địa điểm hỗ trợ sinh viên quanh đây.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-		<string>hicampus cần vị trí của bạn để gửi thông báo về các địa điểm hữu ích gần bạn.</string>
 </dict>
 </plist>

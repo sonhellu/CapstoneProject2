@@ -2,10 +2,12 @@ class University {
   const University({
     required this.name,
     required this.domains,
+    this.websiteUrl,
   });
 
   final String name;
   final List<String> domains; // first = default/main domain
+  final String? websiteUrl;   // official university website
 
   String get defaultDomain => domains.first;
   bool get hasMultipleDomains => domains.length > 1;
@@ -53,7 +55,7 @@ const List<University> koreanUniversities = [
   University(name: 'UNIST',                           domains: ['unist.ac.kr']),
   University(name: 'DGIST',                           domains: ['dgist.ac.kr']),
   University(name: 'GIST',                            domains: ['gist.ac.kr', 'ms.gist.ac.kr']),
-  University(name: 'Keimyung University',             domains: ['kmu.ac.kr', 'stu.kmu.ac.kr']),
+  University(name: 'Keimyung University',             domains: ['kmu.ac.kr', 'stu.kmu.ac.kr'],             websiteUrl: 'https://www.kmu.ac.kr'),
   University(name: 'Incheon National University',     domains: ['inu.ac.kr']),
   University(name: 'Pusan National University',       domains: ['pusan.ac.kr', 'pnu.ac.kr']),
   University(name: 'Kyungpook National University',   domains: ['knu.ac.kr', 'student.knu.ac.kr']),

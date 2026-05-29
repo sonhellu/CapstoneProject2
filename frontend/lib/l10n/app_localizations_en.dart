@@ -532,16 +532,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authButtonRegister => 'Create account';
 
   @override
-  String get authSocialGoogleLoginDemo => 'Google sign-in (demo)';
+  String get authSocialGoogleLoginDemo => 'Sign in with Google';
 
   @override
-  String get authSocialKakaoLoginDemo => 'KakaoTalk sign-in (demo)';
+  String get authSocialKakaoLoginDemo => 'Sign in with KakaoTalk';
 
   @override
-  String get authSocialGoogleRegisterDemo => 'Google sign-up (demo)';
+  String get authSocialGoogleRegisterDemo => 'Sign up with Google';
 
   @override
-  String get authSocialKakaoRegisterDemo => 'KakaoTalk sign-up (demo)';
+  String get authSocialKakaoRegisterDemo => 'Sign up with KakaoTalk';
 
   @override
   String get authSocialOr => 'or';
@@ -584,6 +584,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get authValidationLocalPart =>
       'Only letters, numbers, . _ - are allowed';
+
+  @override
+  String get authValidationNationalityEmpty => 'Please select your nationality';
+
+  @override
+  String get authValidationNativeLanguageEmpty =>
+      'Please select your native language';
+
+  @override
+  String get authRegisterSearchHint => 'Search…';
+
+  @override
+  String get authRegisterSelectPlaceholder => 'Select…';
 
   @override
   String get authTooltipShowPassword => 'Show password';
@@ -995,4 +1008,95 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get postTranslate => 'Translate';
+
+  @override
+  String get scheduleScreenTitle => 'Schedule';
+
+  @override
+  String get scheduleTodayHeader => 'Today\'s schedule';
+
+  @override
+  String get scheduleViewAll => 'View all';
+
+  @override
+  String get scheduleNoActivities => 'No activities for this day';
+
+  @override
+  String get scheduleNoActivitiesToday =>
+      'Nothing scheduled today — tap View all to add one.';
+
+  @override
+  String get scheduleAddActivity => 'Add activity';
+
+  @override
+  String get scheduleEditActivity => 'Edit activity';
+
+  @override
+  String get scheduleTitleLabel => 'Title';
+
+  @override
+  String get scheduleLocationLabel => 'Location';
+
+  @override
+  String get scheduleStartTime => 'Start';
+
+  @override
+  String get scheduleEndTime => 'End';
+
+  @override
+  String get scheduleSave => 'Save';
+
+  @override
+  String get scheduleEmojiLabel => 'Icon';
+
+  @override
+  String get scheduleColorLabel => 'Color';
+
+  @override
+  String get scheduleTitleRequired => 'Please enter a title.';
+
+  @override
+  String get scheduleEndAfterStart => 'End time must be after start time.';
+
+  @override
+  String get scheduleNotesLabel => 'Notes';
+
+  @override
+  String get scheduleDelete => 'Delete';
+
+  @override
+  String get scheduleDeleteConfirmTitle => 'Delete activity?';
+
+  @override
+  String get scheduleDeleteConfirmMessage =>
+      'This activity will be permanently removed.';
+
+  @override
+  String get scheduleGoToToday => 'Today';
+
+  @override
+  String get scheduleDeleteCancel => 'Cancel';
+
+  @override
+  String get uniWebTranslateUnavailableTitle => 'Translation unavailable';
+
+  @override
+  String get uniWebTranslateUnavailableBody =>
+      'This site\'s security policy (CSP) blocks translation. Open in browser to translate.';
+
+  @override
+  String get uniWebOpenInBrowser => 'Open in browser';
+
+  @override
+  String get visaInfoTitle => 'Visa Information';
+
+  @override
+  String get visaInfoSubtitle =>
+      'Register your visa details to receive expiry alerts.';
+
+  @override
+  String get profileGender => 'Gender';
+
+  @override
+  String get profileBio => 'Bio';
 }

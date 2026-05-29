@@ -1,25 +1,21 @@
 {
   "@@locale": "my",
-
   "appTitle": "Capstone",
   "homeTitle": "ပင်မစာမျက်နှာ",
   "counterLabel": "ခလုတ်ကို နှိပ်ထားသည့်အကြိမ် —",
   "incrementTooltip": "တိုးပါ",
   "languagePickerTooltip": "ဘာသာစကား",
   "languageSheetTitle": "ဘာသာစကားရွေးပါ",
-
   "navHome": "ပင်မ",
   "navMap": "မြေပုံ",
   "navCommunity": "အသိုင်းအဝိုင်း",
   "navMyPage": "ကျွန်ုပ်",
-
   "mapSearchHere": "ဤနေရာ ရှာဖွေပါ",
   "mapMyLocation": "ကျွန်ုပ်တည်နေရာ",
   "mapPinSpot": "ဤနေရာ ပင်ထိုးပါ",
   "mapGetDirections": "လမ်းညွှန် ရယူပါ",
   "mapDirections": "လမ်းညွှန်",
   "mapPinSaved": "သိမ်းပြီး",
-
   "btnConfirm": "အတည်ပြု",
   "btnCancel": "မလုပ်တော့",
   "btnSave": "သိမ်းဆည်း",
@@ -28,60 +24,61 @@
   "btnClose": "ပိတ်",
   "btnNext": "နောက်",
   "btnBack": "နောက်သို့",
-
   "filterAll": "အားလုံး",
   "filterRestaurants": "စားသောက်ဆိုင်",
   "filterRealEstate": "အိမ်ခြံမြေ",
   "filterConvenience": "အဆင်ပြေဆိုင်",
   "filterAtm": "ATM",
   "filterPharmacy": "ဆေးဆိုင်",
-
   "statusLoadingMap": "မြေပုံ ဖွင့်နေသည်…",
   "statusLocating": "တည်နေရာ ရှာနေသည်…",
   "statusPermissionDenied": "ခွင့်ပြုချက် ငြင်းဆန်ခံရသည်",
   "statusEnableGps": "GPS ဖွင့်ပါ",
-
   "foodMenu": "မီနူး",
   "foodPrice": "စျေးနှုန်း",
   "foodHours": "ဖွင့်ချိန်",
   "foodHalal": "ဟာလာ",
   "foodVeggie": "သက်သတ်လွတ်",
   "foodAuthentic": "စစ်မှန်",
-
   "housingRent": "အငှားခ",
   "housingDeposit": "အပေါင်",
   "housingFee": "စီမံခ",
   "housingNoDeposit": "အပေါင်မလို",
   "housingStationNearby": "ဘူတာနီး",
-
   "actionCall": "ဖုန်းဆက်",
   "actionMessage": "စာပို့",
   "actionReview": "သုံးသပ်",
   "actionShare": "မျှဝေ",
   "actionPhoto": "ဓာတ်ပုံ",
-
   "distanceAway": "{distance} ကွာ",
   "@distanceAway": {
-    "placeholders": { "distance": { "type": "String", "example": "500m" } }
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "500m"
+      }
+    }
   },
   "minWalk": "လမ်းလျှောက် {time} မိနစ်",
   "@minWalk": {
-    "placeholders": { "time": { "type": "String", "example": "5" } }
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "5"
+      }
+    }
   },
-
   "alertEnterName": "နာမည်ထည့်ပါ",
   "alertWrongPhone": "ဖုန်းနံပါတ်မှား",
   "alertNotFound": "မတွေ့ပါ",
   "alertTryAgain": "ထပ်ကြိုးစားပါ",
   "alertLoginFirst": "အရင်ဝင်ပါ",
-
   "profileMyProfile": "ကျွန်ုပ်ပရိုဖိုင်",
   "profileEdit": "ပရိုဖိုင်တည်းဖြတ်",
   "profileMyPosts": "ကျွန်ုပ်ပို့စ်များ",
   "profileSavedPlaces": "သိမ်းဆည်းထားသောနေရာ",
   "profileLogout": "ထွက်မည်",
   "profileDeleteAccount": "အကောင့်ဖျက်မည်",
-
   "chatMessages": "စာတိုများ",
   "chatTyping": "ရိုက်နေသည်…",
   "chatSent": "ပို့ပြီး",
@@ -89,14 +86,12 @@
   "chatRead": "ဖတ်ပြီး",
   "chatCall": "ဖုန်းဆက်",
   "chatStartConversation": "စကားစပ်လိုက်ပါ",
-
   "communityPostStory": "ပို့စ်တင်ပါ",
   "communityWhatsOnMind": "ဘာတွေးနေသလဲ?",
   "communityPublic": "အများသိ",
   "communityPrivate": "ကိုယ်တိုင်သာ",
   "communityAnonymous": "အမည်မဖော်",
   "communityReport": "တိုင်ကြားပါ",
-
   "settingsLanguage": "ဘာသာစကား",
   "settingsNotifications": "အကြောင်းကြားချက်",
   "settingsDarkMode": "မှောင်မိုက်မုဒ်",
@@ -104,22 +99,29 @@
   "settingsPrivacy": "ကိုယ်ရေးလုံခြုံမှုမူဝါဒ",
   "settingsHelp": "အကူအညီဌာန",
   "settingsVersion": "ဗားရှင်း",
-
   "timeJustNow": "ယခုလေးတင်",
   "timeMinAgo": "{count, plural, other{{count} မိနစ်က}}",
   "@timeMinAgo": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "timeHourAgo": "{count, plural, other{{count} နာရီက}}",
   "@timeHourAgo": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "timeYesterday": "မနေ့က",
-
   "homeViewAll": "အားလုံးကြည့်",
   "homeIntlNews": "နိုင်ငံတကာသတင်း 🌏",
   "homeCampusLife": "ကျောင်းဘဝ 🇰🇷",
-
   "profilePersonalInfo": "ကိုယ်ရေးအချက်အလက်",
   "profileEditInfo": "အချက်အလက်တည်းဖြတ်",
   "profileNativeLang": "မိခင်ဘာသာ",
@@ -131,17 +133,20 @@
   "profileVerified": "အတည်ပြုပြီး",
   "profileLogoutConfirm": "ထွက်မည်မှာ သေချာသလား?",
   "profileSaveChanges": "ပြောင်းလဲမှုများ သိမ်းဆည်း",
-
   "communityBoardTitle": "အသိုင်းအဝိုင်းဘုတ်",
   "communitySearchHint": "ပို့စ်များ၊ ရေးသားသူများ ရှာဖွေ…",
   "communityPostCount": "{count, plural, other{{count} ပို့စ်}}",
   "@communityPostCount": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "communitySortRecent": "နောက်ဆုံး",
   "communitySortPopular": "လူကြိုက်များ",
   "communityNoPosts": "ပို့စ်မတွေ့ပါ",
-
   "createPostNew": "ပို့စ်အသစ်",
   "createPostCategory": "အမျိုးအစား",
   "createPostTitleLabel": "ခေါင်းစဉ်",
@@ -154,7 +159,6 @@
   "createPostGallery": "ဓာတ်ပုံပြခန်း",
   "createPostCamera": "ကင်မရာ",
   "createPostPublish": "တင်မည်",
-
   "postCopied": "ကလစ်ဘုတ်သို့ကူးပြီး",
   "postFollow": "လိုက်နာ",
   "postFollowing": "လိုက်နာနေ",
@@ -173,7 +177,6 @@
   "reviewTimeUnitMinute": "မိနစ်",
   "reviewTimeUnitHour": "နာရီ",
   "reviewTimeUnitDay": "ရက်",
-
   "authHeaderTitle": "နိုင်ငံတကာကျောင်းသားများ၊ မင်္ဂလာပါ!",
   "authHeaderSubtitle": "ကမ္ဘာ့သင်ယူမှုခရီးကို အတူတကွ လျှောက်လှမ်းကြပါစို့။",
   "authLoginTitle": "ဝင်ရောက်မည်",
@@ -195,10 +198,10 @@
   "authHintNameExample": "အောင်အောင်",
   "authButtonLogin": "ဝင်မည်",
   "authButtonRegister": "အကောင့်ဖန်တီးမည်",
-  "authSocialGoogleLoginDemo": "Google ဖြင့် ဝင်ရောက်မည် (ဒမို)",
-  "authSocialKakaoLoginDemo": "KakaoTalk ဖြင့် ဝင်ရောက်မည် (ဒမို)",
-  "authSocialGoogleRegisterDemo": "Google ဖြင့် မှတ်ပုံတင်မည် (ဒမို)",
-  "authSocialKakaoRegisterDemo": "KakaoTalk ဖြင့် မှတ်ပုံတင်မည် (ဒမို)",
+  "authSocialGoogleLoginDemo": "Google ဖြင့် ဝင်ရောက်မည်",
+  "authSocialKakaoLoginDemo": "KakaoTalk ဖြင့် ဝင်ရောက်မည်",
+  "authSocialGoogleRegisterDemo": "Google ဖြင့် မှတ်ပုံတင်မည်",
+  "authSocialKakaoRegisterDemo": "KakaoTalk ဖြင့် မှတ်ပုံတင်မည်",
   "authSocialOr": "သို့မဟုတ်",
   "authSocialContinueGoogle": "Google ဖြင့် ဆက်လုပ်မည်",
   "authSocialKakaoLabel": "KakaoTalk ID",
@@ -211,12 +214,14 @@
   "authValidationConfirmEmpty": "စကားဝှက်အတည်ပြုပါ",
   "authValidationUniversityEmail": "ပူးပေါင်းတက္ကသိုလ်၏ .ac.kr အီးမေးလ် သုံးပါ",
   "authValidationLocalPart": "စာလုံး၊ ဂဏန်း၊ . _ - သာ အသုံးပြုနိုင်သည်",
-  "authValidationConfirmMismatch":"စကားဝှက်မတူညီပါ",
+  "authValidationNationalityEmpty": "Please select your nationality",
+  "authValidationNativeLanguageEmpty": "Please select your native language",
+  "authRegisterSearchHint": "Search…",
+  "authRegisterSelectPlaceholder": "Select…",
+  "authValidationConfirmMismatch": "စကားဝှက်မတူညီပါ",
   "authTooltipShowPassword": "စကားဝှက်ပြမည်",
   "authTooltipHidePassword": "စကားဝှက်ဖျောက်မည်",
-
   "languageSheetSubtitle": "အက်ပ်ဘာသာစကားကို ရွေးချယ်ပါ",
-
   "mapPinFormTitle": "နေရာပင်ထိုးမည်",
   "mapPinSectionVisibility": "မြင်သာမှု",
   "mapPinSectionType": "နေရာအမျိုးအစား",
@@ -248,14 +253,18 @@
   "mapSdkInitializing": "Naver Map SDK စတင်နေသည်…",
   "mapSdkError": "အမှား: {error}",
   "@mapSdkError": {
-    "placeholders": { "error": { "type": "String", "example": "network" } }
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network"
+      }
+    }
   },
   "mapPinInfoPublicShort": "အများမြင်",
   "pinTypeRestaurant": "စားကောင်းသောနေရာ",
   "pinTypeRealEstate": "အိမ်ခြံမြေ",
   "pinTypeUtility": "အခြားအဆင်ပြေများ",
   "pinTypePharmacy": "ဆေးဆိုင်",
-
   "partnerSearchTitle": "ဘာသာစကားဖော်ဖော်ရှာဖော်များ",
   "partnerGenderAny": "အားလုံး",
   "partnerGenderMale": "ကျား",
@@ -267,7 +276,6 @@
   "partnerPending": "စောင့်ဆိုင်းနေသည်…",
   "partnerAccepted": "လက်ခံပြီး!",
   "partnerOpenChat": "Chat ဖွင့်မည်",
-
   "partnerRequestSentSuccess": "Request sent.",
   "partnerRequestNotSignedIn": "Please sign in to send a request.",
   "partnerRequestProfileMissing": "This user has no profile yet.",
@@ -275,7 +283,6 @@
   "partnerRequestIncomingPending": "They already sent you a request. Open Chat to accept it.",
   "partnerRequestAlreadyAccepted": "You are already connected with this person.",
   "partnerRequestFailed": "Could not send the request. Please try again.",
-
   "chatSearchConversations": "စကားပြောများကို ရှာဖွေပါ…",
   "chatEmptyTitle": "စကားပြောမရှိသေးပါ",
   "chatEmptySubtitle": "ဘာသာစကားဖော်ဖော်ရှာဖော်ရှာပြီး စကားပြောစမည်!",
@@ -304,8 +311,6 @@
   "chatReconnectSuccess": "Connection restored.",
   "chatShareLocation": "တည်နေရာမျှဝေရန်",
   "chatOpenInMap": "မြေပုံတွင်ကြည့်ရန်",
-
-
   "authSuccessLogin": "ကြိုဆိုပါသည်！",
   "authSuccessRegister": "စာရင်းသွင်းပြီးပါပြီ！ အီးမေးလ် အတည်ပြုပါ။",
   "authErrInvalidCredential": "အီးမေးလ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေသည်",
@@ -317,25 +322,34 @@
   "authErrWeakPassword": "စကားဝှက် အားနည်းသည် (အနည်းဆုံး ၆ လုံး)",
   "authErrDefault": "အတည်ပြုမှု မအောင်မြင်ပါ: {message}",
   "@authErrDefault": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
-
   "verifyEmailTitle": "သင့် inbox ကို စစ်ဆေးပါ",
   "verifyEmailSubtitle": "{email} သို့ အတည်ပြုလင့်ခ် ပို့ပြီးပါပြီ။ အကောင့် အသက်သွင်းရန် လင့်ခ်ကို နှိပ်ပါ။",
   "@verifyEmailSubtitle": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "verifyEmailCheckButton": "ကျွန်ုပ် အတည်ပြုပြီးပါပြီ",
   "verifyEmailResendButton": "အီးမေးလ် ပြန်ပို့မည်",
   "verifyEmailResendSent": "အတည်ပြုအီးမေးလ် ပို့ပြီးပါပြီ！",
   "verifyEmailResendCooldown": "{seconds} စက္ကန့်အကြာတွင် ပြန်ပို့မည်",
   "@verifyEmailResendCooldown": {
-    "placeholders": { "seconds": { "type": "int" } }
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
-
   "authSuccessVerified": "အီးမေးလ် အတည်ပြုပြီးပါပြီ! ဝင်ရောက်ပါ။",
   "verifyEmailNotYet": "အီးမေးလ် မအတည်ပြုရသေးပါ။ inbox စစ်ဆေးပါ။",
-
   "errorChatRequestNotFound": "ဤတောင်းဆိုမှု မရှိတော့ပါ။",
   "errorChatRequestNotPending": "ဤတောင်းဆိုမှု ဖြေရှင်းပြီးပါပြီ။",
   "errorTransactionAborted": "ချိတ်ဆက်မှု အလုပ်ရှုပ်နေသည် — ထပ်မံကြိုးစားပါ။",
@@ -344,16 +358,22 @@
   "errorNotFound": "တောင်းဆိုထားသောအရာမတွေ့ပါ။",
   "errorDataConflict": "ဒေတာပဋိပက္ခ။ refresh ပြုလုပ်ပြီးပြန်ကြိုးစားပါ။",
   "errorUnexpected": "မမျှော်လင့်သောအမှားဖြစ်ပွားသည်။ ပြန်ကြိုးစားပါ။",
-
   "mapDistanceFromYouMeters": "သင်နှင့် {meters}m",
   "@mapDistanceFromYouMeters": {
-    "placeholders": { "meters": { "type": "int" } }
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
   },
   "mapDistanceFromYouKilometers": "သင်နှင့် {km}km",
   "@mapDistanceFromYouKilometers": {
-    "placeholders": { "km": { "type": "String" } }
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
   },
-
   "postMenuEdit": "တည်းဖြတ်မည်",
   "postMenuDelete": "ဖျက်မည်",
   "postUpdateSuccess": "ပို့စ်ကို အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ",
@@ -368,5 +388,34 @@
   "postDeleteConfirm": "ဖျက်မည်",
   "postTranslating": "ဘာသာပြန်နေသည်…",
   "postShowOriginal": "မူရင်း ကြည့်မည်",
-  "postTranslate": "ဘာသာပြန်မည်"
+  "postTranslate": "ဘာသာပြန်မည်",
+  "scheduleScreenTitle": "အစီအစဉ်",
+  "scheduleTodayHeader": "ယနေ့ အစီအစဉ်",
+  "scheduleViewAll": "အားလုံး ကြည့်မည်",
+  "scheduleNoActivities": "ဤနေ့တွင် လုပ်ဆောင်မှု မရှိပါ",
+  "scheduleNoActivitiesToday": "ယနေ့ အစီအစဉ် မရှိသေးပါ — ထည့်ရန် အားလုံး ကြည့်မည် နှိပ်ပါ",
+  "scheduleAddActivity": "လုပ်ဆောင်မှု ထည့်မည်",
+  "scheduleEditActivity": "လုပ်ဆောင်မှု တည်းဖြတ်မည်",
+  "scheduleTitleLabel": "ခေါင်းစဉ်",
+  "scheduleLocationLabel": "တည်နေရာ",
+  "scheduleStartTime": "စတင်",
+  "scheduleEndTime": "ပြီးဆုံး",
+  "scheduleSave": "သိမ်းဆည်း",
+  "scheduleEmojiLabel": "အိုင်ကွန်",
+  "scheduleColorLabel": "အရောင်",
+  "scheduleTitleRequired": "ခေါင်းစဉ် ထည့်သွင်းပါ",
+  "scheduleEndAfterStart": "ပြီးဆုံးချိန်သည် စတင်ချိန်ထက် နောက်ကျရမည်",
+  "scheduleNotesLabel": "မှတ်စု",
+  "scheduleDelete": "ဖျက်မည်",
+  "scheduleDeleteConfirmTitle": "လုပ်ဆောင်မှု ဖျက်မည်?",
+  "scheduleDeleteConfirmMessage": "ဤလုပ်ဆောင်မှုကို အပြီးအပိုင် ဖျက်မည်",
+  "scheduleGoToToday": "ယနေ့",
+  "scheduleDeleteCancel": "မလုပ်တော့",
+  "uniWebTranslateUnavailableTitle": "ဘာသာပြန်၍မရပါ",
+  "uniWebTranslateUnavailableBody": "ဤဆိုဒ်၏ လုံခြုံရေးမူဝါဒ (CSP) ကြောင့် ဘာသာပြန်ဆိုမှု ပိတ်ဆို့ထားသည်။ ဘရောက်ဆာဖြင့် ဖွင့်၍ ဘာသာပြန်နိုင်သည်။",
+  "uniWebOpenInBrowser": "ဘရောက်ဆာဖြင့် ဖွင့်ရန်",
+  "visaInfoTitle": "ဗီဇာ အချက်အလက်",
+  "visaInfoSubtitle": "သက်တမ်းကုန်ဆုံးသတိပေးချက် ရရန် ဗီဇာ အချက်အလက် ထည့်သွင်းပါ။",
+  "profileGender": "ကျား/မ",
+  "profileBio": "မိတ်ဆက်"
 }

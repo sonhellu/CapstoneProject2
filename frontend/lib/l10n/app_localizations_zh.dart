@@ -527,16 +527,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authButtonRegister => '创建账号';
 
   @override
-  String get authSocialGoogleLoginDemo => 'Google 登录（演示）';
+  String get authSocialGoogleLoginDemo => 'Google 登录';
 
   @override
-  String get authSocialKakaoLoginDemo => 'KakaoTalk 登录（演示）';
+  String get authSocialKakaoLoginDemo => 'KakaoTalk 登录';
 
   @override
-  String get authSocialGoogleRegisterDemo => 'Google 注册（演示）';
+  String get authSocialGoogleRegisterDemo => 'Google 注册';
 
   @override
-  String get authSocialKakaoRegisterDemo => 'KakaoTalk 注册（演示）';
+  String get authSocialKakaoRegisterDemo => 'KakaoTalk 注册';
 
   @override
   String get authSocialOr => '或';
@@ -576,6 +576,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get authValidationLocalPart => '只能使用字母、数字、. _ -';
+
+  @override
+  String get authValidationNationalityEmpty => '请选择国籍';
+
+  @override
+  String get authValidationNativeLanguageEmpty => '请选择母语';
+
+  @override
+  String get authRegisterSearchHint => '搜索…';
+
+  @override
+  String get authRegisterSelectPlaceholder => '选择…';
 
   @override
   String get authTooltipShowPassword => '显示密码';
@@ -971,4 +983,92 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get postTranslate => '翻译';
+
+  @override
+  String get scheduleScreenTitle => '日程';
+
+  @override
+  String get scheduleTodayHeader => '今日日程';
+
+  @override
+  String get scheduleViewAll => '查看全部';
+
+  @override
+  String get scheduleNoActivities => '当天没有活动';
+
+  @override
+  String get scheduleNoActivitiesToday => '今天没有安排，可在查看全部中添加。';
+
+  @override
+  String get scheduleAddActivity => '添加活动';
+
+  @override
+  String get scheduleEditActivity => '编辑活动';
+
+  @override
+  String get scheduleTitleLabel => '标题';
+
+  @override
+  String get scheduleLocationLabel => '地点';
+
+  @override
+  String get scheduleStartTime => '开始';
+
+  @override
+  String get scheduleEndTime => '结束';
+
+  @override
+  String get scheduleSave => '保存';
+
+  @override
+  String get scheduleEmojiLabel => '图标';
+
+  @override
+  String get scheduleColorLabel => '颜色';
+
+  @override
+  String get scheduleTitleRequired => '请输入标题。';
+
+  @override
+  String get scheduleEndAfterStart => '结束时间必须晚于开始时间。';
+
+  @override
+  String get scheduleNotesLabel => '备注';
+
+  @override
+  String get scheduleDelete => '删除';
+
+  @override
+  String get scheduleDeleteConfirmTitle => '删除活动?';
+
+  @override
+  String get scheduleDeleteConfirmMessage => '该活动将被永久删除。';
+
+  @override
+  String get scheduleGoToToday => '今天';
+
+  @override
+  String get scheduleDeleteCancel => '取消';
+
+  @override
+  String get uniWebTranslateUnavailableTitle => '无法翻译';
+
+  @override
+  String get uniWebTranslateUnavailableBody =>
+      '该网站的安全策略(CSP)阻止了翻译功能。请在浏览器中打开以使用翻译。';
+
+  @override
+  String get uniWebOpenInBrowser => '在浏览器中打开';
+
+  @override
+  String get visaInfoTitle => '签证信息';
+
+  @override
+  String get visaInfoSubtitle => '请注册签证信息以接收到期提醒。';
+
+  @override
+  String get profileGender => '性别';
+
+  @override
+  String get profileBio => '简介';
 }

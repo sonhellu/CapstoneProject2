@@ -1,25 +1,21 @@
 {
   "@@locale": "vi",
-
   "appTitle": "Capstone",
   "homeTitle": "Trang chủ",
   "counterLabel": "Bạn đã bấm nút số lần:",
   "incrementTooltip": "Tăng",
   "languagePickerTooltip": "Ngôn ngữ",
   "languageSheetTitle": "Chọn ngôn ngữ",
-
   "navHome": "Trang chủ",
   "navMap": "Bản đồ",
   "navCommunity": "Cộng đồng",
   "navMyPage": "Cá nhân",
-
   "mapSearchHere": "Tìm khu vực này",
   "mapMyLocation": "Vị trí của tôi",
   "mapPinSpot": "Ghim địa điểm",
   "mapGetDirections": "Chỉ đường",
   "mapDirections": "Chỉ đường",
   "mapPinSaved": "Đã lưu",
-
   "btnConfirm": "Xác nhận",
   "btnCancel": "Hủy",
   "btnSave": "Lưu",
@@ -28,60 +24,61 @@
   "btnClose": "Đóng",
   "btnNext": "Tiếp theo",
   "btnBack": "Quay lại",
-
   "filterAll": "Tất cả",
   "filterRestaurants": "Nhà hàng",
   "filterRealEstate": "Bất động sản",
   "filterConvenience": "Tiện lợi",
   "filterAtm": "ATM",
   "filterPharmacy": "Nhà thuốc",
-
   "statusLoadingMap": "Đang tải bản đồ…",
   "statusLocating": "Đang định vị…",
   "statusPermissionDenied": "Quyền truy cập bị từ chối",
   "statusEnableGps": "Vui lòng bật GPS",
-
   "foodMenu": "Thực đơn",
   "foodPrice": "Giá",
   "foodHours": "Giờ mở cửa",
   "foodHalal": "Halal",
   "foodVeggie": "Chay",
   "foodAuthentic": "Chuẩn vị",
-
   "housingRent": "Tiền thuê",
   "housingDeposit": "Đặt cọc",
   "housingFee": "Phí QL",
   "housingNoDeposit": "Không cọc",
   "housingStationNearby": "Gần ga",
-
   "actionCall": "Gọi",
   "actionMessage": "Nhắn tin",
   "actionReview": "Đánh giá",
   "actionShare": "Chia sẻ",
   "actionPhoto": "Ảnh",
-
   "distanceAway": "Cách {distance}",
   "@distanceAway": {
-    "placeholders": { "distance": { "type": "String", "example": "500m" } }
+    "placeholders": {
+      "distance": {
+        "type": "String",
+        "example": "500m"
+      }
+    }
   },
   "minWalk": "Đi bộ {time} phút",
   "@minWalk": {
-    "placeholders": { "time": { "type": "String", "example": "5" } }
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "5"
+      }
+    }
   },
-
   "alertEnterName": "Nhập tên",
   "alertWrongPhone": "Sai số ĐT",
   "alertNotFound": "Không tìm thấy",
   "alertTryAgain": "Thử lại",
   "alertLoginFirst": "Đăng nhập trước",
-
   "profileMyProfile": "Trang cá nhân",
   "profileEdit": "Chỉnh sửa",
   "profileMyPosts": "Bài viết của tôi",
   "profileSavedPlaces": "Địa điểm đã lưu",
   "profileLogout": "Đăng xuất",
   "profileDeleteAccount": "Xóa tài khoản",
-
   "chatMessages": "Tin nhắn",
   "chatTyping": "Đang nhập…",
   "chatSent": "Đã gửi",
@@ -89,14 +86,12 @@
   "chatRead": "Đã xem",
   "chatCall": "Gọi",
   "chatStartConversation": "Bắt đầu trò chuyện",
-
   "communityPostStory": "Đăng bài",
   "communityWhatsOnMind": "Bạn đang nghĩ gì?",
   "communityPublic": "Công khai",
   "communityPrivate": "Riêng tư",
   "communityAnonymous": "Ẩn danh",
   "communityReport": "Báo cáo",
-
   "settingsLanguage": "Ngôn ngữ",
   "settingsNotifications": "Thông báo",
   "settingsDarkMode": "Chế độ tối",
@@ -104,22 +99,29 @@
   "settingsPrivacy": "Chính sách bảo mật",
   "settingsHelp": "Trung tâm hỗ trợ",
   "settingsVersion": "Phiên bản",
-
   "timeJustNow": "Vừa xong",
   "timeMinAgo": "{count, plural, other{{count} phút trước}}",
   "@timeMinAgo": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "timeHourAgo": "{count, plural, other{{count} giờ trước}}",
   "@timeHourAgo": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "timeYesterday": "Hôm qua",
-
   "homeViewAll": "Xem tất cả",
   "homeIntlNews": "Tin quốc tế 🌏",
   "homeCampusLife": "Cuộc sống campus 🇰🇷",
-
   "profilePersonalInfo": "Thông tin cá nhân",
   "profileEditInfo": "Chỉnh sửa thông tin",
   "profileNativeLang": "Ngôn ngữ mẹ đẻ",
@@ -131,17 +133,20 @@
   "profileVerified": "Đã xác minh",
   "profileLogoutConfirm": "Bạn có chắc muốn đăng xuất không?",
   "profileSaveChanges": "Lưu thay đổi",
-
   "communityBoardTitle": "Bảng cộng đồng",
   "communitySearchHint": "Tìm bài viết, tác giả…",
   "communityPostCount": "{count, plural, other{{count} bài viết}}",
   "@communityPostCount": {
-    "placeholders": { "count": { "type": "num", "format": "compact" } }
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
   },
   "communitySortRecent": "Mới nhất",
   "communitySortPopular": "Phổ biến",
   "communityNoPosts": "Không tìm thấy bài viết",
-
   "createPostNew": "Bài viết mới",
   "createPostCategory": "Danh mục",
   "createPostTitleLabel": "Tiêu đề",
@@ -154,7 +159,6 @@
   "createPostGallery": "Thư viện ảnh",
   "createPostCamera": "Camera",
   "createPostPublish": "Đăng bài",
-
   "postCopied": "Đã sao chép vào bộ nhớ tạm",
   "postFollow": "Theo dõi",
   "postFollowing": "Đang theo dõi",
@@ -173,7 +177,6 @@
   "reviewTimeUnitMinute": "phút",
   "reviewTimeUnitHour": "giờ",
   "reviewTimeUnitDay": "ngày",
-
   "authHeaderTitle": "Chào bạn, du học sinh!",
   "authHeaderSubtitle": "Cùng nhau chinh phục hành trình học tập toàn cầu.",
   "authLoginTitle": "Đăng nhập",
@@ -195,10 +198,10 @@
   "authHintNameExample": "Nguyễn Văn A",
   "authButtonLogin": "Đăng nhập",
   "authButtonRegister": "Tạo tài khoản",
-  "authSocialGoogleLoginDemo": "Đăng nhập Google (demo)",
-  "authSocialKakaoLoginDemo": "Đăng nhập KakaoTalk (demo)",
-  "authSocialGoogleRegisterDemo": "Đăng ký với Google (demo)",
-  "authSocialKakaoRegisterDemo": "Đăng ký với KakaoTalk (demo)",
+  "authSocialGoogleLoginDemo": "Đăng nhập với Google",
+  "authSocialKakaoLoginDemo": "Đăng nhập với KakaoTalk",
+  "authSocialGoogleRegisterDemo": "Đăng ký với Google",
+  "authSocialKakaoRegisterDemo": "Đăng ký với KakaoTalk",
   "authSocialOr": "hoặc",
   "authSocialContinueGoogle": "Tiếp tục với Google",
   "authSocialKakaoLabel": "KakaoTalk ID",
@@ -211,12 +214,14 @@
   "authValidationConfirmEmpty": "Vui lòng xác nhận mật khẩu",
   "authValidationUniversityEmail": "Vui lòng sử dụng email đuôi .ac.kr từ các trường đại học liên kết",
   "authValidationLocalPart": "Chỉ được dùng chữ cái, số, . _ -",
-  "authValidationConfirmMismatch":"Mật khẩu xác nhận không khớp",
+  "authValidationNationalityEmpty": "Vui lòng chọn quốc tịch",
+  "authValidationNativeLanguageEmpty": "Vui lòng chọn ngôn ngữ mẹ đẻ",
+  "authRegisterSearchHint": "Tìm…",
+  "authRegisterSelectPlaceholder": "Chọn…",
+  "authValidationConfirmMismatch": "Mật khẩu xác nhận không khớp",
   "authTooltipShowPassword": "Hiện mật khẩu",
   "authTooltipHidePassword": "Ẩn mật khẩu",
-
   "languageSheetSubtitle": "Chọn ngôn ngữ hiển thị ưa thích",
-
   "mapPinFormTitle": "Ghim địa điểm",
   "mapPinSectionVisibility": "Chế độ hiển thị",
   "mapPinSectionType": "Loại địa điểm",
@@ -248,14 +253,18 @@
   "mapSdkInitializing": "Đang khởi tạo Naver Map SDK…",
   "mapSdkError": "Lỗi: {error}",
   "@mapSdkError": {
-    "placeholders": { "error": { "type": "String", "example": "network" } }
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "network"
+      }
+    }
   },
   "mapPinInfoPublicShort": "Công khai",
   "pinTypeRestaurant": "Quán ăn ngon",
   "pinTypeRealEstate": "Bất động sản tốt",
   "pinTypeUtility": "Tiện ích khác",
   "pinTypePharmacy": "Nhà thuốc",
-
   "partnerSearchTitle": "Tìm partner ngôn ngữ",
   "partnerGenderAny": "Tất cả",
   "partnerGenderMale": "Nam",
@@ -302,7 +311,6 @@
   "chatReconnectSuccess": "Da ket noi lai.",
   "chatShareLocation": "Chia sẻ vị trí",
   "chatOpenInMap": "Xem trên bản đồ",
-
   "authSuccessLogin": "Chào mừng trở lại!",
   "authSuccessRegister": "Đăng ký thành công! Vui lòng xác thực email.",
   "authErrInvalidCredential": "Email hoặc mật khẩu không đúng",
@@ -314,25 +322,34 @@
   "authErrWeakPassword": "Mật khẩu quá yếu (tối thiểu 6 ký tự)",
   "authErrDefault": "Xác thực thất bại: {message}",
   "@authErrDefault": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
-
   "verifyEmailTitle": "Kiểm tra hòm thư của bạn",
   "verifyEmailSubtitle": "Chúng tôi đã gửi link xác thực đến {email}. Vui lòng nhấn vào link để kích hoạt tài khoản.",
   "@verifyEmailSubtitle": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "verifyEmailCheckButton": "Tôi đã xác thực rồi",
   "verifyEmailResendButton": "Gửi lại email",
   "verifyEmailResendSent": "Đã gửi email xác thực!",
   "verifyEmailResendCooldown": "Gửi lại sau {seconds}s",
   "@verifyEmailResendCooldown": {
-    "placeholders": { "seconds": { "type": "int" } }
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
-
   "authSuccessVerified": "Email đã xác thực! Vui lòng đăng nhập.",
   "verifyEmailNotYet": "Email chưa được xác thực. Vui lòng kiểm tra hộp thư.",
-
   "errorChatRequestNotFound": "Lời mời này không còn tồn tại.",
   "errorChatRequestNotPending": "Lời mời này đã được xử lý.",
   "errorTransactionAborted": "Kết nối bận — vui lòng thử lại.",
@@ -341,16 +358,22 @@
   "errorNotFound": "Không tìm thấy mục yêu cầu.",
   "errorDataConflict": "Xung đột dữ liệu. Vui lòng làm mới và thử lại.",
   "errorUnexpected": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.",
-
   "mapDistanceFromYouMeters": "Cách bạn {meters}m",
   "@mapDistanceFromYouMeters": {
-    "placeholders": { "meters": { "type": "int" } }
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
   },
   "mapDistanceFromYouKilometers": "Cách bạn {km}km",
   "@mapDistanceFromYouKilometers": {
-    "placeholders": { "km": { "type": "String" } }
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
   },
-
   "postMenuEdit": "Chỉnh sửa",
   "postMenuDelete": "Xóa",
   "postUpdateSuccess": "Bài viết đã được cập nhật",
@@ -365,5 +388,34 @@
   "postDeleteConfirm": "Xóa",
   "postTranslating": "Đang dịch…",
   "postShowOriginal": "Xem bản gốc",
-  "postTranslate": "Dịch"
+  "postTranslate": "Dịch",
+  "scheduleScreenTitle": "Lịch trình",
+  "scheduleTodayHeader": "Lịch trình hôm nay",
+  "scheduleViewAll": "Xem tất cả",
+  "scheduleNoActivities": "Không có hoạt động trong ngày này",
+  "scheduleNoActivitiesToday": "Hôm nay chưa có lịch — chọn Xem tất cả để thêm.",
+  "scheduleAddActivity": "Thêm hoạt động",
+  "scheduleEditActivity": "Sửa hoạt động",
+  "scheduleTitleLabel": "Tiêu đề",
+  "scheduleLocationLabel": "Địa điểm",
+  "scheduleStartTime": "Bắt đầu",
+  "scheduleEndTime": "Kết thúc",
+  "scheduleSave": "Lưu",
+  "scheduleEmojiLabel": "Biểu tượng",
+  "scheduleColorLabel": "Màu",
+  "scheduleTitleRequired": "Vui lòng nhập tiêu đề.",
+  "scheduleEndAfterStart": "Giờ kết thúc phải sau giờ bắt đầu.",
+  "scheduleNotesLabel": "Ghi chú",
+  "scheduleDelete": "Xóa",
+  "scheduleDeleteConfirmTitle": "Xóa hoạt động?",
+  "scheduleDeleteConfirmMessage": "Hoạt động này sẽ bị xóa vĩnh viễn.",
+  "scheduleGoToToday": "Hôm nay",
+  "scheduleDeleteCancel": "Hủy",
+  "uniWebTranslateUnavailableTitle": "Không thể dịch",
+  "uniWebTranslateUnavailableBody": "Chính sách bảo mật (CSP) của trang này chặn tính năng dịch. Mở bằng trình duyệt để dịch.",
+  "uniWebOpenInBrowser": "Mở bằng trình duyệt",
+  "visaInfoTitle": "Thông tin Visa",
+  "visaInfoSubtitle": "Đăng ký thông tin visa để nhận thông báo hết hạn.",
+  "profileGender": "Giới tính",
+  "profileBio": "Giới thiệu"
 }

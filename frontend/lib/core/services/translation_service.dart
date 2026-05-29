@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:http/http.dart' as http;
 
 import '../config/api_keys.dart';
@@ -8,25 +8,23 @@ import '../config/api_keys.dart';
 // ──────────────────────────── Language codes ────────────────────────────
 
 abstract final class LangCode {
-  static const ko    = 'ko';
-  static const en    = 'en';
-  static const vi    = 'vi';
-  static const ja    = 'ja';
-  static const zhCn  = 'zh-CN';
+  static const ko   = 'ko';
+  static const en   = 'en';
+  static const vi   = 'vi';
+  static const ja   = 'ja';
+  static const zhCn = 'zh-CN';
+  static const my   = 'my';
 
-  // Papago-supported target languages (source is always Korean in this app).
-  static const _papagoSupported = {ko, en, vi, ja, zhCn};
+  static const _supported = {ko, en, vi, ja, zhCn, my};
 
-  /// Accepts display tags (KR, VN, ZH), ISO locale codes (ko, vi, zh),
-  /// and full language names (Korean, Vietnamese, Chinese) stored in Firestore.
   static String fromTag(String tag) => switch (tag.toUpperCase()) {
-    'KR' || 'KO' || 'KOREAN'        => ko,
-    'EN' || 'ENGLISH'                => en,
-    'VN' || 'VI' || 'VIETNAMESE'     => vi,
-    'JA' || 'JAPANESE'               => ja,
-    'ZH' || 'ZH-CN' || 'CHINESE'    => zhCn,
-    'MY' || 'MYANMAR' || 'BURMESE'  => en, // Papago unsupported → fallback
-    _                                => en,
+    'KR' || 'KO' || 'KOREAN'       => ko,
+    'EN' || 'ENGLISH'               => en,
+    'VN' || 'VI' || 'VIETNAMESE'    => vi,
+    'JA' || 'JAPANESE'              => ja,
+    'ZH' || 'ZH-CN' || 'CHINESE'   => zhCn,
+    'MY' || 'MYANMAR' || 'BURMESE' => my,
+    _                               => en,
   };
 
   static String displayName(String code) => switch (code) {
@@ -35,127 +33,135 @@ abstract final class LangCode {
     vi   => 'Tiếng Việt',
     ja   => '日本語',
     zhCn => '中文(简体)',
+    my   => 'မြန်မာဘာသာ',
     _    => code,
   };
 
-  /// Returns true when Papago can translate FROM Korean TO [code].
-  static bool isPapagoSupported(String code) =>
-      _papagoSupported.contains(code);
+  static bool isSupported(String code) => _supported.contains(code);
+  static String normalize(String code) => fromTag(code);
 }
 
 // ──────────────────────────── Service (Singleton) ────────────────────────────
 
-/// Translation service backed by Naver Papago NMT API.
-///
-/// Usage:
-/// ```dart
-/// final result = await TranslationService.instance.translateText(
-///   '안녕하세요',
-///   from: LangCode.ko,
-///   to: LangCode.vi,
-/// );
-/// ```
-///
-/// Supported target languages: vi, en, ja, zh-CN, ko.
-/// Burmese (my) is not supported by Papago — falls back to English.
+/// Translation service backed by Google Cloud Translation API v2.
+/// Free tier: 500,000 characters/month.
+/// Requires API key in ApiKeys.googleTranslateApiKey.
 class TranslationService {
   TranslationService._();
   static final instance = TranslationService._();
 
-  static const _endpoint =
-      'https://papago.apigw.ntruss.com/nmt/v1/translation';
+  static const _baseUrl =
+      'https://translation.googleapis.com/language/translate/v2';
 
-  static const _detectEndpoint =
-      'https://papago.apigw.ntruss.com/langs/v1/dect';
+  final _translationCache = <String, String>{};
+  final _detectCache      = <String, String?>{};
+  static const _kMaxCache = 250;
 
-  /// Detects the language of [text] using Papago Language Detection API.
-  ///
-  /// Returns a [LangCode] string (e.g. 'ko', 'vi', 'en') on success,
-  /// or null if detection fails or the language is unsupported.
+  void clearCache() {
+    _translationCache.clear();
+    _detectCache.clear();
+  }
+
+  bool canTranslate({
+    required String text,
+    required String from,
+    required String to,
+  }) {
+    if (text.trim().isEmpty) return false;
+    if (ApiKeys.googleTranslateApiKey.isEmpty) return false;
+    final f = LangCode.normalize(from);
+    final t = LangCode.normalize(to);
+    return f != t && LangCode.isSupported(t);
+  }
+
+  /// Detects the language of [text] via Google Cloud Translation API.
+  /// Returns a LangCode string (e.g. 'ko', 'vi') or null on failure.
   Future<String?> detectLanguage(String text) async {
-    if (text.trim().isEmpty) return null;
+    final key = text.trim();
+    if (key.isEmpty || ApiKeys.googleTranslateApiKey.isEmpty) return null;
+    if (_detectCache.containsKey(key)) return _detectCache[key];
+
     try {
-      final response = await http
+      final uri = Uri.parse('$_baseUrl/detect')
+          .replace(queryParameters: {'key': ApiKeys.googleTranslateApiKey});
+
+      final res = await http
           .post(
-            Uri.parse(_detectEndpoint),
-            headers: {
-              'X-NCP-APIGW-API-KEY-ID': ApiKeys.papagoClientId,
-              'X-NCP-APIGW-API-KEY':    ApiKeys.papagoClientSecret,
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: {'query': text},
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'q': key}),
           )
           .timeout(const Duration(seconds: 6));
 
-      if (response.statusCode != 200) {
-        if (kDebugMode) {
-          debugPrint('[Papago] Detect HTTP ${response.statusCode}: ${response.body}');
-        }
-        return null;
-      }
+      if (res.statusCode != 200) return null;
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final langCode = data['langCode'] as String?;
-      if (langCode == null || langCode.isEmpty) return null;
+      final data       = jsonDecode(res.body) as Map<String, dynamic>;
+      final detections = data['data']?['detections'] as List?;
+      final lang       = detections?.first?.first?['language'] as String?;
+      final normalized = lang != null ? LangCode.fromTag(lang) : null;
 
-      // Normalize: Papago may return 'zh-CN', 'zh-TW' etc.
-      return LangCode.fromTag(langCode);
+      _remember(_detectCache, key, normalized, _kMaxCache);
+      return normalized;
     } catch (e) {
-      if (kDebugMode) debugPrint('[Papago] Detect error: $e');
+      if (kDebugMode) debugPrint('[TranslationService] detect error: $e');
       return null;
     }
   }
 
-  /// Translates [text] from [from] to [to] using Papago NMT.
-  ///
-  /// - Returns [text] unchanged on error or unsupported language pair.
-  /// - Never throws.
+  /// Translates [text] from [from] to [to].
+  /// Returns [text] unchanged on error or unsupported pair.
   Future<String> translateText(
     String text, {
     required String from,
     required String to,
   }) async {
-    if (text.trim().isEmpty) return text;
-    if (from == to) return text;
+    final f = LangCode.normalize(from);
+    final t = LangCode.normalize(to);
 
-    // Papago does not support Burmese — return original text.
-    if (!LangCode.isPapagoSupported(to)) return text;
+    if (!canTranslate(text: text, from: f, to: t)) return text;
+
+    final cacheKey = '$f|$t|${text.trim()}';
+    if (_translationCache.containsKey(cacheKey)) {
+      return _translationCache[cacheKey]!;
+    }
 
     try {
-      final response = await http
+      final uri = Uri.parse(_baseUrl)
+          .replace(queryParameters: {'key': ApiKeys.googleTranslateApiKey});
+
+      final res = await http
           .post(
-            Uri.parse(_endpoint),
-            headers: {
-              'X-NCP-APIGW-API-KEY-ID': ApiKeys.papagoClientId,
-              'X-NCP-APIGW-API-KEY':    ApiKeys.papagoClientSecret,
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: {
-              'source': from,
-              'target': to,
-              'text':   text,
-            },
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'q': text.trim(),
+              'source': f,
+              'target': t,
+              'format': 'text',
+            }),
           )
           .timeout(const Duration(seconds: 10));
 
-      if (response.statusCode != 200) {
-        if (kDebugMode) {
-          debugPrint(
-            '[Papago] HTTP ${response.statusCode}: ${response.body}',
-          );
-        }
-        return text;
-      }
+      if (res.statusCode != 200) return text;
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final translated =
-          data['message']?['result']?['translatedText'] as String?;
+      final data        = jsonDecode(res.body) as Map<String, dynamic>;
+      final translations = data['data']?['translations'] as List?;
+      final translated  = translations?.first?['translatedText'] as String?;
 
       if (translated == null || translated.trim().isEmpty) return text;
+      _remember(_translationCache, cacheKey, translated, _kMaxCache);
       return translated;
     } catch (e) {
-      if (kDebugMode) debugPrint('[Papago] Error: $e');
+      if (kDebugMode) debugPrint('[TranslationService] translate error: $e');
       return text;
+    }
+  }
+
+  void _remember<K, V>(Map<K, V> cache, K key, V value, int maxEntries) {
+    cache.remove(key);
+    cache[key] = value;
+    while (cache.length > maxEntries) {
+      cache.remove(cache.keys.first);
     }
   }
 }

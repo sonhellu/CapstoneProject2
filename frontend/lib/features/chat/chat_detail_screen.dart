@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,9 +8,9 @@ import '../../core/feedback/app_snackbar.dart';
 import '../../core/locale/app_locale_resolver.dart';
 import '../../core/services/translation_service.dart';
 import '../maps/map_focus_controller.dart';
+import '../maps/repository/pin_repository.dart';
 import '../../core/theme/theme_ext.dart';
 import '../../l10n/app_localizations.dart';
-import '../maps/services/mock_pin_service.dart';
 import 'models/chat_models.dart';
 import 'services/chat_service.dart';
 
@@ -19,10 +18,7 @@ const Color _kOnlineGreen = Color(0xFF4CAF50);
 
 // ─────────────────────────── Screen ───────────────────────────
 class ChatDetailScreen extends StatefulWidget {
-  const ChatDetailScreen({
-    super.key,
-    required this.chat,
-  });
+  const ChatDetailScreen({super.key, required this.chat});
 
   final ChatModel chat;
 
@@ -61,7 +57,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   @override
   void initState() {
     super.initState();
-    _cachedMyUid = FirebaseAuth.instance.currentUser?.uid ?? 'me';
+    _cachedMyUid = ChatService.instance.currentUid.isNotEmpty
+        ? ChatService.instance.currentUid
+        : 'me';
     _sendBtnCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
@@ -111,8 +109,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   }
 
   Future<void> _loadInitialMessages() async {
-    final (msgs, cursor) = await ChatService.instance
-        .getMessages(widget.chat.id, since: widget.chat.lastClearedAt);
+    final (msgs, cursor) = await ChatService.instance.getMessages(
+      widget.chat.id,
+      since: widget.chat.lastClearedAt,
+    );
     // Reset unread badge when opening chat.
     ChatService.instance.resetUnreadCount(widget.chat.id);
     if (!mounted) return;
@@ -165,10 +165,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
     // Check if this Firestore message corresponds to a pending optimistic one.
     // We match by content + senderId because the temp ID differs from Firestore ID.
     final pendingIdx = _pendingMsgIds.isNotEmpty
-        ? _messages.indexWhere((m) =>
-            m.isPending &&
-            m.senderId == msg.senderId &&
-            m.content == msg.content)
+        ? _messages.indexWhere(
+            (m) =>
+                m.isPending &&
+                m.senderId == msg.senderId &&
+                m.content == msg.content,
+          )
         : -1;
 
     if (pendingIdx != -1) {
@@ -212,13 +214,28 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
 
   Future<void> _showLocationPicker() async {
     if (mounted) Navigator.pop(context);
-    final locations = MockPinService.instance.allPins.map((pin) => LocationData(
-          name: pin.name,
-          lat: pin.latLng.latitude,
-          lng: pin.latLng.longitude,
-          address: pin.notes,
-          typeEmoji: pin.type.emoji,
-        )).toList();
+    List<LocationData> locations;
+    try {
+      final pins = await PinRepository.instance.visiblePinsOnce();
+      locations = pins
+          .map(
+            (pin) => LocationData(
+              name: pin.name,
+              lat: pin.latLng.latitude,
+              lng: pin.latLng.longitude,
+              address: pin.notes,
+              typeEmoji: pin.type.emoji,
+            ),
+          )
+          .toList();
+    } catch (_) {
+      if (!mounted) return;
+      showErrorTextSnackBar(
+        context,
+        AppLocalizations.of(context)!.mapPinSaveFail,
+      );
+      return;
+    }
     if (!mounted) return;
     final picked = await showModalBottomSheet<LocationData>(
       context: context,
@@ -231,8 +248,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
 
   Future<void> _sendLocation(LocationData location) async {
     HapticFeedback.lightImpact();
-    final tempId =
-        'pending_loc_${DateTime.now().microsecondsSinceEpoch}';
+    final tempId = 'pending_loc_${DateTime.now().microsecondsSinceEpoch}';
     final tempMsg = MessageModel(
       id: tempId,
       senderId: _cachedMyUid,
@@ -328,6 +344,58 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
   }
 
   /// Opens the modern BottomSheet action menu (replaces PopupMenuButton).
+  void _showReportSheet(PartnerModel partner) {
+    final reasons = [
+      'Spam or advertising',
+      'Harassment or bullying',
+      'Inappropriate content',
+      'Fake account',
+    ];
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Report ${partner.name}',
+          style: GoogleFonts.notoSansKr(fontWeight: FontWeight.w700),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: reasons
+              .map(
+                (r) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(r, style: GoogleFonts.notoSansKr(fontSize: 14)),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Report submitted. Thank you!',
+                          style: GoogleFonts.notoSansKr(fontSize: 13),
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              )
+              .toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('Cancel', style: GoogleFonts.notoSansKr()),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showChatActions(PartnerModel partner) {
     showModalBottomSheet<void>(
       context: context,
@@ -337,11 +405,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
         partner: partner,
         onViewProfile: () {
           Navigator.pop(context);
-          // TODO: navigate to partner profile screen
+          showModalBottomSheet<void>(
+            context: context,
+            backgroundColor: Colors.transparent,
+            isScrollControlled: true,
+            builder: (_) => _PartnerProfileSheet(partner: partner),
+          );
         },
         onReport: () {
           Navigator.pop(context);
-          // TODO: open report flow
+          _showReportSheet(partner);
         },
         onDisconnect: () {
           Navigator.pop(context);
@@ -394,9 +467,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
       body: Column(
         children: [
           Expanded(
-            child: _isLoadingInitial
-                ? _buildSkeleton()
-                : _buildMessageList(),
+            child: _isLoadingInitial ? _buildSkeleton() : _buildMessageList(),
           ),
           _buildInputBar(),
         ],
@@ -414,8 +485,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
       shadowColor: const Color(0x14000000),
       titleSpacing: 0,
       leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios_new_rounded,
-            size: 20, color: onS),
+        icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: onS),
         onPressed: () => Navigator.pop(context),
       ),
       title: Row(
@@ -455,9 +525,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                 partner.isOnline ? 'Online' : 'Offline',
                 style: GoogleFonts.notoSansKr(
                   fontSize: 11,
-                  color: partner.isOnline
-                      ? _kOnlineGreen
-                      : context.hintColor,
+                  color: partner.isOnline ? _kOnlineGreen : context.hintColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -484,7 +552,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
       child: ListView.builder(
         controller: _scrollCtrl,
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-        itemCount: _messages.length +
+        itemCount:
+            _messages.length +
             (_isLoadingOlder ? 1 : 0) +
             (_hasMoreOlder && !_isLoadingOlder ? 1 : 0),
         itemBuilder: (context, index) {
@@ -508,22 +577,22 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
             return _LoadOlderButton(onTap: _loadOlderMessages);
           }
 
-          final msgIndex = _isLoadingOlder || _hasMoreOlder
-              ? index - 1
-              : index;
+          final msgIndex = _isLoadingOlder || _hasMoreOlder ? index - 1 : index;
           final msg = _messages[msgIndex];
           final prev = msgIndex > 0 ? _messages[msgIndex - 1] : null;
           final next = msgIndex < _messages.length - 1
               ? _messages[msgIndex + 1]
               : null;
 
-          final showDateSeparator = prev == null ||
-              !_isSameDay(prev.timestamp, msg.timestamp);
-          final isGroupStart = prev == null ||
+          final showDateSeparator =
+              prev == null || !_isSameDay(prev.timestamp, msg.timestamp);
+          final isGroupStart =
+              prev == null ||
               prev.senderId != msg.senderId ||
               msg.timestamp.difference(prev.timestamp).inMinutes > 5 ||
               showDateSeparator;
-          final isGroupEnd = next == null ||
+          final isGroupEnd =
+              next == null ||
               next.senderId != msg.senderId ||
               next.timestamp.difference(msg.timestamp).inMinutes > 5 ||
               !_isSameDay(msg.timestamp, next.timestamp);
@@ -533,6 +602,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
               if (showDateSeparator) _DateSeparator(date: msg.timestamp),
               _BubbleTile(
                 message: msg,
+                currentUid: _cachedMyUid,
                 partnerInitial: widget.chat.partner.avatarInitial,
                 partnerLangTag: widget.chat.partner.nativeLanguage,
                 isGroupStart: isGroupStart,
@@ -560,82 +630,86 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-            SizedBox(
-              width: 40,
-              height: 40,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                icon: Icon(Icons.add_circle_outline_rounded,
-                    color: context.onSurfaceVar, size: 26),
-                onPressed: _showAttachSheet,
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              icon: Icon(
+                Icons.add_circle_outline_rounded,
+                color: context.onSurfaceVar,
+                size: 26,
               ),
+              onPressed: _showAttachSheet,
             ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Container(
-                constraints: const BoxConstraints(maxHeight: 120),
-                decoration: BoxDecoration(
-                  color: context.subtleFill,
-                  borderRadius: BorderRadius.circular(24),
-                  border:
-                      Border.all(color: context.outline.withValues(alpha: 0.35)),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 120),
+              decoration: BoxDecoration(
+                color: context.subtleFill,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: context.outline.withValues(alpha: 0.35),
                 ),
-                child: TextField(
-                  controller: _inputCtrl,
-                  focusNode: _focusNode,
-                  maxLines: null,
-                  keyboardType: TextInputType.multiline,
-                  textCapitalization: TextCapitalization.sentences,
-                  style: GoogleFonts.notoSansKr(
+              ),
+              child: TextField(
+                controller: _inputCtrl,
+                focusNode: _focusNode,
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+                textCapitalization: TextCapitalization.sentences,
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 14,
+                  color: context.onSurface,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Type a message…',
+                  hintStyle: GoogleFonts.notoSansKr(
                     fontSize: 14,
-                    color: context.onSurface,
+                    color: context.hintColor,
                   ),
-                  decoration: InputDecoration(
-                    hintText: 'Type a message…',
-                    hintStyle: GoogleFonts.notoSansKr(
-                      fontSize: 14,
-                      color: context.hintColor,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
                   ),
-                  onSubmitted: (_) => canSendNow ? _send() : null,
                 ),
+                onSubmitted: (_) => canSendNow ? _send() : null,
               ),
             ),
-            const SizedBox(width: 8),
-            AnimatedBuilder(
-              animation: _sendBtnCtrl,
-              builder: (context, _) {
-                final v = _sendBtnCtrl.value;
-                return Transform.scale(
-                  scale: 0.85 + 0.15 * v,
-                  child: GestureDetector(
-                    onTap: canSendNow ? _send : null,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: canSendNow
-                            ? p
-                            : context.outline.withValues(alpha: 0.35),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.send_rounded,
-                        color: canSendNow ? cs.onPrimary : context.hintColor,
-                        size: 20,
-                      ),
+          ),
+          const SizedBox(width: 8),
+          AnimatedBuilder(
+            animation: _sendBtnCtrl,
+            builder: (context, _) {
+              final v = _sendBtnCtrl.value;
+              return Transform.scale(
+                scale: 0.85 + 0.15 * v,
+                child: GestureDetector(
+                  onTap: canSendNow ? _send : null,
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: canSendNow
+                          ? p
+                          : context.outline.withValues(alpha: 0.35),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.send_rounded,
+                      color: canSendNow ? cs.onPrimary : context.hintColor,
+                      size: 20,
                     ),
                   ),
-                );
-              },
-            ),
-          ],
-        ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -664,8 +738,7 @@ class _LoadOlderButton extends StatelessWidget {
         child: GestureDetector(
           onTap: onTap,
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
               color: context.cardFill,
               borderRadius: BorderRadius.circular(20),
@@ -674,8 +747,11 @@ class _LoadOlderButton extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.keyboard_arrow_up_rounded,
-                    size: 16, color: context.onSurfaceVar),
+                Icon(
+                  Icons.keyboard_arrow_up_rounded,
+                  size: 16,
+                  color: context.onSurfaceVar,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   'Load older messages',
@@ -701,9 +777,11 @@ class _DateSeparator extends StatelessWidget {
 
   String _label() {
     final now = DateTime.now();
-    final diff = DateTime(now.year, now.month, now.day)
-        .difference(DateTime(date.year, date.month, date.day))
-        .inDays;
+    final diff = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).difference(DateTime(date.year, date.month, date.day)).inDays;
     if (diff == 0) return 'Today';
     if (diff == 1) return 'Yesterday';
     return '${date.day}/${date.month}/${date.year}';
@@ -716,7 +794,8 @@ class _DateSeparator extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-              child: Divider(color: Theme.of(context).dividerColor, thickness: 1)),
+            child: Divider(color: Theme.of(context).dividerColor, thickness: 1),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
@@ -729,7 +808,8 @@ class _DateSeparator extends StatelessWidget {
             ),
           ),
           Expanded(
-              child: Divider(color: Theme.of(context).dividerColor, thickness: 1)),
+            child: Divider(color: Theme.of(context).dividerColor, thickness: 1),
+          ),
         ],
       ),
     );
@@ -740,6 +820,7 @@ class _DateSeparator extends StatelessWidget {
 class _BubbleTile extends StatelessWidget {
   const _BubbleTile({
     required this.message,
+    required this.currentUid,
     required this.partnerInitial,
     required this.partnerLangTag,
     required this.isGroupStart,
@@ -747,6 +828,7 @@ class _BubbleTile extends StatelessWidget {
   });
 
   final MessageModel message;
+  final String currentUid;
   final String partnerInitial;
   final String partnerLangTag;
   final bool isGroupStart;
@@ -754,7 +836,7 @@ class _BubbleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMe = message.isMe;
+    final isMe = message.isSentBy(currentUid);
 
     if (message.type == MessageType.system) {
       return Padding(
@@ -770,66 +852,65 @@ class _BubbleTile extends StatelessWidget {
       opacity: message.isPending ? 0.55 : 1.0,
       duration: const Duration(milliseconds: 200),
       child: Padding(
-      padding: EdgeInsets.only(
-        top: isGroupStart ? 6 : 2,
-        bottom: isGroupEnd ? 2 : 0,
-      ),
-      child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // Partner avatar (left side, only for last in group)
-          if (!isMe) ...[
-            if (isGroupEnd)
-              _Avatar(initial: partnerInitial, size: 28, fontSize: 11)
-            else
-              const SizedBox(width: 28),
-            const SizedBox(width: 6),
-          ],
+        padding: EdgeInsets.only(
+          top: isGroupStart ? 6 : 2,
+          bottom: isGroupEnd ? 2 : 0,
+        ),
+        child: Row(
+          mainAxisAlignment: isMe
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Partner avatar (left side, only for last in group)
+            if (!isMe) ...[
+              if (isGroupEnd)
+                _Avatar(initial: partnerInitial, size: 28, fontSize: 11)
+              else
+                const SizedBox(width: 28),
+              const SizedBox(width: 6),
+            ],
 
-          // Bubble column
-          Flexible(
-            child: Column(
-              crossAxisAlignment: isMe
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
-              children: [
-                if (message.type == MessageType.location &&
-                    message.locationData != null)
-                  _LocationBubble(
-                    location: message.locationData!,
-                    isMe: isMe,
-                  )
-                else
-                  _Bubble(
-                    message: message,
-                    isMe: isMe,
-                    isGroupStart: isGroupStart,
-                    isGroupEnd: isGroupEnd,
-                    partnerLangTag: isMe ? null : partnerLangTag,
-                  ),
-                if (isGroupEnd)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 3, left: 2, right: 2),
-                    child: Text(
-                      _formatTime(message.timestamp),
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 10,
-                        color: context.hintColor,
+            // Bubble column
+            Flexible(
+              child: Column(
+                crossAxisAlignment: isMe
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
+                children: [
+                  if (message.type == MessageType.location &&
+                      message.locationData != null)
+                    _LocationBubble(location: message.locationData!, isMe: isMe)
+                  else
+                    _Bubble(
+                      key: ValueKey('${message.id}:${message.content}'),
+                      message: message,
+                      isMe: isMe,
+                      isGroupStart: isGroupStart,
+                      isGroupEnd: isGroupEnd,
+                      partnerLangTag: isMe ? null : partnerLangTag,
+                    ),
+                  if (isGroupEnd)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3, left: 2, right: 2),
+                      child: Text(
+                        _formatTime(message.timestamp),
+                        style: GoogleFonts.notoSansKr(
+                          fontSize: 10,
+                          color: context.hintColor,
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Spacer on right for partner messages
-          if (!isMe) const SizedBox(width: 40),
-          // Spacer on left for my messages
-          if (isMe) const SizedBox(width: 40),
-        ],
-      ),
+            // Spacer on right for partner messages
+            if (!isMe) const SizedBox(width: 40),
+            // Spacer on left for my messages
+            if (isMe) const SizedBox(width: 40),
+          ],
+        ),
       ), // Padding
     ); // AnimatedOpacity
   }
@@ -878,6 +959,7 @@ enum _TxState { idle, loading, done }
 
 class _Bubble extends StatefulWidget {
   const _Bubble({
+    super.key,
     required this.message,
     required this.isMe,
     required this.isGroupStart,
@@ -889,6 +971,7 @@ class _Bubble extends StatefulWidget {
   final bool isMe;
   final bool isGroupStart;
   final bool isGroupEnd;
+
   /// Native language tag of the partner (e.g. "KR", "ko"). Null for own messages.
   final String? partnerLangTag;
 
@@ -900,12 +983,24 @@ class _BubbleState extends State<_Bubble> {
   _TxState _txState = _TxState.idle;
   String? _translated;
 
+  @override
+  void didUpdateWidget(covariant _Bubble oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.message.id != widget.message.id ||
+        oldWidget.message.content != widget.message.content ||
+        oldWidget.partnerLangTag != widget.partnerLangTag ||
+        oldWidget.isMe != widget.isMe) {
+      _txState = _TxState.idle;
+      _translated = null;
+    }
+  }
+
   bool _canTranslate(BuildContext context) {
     if (widget.isMe) return false;
     if (widget.message.type != MessageType.text) return false;
     if (widget.message.content.trim().isEmpty) return false;
     final toIso = AppLocaleResolver.targetLang(context);
-    return LangCode.isPapagoSupported(toIso);
+    return LangCode.isSupported(toIso);
   }
 
   Future<void> _onTranslateTap() async {
@@ -927,8 +1022,9 @@ class _BubbleState extends State<_Bubble> {
 
     // 1. Detect actual language of this message (handles mixed-language text).
     // 2. Fallback to partner's profile language if detection fails.
-    final detected = await TranslationService.instance
-        .detectLanguage(widget.message.content);
+    final detected = await TranslationService.instance.detectLanguage(
+      widget.message.content,
+    );
     final fromIso = detected ?? LangCode.fromTag(widget.partnerLangTag ?? '');
 
     // No-op if detected language already matches app language.
@@ -988,8 +1084,9 @@ class _BubbleState extends State<_Bubble> {
     final l = AppLocalizations.of(context)!;
 
     return Column(
-      crossAxisAlignment:
-          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: isMe
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         // ── Message bubble ──
@@ -1006,7 +1103,8 @@ class _BubbleState extends State<_Bubble> {
                 duration: const Duration(seconds: 1),
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             );
           },
@@ -1081,8 +1179,8 @@ class _BubbleState extends State<_Bubble> {
                     _txState == _TxState.loading
                         ? l.postTranslating
                         : _txState == _TxState.done
-                            ? l.postShowOriginal
-                            : l.postTranslate,
+                        ? l.postShowOriginal
+                        : l.postTranslate,
                     style: GoogleFonts.notoSansKr(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -1111,13 +1209,11 @@ class _SkeletonBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
-          if (!isMe) ...[
-            _circle(context, 28),
-            const SizedBox(width: 6),
-          ],
+          if (!isMe) ...[_circle(context, 28), const SizedBox(width: 6)],
           _rect(context, isMe ? 180 : 200, 40),
           if (isMe) const SizedBox(width: 40),
           if (!isMe) const SizedBox(width: 40),
@@ -1127,31 +1223,27 @@ class _SkeletonBubble extends StatelessWidget {
   }
 
   Widget _circle(BuildContext context, double s) => Container(
-        width: s,
-        height: s,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          shape: BoxShape.circle,
-        ),
-      );
+    width: s,
+    height: s,
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      shape: BoxShape.circle,
+    ),
+  );
 
   Widget _rect(BuildContext context, double w, double h) => Container(
-        width: w,
-        height: h,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(14),
-        ),
-      );
+    width: w,
+    height: h,
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(14),
+    ),
+  );
 }
 
 // ─────────────────────────── Avatar ───────────────────────────
 class _Avatar extends StatelessWidget {
-  const _Avatar({
-    required this.initial,
-    this.size = 36,
-    this.fontSize = 14,
-  });
+  const _Avatar({required this.initial, this.size = 36, this.fontSize = 14});
   final String initial;
   final double size;
   final double fontSize;
@@ -1162,10 +1254,7 @@ class _Avatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: cs.primary,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: Text(
         initial.toUpperCase(),
@@ -1196,7 +1285,9 @@ class _LocationBubble extends StatelessWidget {
     final p = context.primary;
     final bg = isMe ? cs.primary : context.cardFill;
     final text = isMe ? cs.onPrimary : context.onSurface;
-    final sub = isMe ? cs.onPrimary.withValues(alpha: 0.75) : context.onSurfaceVar;
+    final sub = isMe
+        ? cs.onPrimary.withValues(alpha: 0.75)
+        : context.onSurfaceVar;
 
     return GestureDetector(
       onTap: () => _openInApp(context),
@@ -1216,20 +1307,22 @@ class _LocationBubble extends StatelessWidget {
                 color: isMe
                     ? cs.primary.withValues(alpha: 0.75)
                     : context.subtleFill,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(location.typeEmoji,
-                      style: const TextStyle(fontSize: 28)),
+                  Text(
+                    location.typeEmoji,
+                    style: const TextStyle(fontSize: 28),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     '${location.lat.toStringAsFixed(4)}, '
                     '${location.lng.toStringAsFixed(4)}',
-                    style: GoogleFonts.notoSansKr(
-                        fontSize: 10, color: sub),
+                    style: GoogleFonts.notoSansKr(fontSize: 10, color: sub),
                   ),
                 ],
               ),
@@ -1239,25 +1332,35 @@ class _LocationBubble extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(location.name,
-                      style: GoogleFonts.notoSansKr(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: text),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    location.name,
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: text,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   if (location.address.isNotEmpty) ...[
                     const SizedBox(height: 2),
-                    Text(location.address,
-                        style: GoogleFonts.notoSansKr(
-                            fontSize: 11, color: sub, height: 1.3),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
+                    Text(
+                      location.address,
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 11,
+                        color: sub,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: isMe
                           ? cs.onPrimary.withValues(alpha: 0.15)
@@ -1267,15 +1370,20 @@ class _LocationBubble extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.map_rounded,
-                            size: 12,
-                            color: isMe ? cs.onPrimary : p),
+                        Icon(
+                          Icons.map_rounded,
+                          size: 12,
+                          color: isMe ? cs.onPrimary : p,
+                        ),
                         const SizedBox(width: 4),
-                        Text(AppLocalizations.of(context)!.chatOpenInMap,
-                            style: GoogleFonts.notoSans(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: isMe ? cs.onPrimary : p)),
+                        Text(
+                          AppLocalizations.of(context)!.chatOpenInMap,
+                          style: GoogleFonts.notoSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isMe ? cs.onPrimary : p,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -1316,7 +1424,9 @@ class _AttachSheet extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1333,13 +1443,20 @@ class _AttachSheet extends StatelessWidget {
                     color: Colors.green.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.location_on_rounded,
-                      color: Colors.green, size: 26),
+                  child: const Icon(
+                    Icons.location_on_rounded,
+                    color: Colors.green,
+                    size: 26,
+                  ),
                 ),
                 const SizedBox(height: 6),
-                Text('Location',
-                    style: GoogleFonts.notoSansKr(
-                        fontSize: 12, color: context.onSurfaceVar)),
+                Text(
+                  'Location',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 12,
+                    color: context.onSurfaceVar,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1376,7 +1493,9 @@ class _LocationPickerSheet extends StatelessWidget {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1405,37 +1524,45 @@ class _LocationPickerSheet extends StatelessWidget {
             child: ListView(
               shrinkWrap: true,
               padding: EdgeInsets.only(bottom: bottomPad + 8),
-              children: locations.map((loc) => ListTile(
-                    leading: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: p.withValues(alpha: 0.08),
-                        shape: BoxShape.circle,
+              children: locations
+                  .map(
+                    (loc) => ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: p.withValues(alpha: 0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          loc.typeEmoji,
+                          style: const TextStyle(fontSize: 20),
+                        ),
                       ),
-                      alignment: Alignment.center,
-                      child: Text(loc.typeEmoji,
-                          style: const TextStyle(fontSize: 20)),
-                    ),
-                    title: Text(
-                      loc.name,
-                      style: GoogleFonts.notoSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: context.onSurface,
+                      title: Text(
+                        loc.name,
+                        style: GoogleFonts.notoSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: context.onSurface,
+                        ),
                       ),
+                      subtitle: loc.address.isNotEmpty
+                          ? Text(
+                              loc.address,
+                              style: GoogleFonts.notoSans(
+                                fontSize: 12,
+                                color: context.onSurfaceVar,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : null,
+                      onTap: () => Navigator.pop(context, loc),
                     ),
-                    subtitle: loc.address.isNotEmpty
-                        ? Text(
-                            loc.address,
-                            style: GoogleFonts.notoSans(
-                                fontSize: 12, color: context.onSurfaceVar),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          )
-                        : null,
-                    onTap: () => Navigator.pop(context, loc),
-                  )).toList(),
+                  )
+                  .toList(),
             ),
           ),
         ],
@@ -1614,6 +1741,169 @@ class _ActionTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ─────────────────────────── Partner Profile Sheet ───────────────────────────
+
+class _PartnerProfileSheet extends StatelessWidget {
+  const _PartnerProfileSheet({required this.partner});
+  final PartnerModel partner;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        MediaQuery.of(context).padding.bottom + 28,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: cs.outline.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: cs.primary,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              partner.avatarInitial.toUpperCase(),
+              style: GoogleFonts.notoSansKr(
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                color: cs.onPrimary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            partner.name,
+            style: GoogleFonts.notoSansKr(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: cs.onSurface,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            partner.school,
+            style: GoogleFonts.notoSansKr(
+              fontSize: 13,
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+          if (partner.isOnline) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: _kOnlineGreen,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Online',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 12,
+                    color: _kOnlineGreen,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 20),
+          Divider(height: 1, color: cs.outline.withValues(alpha: 0.25)),
+          const SizedBox(height: 16),
+          _ProfileInfoRow(
+            icon: Icons.language_outlined,
+            label: 'Native language',
+            value: partner.nativeLanguage,
+          ),
+          const SizedBox(height: 12),
+          _ProfileInfoRow(
+            icon: Icons.translate_rounded,
+            label: 'Learning',
+            value: partner.learningLanguage,
+          ),
+          if (partner.bio.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _ProfileInfoRow(
+              icon: Icons.info_outline_rounded,
+              label: 'Bio',
+              value: partner.bio,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileInfoRow extends StatelessWidget {
+  const _ProfileInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: cs.primary),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 11,
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            Text(
+              value,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

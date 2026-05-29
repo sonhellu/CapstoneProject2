@@ -527,16 +527,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get authButtonRegister => 'アカウント作成';
 
   @override
-  String get authSocialGoogleLoginDemo => 'Googleでログイン（デモ）';
+  String get authSocialGoogleLoginDemo => 'Googleでログイン';
 
   @override
-  String get authSocialKakaoLoginDemo => 'KakaoTalkでログイン（デモ）';
+  String get authSocialKakaoLoginDemo => 'KakaoTalkでログイン';
 
   @override
-  String get authSocialGoogleRegisterDemo => 'Googleで登録（デモ）';
+  String get authSocialGoogleRegisterDemo => 'Googleで登録';
 
   @override
-  String get authSocialKakaoRegisterDemo => 'KakaoTalkで登録（デモ）';
+  String get authSocialKakaoRegisterDemo => 'KakaoTalkで登録';
 
   @override
   String get authSocialOr => 'または';
@@ -576,6 +576,18 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get authValidationLocalPart => '英字、数字、. _ - のみ使用できます';
+
+  @override
+  String get authValidationNationalityEmpty => '国籍を選択してください';
+
+  @override
+  String get authValidationNativeLanguageEmpty => '母国語を選択してください';
+
+  @override
+  String get authRegisterSearchHint => '検索…';
+
+  @override
+  String get authRegisterSelectPlaceholder => '選択…';
 
   @override
   String get authTooltipShowPassword => 'パスワードを表示';
@@ -972,4 +984,92 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get postTranslate => '翻訳';
+
+  @override
+  String get scheduleScreenTitle => 'スケジュール';
+
+  @override
+  String get scheduleTodayHeader => '今日の予定';
+
+  @override
+  String get scheduleViewAll => 'すべて表示';
+
+  @override
+  String get scheduleNoActivities => 'この日の予定はありません';
+
+  @override
+  String get scheduleNoActivitiesToday => '今日の予定はありません。すべて表示から追加できます。';
+
+  @override
+  String get scheduleAddActivity => '予定を追加';
+
+  @override
+  String get scheduleEditActivity => '予定を編集';
+
+  @override
+  String get scheduleTitleLabel => 'タイトル';
+
+  @override
+  String get scheduleLocationLabel => '場所';
+
+  @override
+  String get scheduleStartTime => '開始';
+
+  @override
+  String get scheduleEndTime => '終了';
+
+  @override
+  String get scheduleSave => '保存';
+
+  @override
+  String get scheduleEmojiLabel => 'アイコン';
+
+  @override
+  String get scheduleColorLabel => '色';
+
+  @override
+  String get scheduleTitleRequired => 'タイトルを入力してください。';
+
+  @override
+  String get scheduleEndAfterStart => '終了時刻は開始時刻より後にしてください。';
+
+  @override
+  String get scheduleNotesLabel => 'メモ';
+
+  @override
+  String get scheduleDelete => '削除';
+
+  @override
+  String get scheduleDeleteConfirmTitle => '予定を削除しますか?';
+
+  @override
+  String get scheduleDeleteConfirmMessage => 'この予定は完全に削除されます。';
+
+  @override
+  String get scheduleGoToToday => '今日';
+
+  @override
+  String get scheduleDeleteCancel => 'キャンセル';
+
+  @override
+  String get uniWebTranslateUnavailableTitle => '翻訳できません';
+
+  @override
+  String get uniWebTranslateUnavailableBody =>
+      'このサイトのセキュリティポリシー(CSP)により翻訳がブロックされています。ブラウザで開くと翻訳できます。';
+
+  @override
+  String get uniWebOpenInBrowser => 'ブラウザで開く';
+
+  @override
+  String get visaInfoTitle => 'ビザ情報登録';
+
+  @override
+  String get visaInfoSubtitle => '在留期限の通知を受けるために情報を登録してください。';
+
+  @override
+  String get profileGender => '性別';
+
+  @override
+  String get profileBio => '自己紹介';
 }

@@ -78,7 +78,102 @@ class Post {
         comments: comments ?? this.comments,
         userId: userId ?? this.userId,
       );
+
+  factory Post.fromJson(Map<String, dynamic> json) {
+    final isAnon = json['is_anonymous'] as bool? ?? false;
+    final name = isAnon ? 'Anonymous' : (json['author_name'] as String? ?? 'Unknown');
+    final initial = isAnon ? 'A' : (json['author_avatar_initial'] as String? ?? '?');
+    return Post(
+      id: json['id'].toString(),
+      title: json['title'] as String,
+      content: json['content'] as String,
+      author: PostAuthor(
+        name: name,
+        school: json['author_school'] as String? ?? '',
+        major: '',
+        avatarInitial: initial,
+      ),
+      time: _timeAgo(json['created_at'] as String),
+      category: json['category'] as String? ?? 'Campus',
+      images: json['image_url'] != null ? [json['image_url'] as String] : const [],
+      language: _langTag(json['language_code'] as String?),
+      likes: json['like_count'] as int? ?? 0,
+      comments: 0,
+      userId: json['firebase_uid'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'title': title,
+    'content': content,
+    'category': category,
+    'language_code': _toLangCode(language),
+    'is_anonymous': false,
+    'author_name': author.name,
+    'author_avatar_initial': author.avatarInitial,
+    'author_school': author.school,
+    if (images.isNotEmpty) 'image_url': images.first,
+  };
 }
+
+// ─────────────────────────── Comment ───────────────────────────
+
+class CommentData {
+  const CommentData({
+    required this.id,
+    required this.authorName,
+    required this.avatarInitial,
+    required this.text,
+    required this.time,
+  });
+
+  final String id;
+  final String authorName;
+  final String avatarInitial;
+  final String text;
+  final String time;
+
+  factory CommentData.fromJson(Map<String, dynamic> json) {
+    final isAnon = json['is_anonymous'] as bool? ?? false;
+    return CommentData(
+      id: json['id'].toString(),
+      authorName: isAnon ? 'Anonymous' : (json['author_name'] as String? ?? 'Unknown'),
+      avatarInitial: isAnon ? 'A' : (json['author_avatar_initial'] as String? ?? '?'),
+      text: json['content'] as String,
+      time: _timeAgo(json['created_at'] as String),
+    );
+  }
+}
+
+// ─────────────────────────── Helpers ───────────────────────────
+
+String _timeAgo(String isoDate) {
+  final dt = DateTime.tryParse(isoDate)?.toLocal() ?? DateTime.now();
+  final diff = DateTime.now().difference(dt);
+  if (diff.inMinutes < 1) return 'Just now';
+  if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  if (diff.inDays == 1) return 'Yesterday';
+  return '${diff.inDays}d ago';
+}
+
+String _langTag(String? code) => switch (code?.toLowerCase()) {
+  'ko' || 'kr' => 'KR',
+  'vi' || 'vn' => 'VN',
+  'ja' => 'JA',
+  'zh' => 'ZH',
+  'my' => 'MY',
+  _ => 'EN',
+};
+
+String _toLangCode(String tag) => switch (tag.toUpperCase()) {
+  'KR' => 'ko',
+  'VN' => 'vi',
+  'JA' => 'ja',
+  'ZH' => 'zh',
+  'MY' => 'my',
+  _ => 'en',
+};
 
 // ─────────────────────────── Mock Data ───────────────────────────
 

@@ -1,0 +1,21 @@
+{
+  "repoId": "8c52f390-de01-48f2-9ae5-17728b8986d9",
+  "repoName": "frontend",
+  "server": "https://api.grapuco.com",
+  "language": "javascript",
+  "features": {
+    "embeddings": true,
+    "dataFlowAnalysis": true
+  },
+  "ignore": [
+    "node_modules",
+    "dist",
+    ".next",
+    ".git",
+    ".grapuco",
+    "__pycache__",
+    "vendor",
+    "target",
+    "build"
+  ]
+}

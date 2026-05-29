@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_app_badger/flutter_app_badger.dart';
 
 import '../../core/errors/chat_accept_errors.dart';
 import '../auth/providers/auth_provider.dart';
@@ -24,16 +23,14 @@ class ChatController extends ChangeNotifier {
   String _boundUid = '';
 
   // Broadcast controllers — single Firestore listener each, many UI subscribers.
-  final _incomingCtrl =
-      StreamController<List<ChatRequestModel>>.broadcast();
+  final _incomingCtrl = StreamController<List<ChatRequestModel>>.broadcast();
   final _chatsCtrl = StreamController<List<ChatModel>>.broadcast();
 
   List<ChatModel> _latestChats = const [];
   int _lastTotalUnread = 0; // cache to avoid redundant notifyListeners calls
 
   // Emits each NEW incoming request once for the in-app banner.
-  final _newRequestCtrl =
-      StreamController<ChatRequestModel>.broadcast();
+  final _newRequestCtrl = StreamController<ChatRequestModel>.broadcast();
   Stream<ChatRequestModel> get newRequests => _newRequestCtrl.stream;
 
   // Emits a ChatModel when its unread count increases (new message received).
@@ -52,8 +49,7 @@ class ChatController extends ChangeNotifier {
   Stream<List<ChatModel>> get chats => _chatsCtrl.stream;
 
   /// Total unread count across all active conversations — used for nav badge.
-  int get totalUnread =>
-      _latestChats.fold(0, (sum, c) => sum + c.unreadCount);
+  int get totalUnread => _latestChats.fold(0, (sum, c) => sum + c.unreadCount);
 
   String get currentUid => _auth.uid ?? '';
 
@@ -72,11 +68,11 @@ class ChatController extends ChangeNotifier {
       _incomingCtrl.add(const []);
       _chatsCtrl.add(const []);
       _latestChats = const [];
-      _updateBadge();
     } else {
       // Single Firestore listener → broadcast to UI + detect new requests.
-      _incomingSub =
-          ChatService.instance.incomingRequestsStream(u).listen((list) {
+      _incomingSub = ChatService.instance.incomingRequestsStream(u).listen((
+        list,
+      ) {
         _incomingCtrl.add(list);
         for (final req in list) {
           if (_seenRequestIds.add(req.id)) {
@@ -85,14 +81,13 @@ class ChatController extends ChangeNotifier {
         }
       });
 
-      // Single Firestore listener → broadcast to UI + update app badge.
+      // Single Firestore listener → broadcast to UI.
       // notifyListeners() is only called when totalUnread actually changes,
       // preventing unnecessary rebuilds of every Consumer<ChatController>
       // widget on every incoming message.
       _chatsSub = ChatService.instance.chatListStream(u).listen((list) {
         _latestChats = list;
         _chatsCtrl.add(list);
-        _updateBadge();
 
         // Detect chats where unread count increased → emit for in-app banner.
         for (final chat in list) {
@@ -111,25 +106,6 @@ class ChatController extends ChangeNotifier {
       });
     }
     notifyListeners();
-  }
-
-  void _updateBadge() {
-    if (kIsWeb) return;
-    // flutter_app_badger chỉ hỗ trợ iOS/Android; desktop/embedder gây MissingPluginException.
-    if (defaultTargetPlatform != TargetPlatform.iOS &&
-        defaultTargetPlatform != TargetPlatform.android) {
-      return;
-    }
-    try {
-      final count = totalUnread;
-      if (count > 0) {
-        FlutterAppBadger.updateBadgeCount(count);
-      } else {
-        FlutterAppBadger.removeBadge();
-      }
-    } catch (_) {
-      // Launcher không hỗ trợ badge hoặc plugin chưa gắn (ví dụ chạy trên một số máy ảo).
-    }
   }
 
   // ── Accept / decline ──────────────────────────────────────────────────────

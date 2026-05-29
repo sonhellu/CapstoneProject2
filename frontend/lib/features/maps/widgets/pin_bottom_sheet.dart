@@ -11,16 +11,16 @@ import '../repository/pin_repository.dart';
 // ──────────────────────────── Design Tokens ────────────────────────────
 
 abstract final class _T {
-  static const primary    = Color(0xFF003478);
-  static const gold       = Color(0xFFFFB300);
-  static const surface    = Colors.white;
+  static const primary = Color(0xFF003478);
+  static const gold = Color(0xFFFFB300);
+  static const surface = Colors.white;
   static const background = Color(0xFFF5F7FA);
-  static const textDark   = Color(0xFF1A1A1A);
-  static const textGrey   = Color(0xFF6A6A6A);
-  static const textLight  = Color(0xFFADB5BD);
-  static const border     = Color(0xFFE4E8EF);
-  static const divider    = Color(0xFFF0F2F5);
-  static const danger     = Color(0xFFD32F2F);
+  static const textDark = Color(0xFF1A1A1A);
+  static const textGrey = Color(0xFF6A6A6A);
+  static const textLight = Color(0xFFADB5BD);
+  static const border = Color(0xFFE4E8EF);
+  static const divider = Color(0xFFF0F2F5);
+  static const danger = Color(0xFFD32F2F);
 }
 
 // ──────────────────────────── Entry Point ────────────────────────────
@@ -76,15 +76,15 @@ class _PinFormSheet extends StatefulWidget {
 }
 
 class _PinFormSheetState extends State<_PinFormSheet> {
-  final _nameCtrl  = TextEditingController();
+  final _nameCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   final _nameFocus = FocusNode();
 
   late PinType _type;
-  late bool    _isPublic;
-  late int     _rating;
-  bool    _isSaving = false;
-  int     _photoCount = 0;
+  late bool _isPublic;
+  late int _rating;
+  bool _isSaving = false;
+  int _photoCount = 0;
 
   // Resolved from addressFuture once geocoding completes
   LocalizedAddress? _resolvedAddress;
@@ -95,11 +95,11 @@ class _PinFormSheetState extends State<_PinFormSheet> {
   void initState() {
     super.initState();
     final p = widget.existingPin;
-    _type     = p?.type     ?? PinType.restaurant;
+    _type = p?.type ?? PinType.restaurant;
     _isPublic = p?.isPublic ?? true;
-    _rating   = p?.rating   ?? 5;
+    _rating = p?.rating ?? 5;
     if (p != null) {
-      _nameCtrl.text  = p.name;
+      _nameCtrl.text = p.name;
       _notesCtrl.text = p.notes;
       if (p.addressKorean.isNotEmpty) {
         _resolvedAddress = LocalizedAddress(
@@ -122,8 +122,7 @@ class _PinFormSheetState extends State<_PinFormSheet> {
     super.dispose();
   }
 
-  bool get _canSave =>
-      _nameCtrl.text.trim().isNotEmpty && !_isSaving;
+  bool get _canSave => _nameCtrl.text.trim().isNotEmpty && !_isSaving;
 
   Future<void> _save() async {
     if (!_canSave) return;
@@ -145,13 +144,12 @@ class _PinFormSheetState extends State<_PinFormSheet> {
       addressLocalized: _resolvedAddress?.localized ?? '',
     );
 
-    final success = await PinRepository.mockSavePin(pin);
-
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.of(context).pop(pin);
-    } else {
+    try {
+      final savedPin = await PinRepository.instance.savePin(pin);
+      if (!mounted) return;
+      Navigator.of(context).pop(savedPin);
+    } catch (_) {
+      if (!mounted) return;
       setState(() => _isSaving = false);
       final l = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -162,8 +160,9 @@ class _PinFormSheetState extends State<_PinFormSheet> {
           ),
           backgroundColor: _T.danger,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -201,8 +200,11 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                     color: _T.gold.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.push_pin_rounded,
-                      color: _T.gold, size: 18),
+                  child: const Icon(
+                    Icons.push_pin_rounded,
+                    color: _T.gold,
+                    size: 18,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -217,13 +219,19 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                           color: _T.textDark,
                         ),
                       ),
-                      _AddressSubtitle(resolved: _resolvedAddress, latLng: widget.latLng),
+                      _AddressSubtitle(
+                        resolved: _resolvedAddress,
+                        latLng: widget.latLng,
+                      ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded,
-                      size: 20, color: _T.textGrey),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    size: 20,
+                    color: _T.textGrey,
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -235,7 +243,9 @@ class _PinFormSheetState extends State<_PinFormSheet> {
             child: ListView(
               controller: widget.scrollController,
               padding: EdgeInsets.fromLTRB(
-                20, 4, 20,
+                20,
+                4,
+                20,
                 MediaQuery.of(context).viewInsets.bottom + 20,
               ),
               children: [
@@ -267,16 +277,25 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                     controller: _nameCtrl,
                     focusNode: _nameFocus,
                     maxLength: 80,
-                    buildCounter: (_, {required currentLength,
-                        required isFocused, maxLength}) => null,
+                    buildCounter:
+                        (
+                          _, {
+                          required currentLength,
+                          required isFocused,
+                          maxLength,
+                        }) => null,
                     onChanged: (_) => setState(() {}),
                     textInputAction: TextInputAction.next,
                     style: GoogleFonts.notoSansKr(
-                        fontSize: 15, color: _T.textDark),
+                      fontSize: 15,
+                      color: _T.textDark,
+                    ),
                     decoration: InputDecoration.collapsed(
                       hintText: l.mapPinNameHint,
                       hintStyle: GoogleFonts.notoSansKr(
-                          fontSize: 15, color: _T.textLight),
+                        fontSize: 15,
+                        color: _T.textLight,
+                      ),
                     ),
                   ),
                 ),
@@ -290,14 +309,24 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                     controller: _notesCtrl,
                     maxLines: 4,
                     maxLength: 300,
-                    buildCounter: (_, {required currentLength,
-                        required isFocused, maxLength}) => null,
+                    buildCounter:
+                        (
+                          _, {
+                          required currentLength,
+                          required isFocused,
+                          maxLength,
+                        }) => null,
                     style: GoogleFonts.notoSansKr(
-                        fontSize: 14, color: _T.textDark, height: 1.6),
+                      fontSize: 14,
+                      color: _T.textDark,
+                      height: 1.6,
+                    ),
                     decoration: InputDecoration.collapsed(
                       hintText: l.mapPinNotesHint,
                       hintStyle: GoogleFonts.notoSansKr(
-                          fontSize: 14, color: _T.textLight),
+                        fontSize: 14,
+                        color: _T.textLight,
+                      ),
                     ),
                   ),
                 ),
@@ -420,8 +449,7 @@ class _TypeSelector extends StatelessWidget {
         return GestureDetector(
           onTap: () => onChanged(type),
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: isSel ? _T.gold.withValues(alpha: 0.12) : _T.background,
               borderRadius: BorderRadius.circular(10),
@@ -434,8 +462,7 @@ class _TypeSelector extends StatelessWidget {
               '${type.emoji}  ${type.localizedLabel(l)}',
               style: GoogleFonts.notoSansKr(
                 fontSize: 13,
-                fontWeight:
-                    isSel ? FontWeight.w700 : FontWeight.w400,
+                fontWeight: isSel ? FontWeight.w700 : FontWeight.w400,
                 color: isSel ? const Color(0xFF8A6000) : _T.textGrey,
               ),
             ),
@@ -512,8 +539,11 @@ class _PhotoPickerRow extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.add_a_photo_outlined,
-                        color: _T.gold, size: 24),
+                    const Icon(
+                      Icons.add_a_photo_outlined,
+                      color: _T.gold,
+                      size: 24,
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       l.mapPinAddPhoto,
@@ -527,41 +557,49 @@ class _PhotoPickerRow extends StatelessWidget {
                 ),
               ),
             ),
-          ...List.generate(count, (_) => Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                margin: const EdgeInsets.only(right: 10),
-                decoration: BoxDecoration(
-                  color: _T.gold.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: _T.gold.withValues(alpha: 0.3)),
-                ),
-                child: Icon(Icons.image_rounded,
-                    color: _T.gold.withValues(alpha: 0.5), size: 30),
-              ),
-              Positioned(
-                top: -6,
-                right: 4,
-                child: GestureDetector(
-                  onTap: onRemove,
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      color: _T.danger,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.close_rounded,
-                        size: 12, color: Colors.white),
+          ...List.generate(
+            count,
+            (_) => Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                    color: _T.gold.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _T.gold.withValues(alpha: 0.3)),
+                  ),
+                  child: Icon(
+                    Icons.image_rounded,
+                    color: _T.gold.withValues(alpha: 0.5),
+                    size: 30,
                   ),
                 ),
-              ),
-            ],
-          )),
+                Positioned(
+                  top: -6,
+                  right: 4,
+                  child: GestureDetector(
+                    onTap: onRemove,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: const BoxDecoration(
+                        color: _T.danger,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -602,8 +640,7 @@ class _SaveButton extends StatelessWidget {
                 height: 22,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
             : Row(
@@ -642,7 +679,10 @@ class _AddressSubtitle extends StatelessWidget {
           const SizedBox(
             width: 10,
             height: 10,
-            child: CircularProgressIndicator(strokeWidth: 1.5, color: _T.textLight),
+            child: CircularProgressIndicator(
+              strokeWidth: 1.5,
+              color: _T.textLight,
+            ),
           ),
           const SizedBox(width: 6),
           Text(
