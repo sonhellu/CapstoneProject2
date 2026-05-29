@@ -1,3 +1,12 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from typing import Optional
+
+from app.models.post import Post, PostTranslation
+from app.db.session import get_db
+
+router = APIRouter(prefix="/posts", tags=["posts"])
+
 @router.get("/")
 def read_posts(
     board_id: int,

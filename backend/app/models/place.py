@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Numeric, Text, ForeignKey, Boolean, DateTime, SmallInteger
 from sqlalchemy.sql import func
-from app.db.base_class import Base
+from app.db.base import Base
 
 class Place(Base):
     __tablename__ = "places"

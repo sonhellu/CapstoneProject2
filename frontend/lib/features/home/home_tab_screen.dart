@@ -300,6 +300,7 @@ class _BannerCard extends StatelessWidget {
   final _BannerItem item;
   final String userName;
 
+  // ToDo: Needs onTap: () in 'Keimyung University' image
   @override
   Widget build(BuildContext context) {
     final p = context.primary;

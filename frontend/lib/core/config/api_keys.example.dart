@@ -3,9 +3,9 @@ abstract final class ApiKeys {
   static const naverMapClientSecret =
       'A838hl3KCSGLP6Uwdw13eaXLNRuaxU2VzsBg0rXI';
 
-  static const naverLocalSearchClientId = '2EiMIKMMGUjiqbHUJhgr';
-  static const naverLocalSearchClientSecret = 'js33_ZMcrK';
+  static const naverLocalSearchClientId = 'DEVELOPERS_CLIENT_ID';
+  static const naverLocalSearchClientSecret = 'DEVELOPERS_CLIENT_SECRET';
 
-  static const papagoClientId = '8qt8fd502n';
-  static const papagoClientSecret = 'lw3ljuXAXll7yTykpXMBxq8bRfKH1uo5ZHlxCw7q';
+  static const papagoClientId = 'DEVELOPERS_CLIENT_ID';
+  static const papagoClientSecret = 'DEVELOPERS_CLIENT_SECRET';
 }
