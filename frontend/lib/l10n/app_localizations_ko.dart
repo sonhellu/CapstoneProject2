@@ -1073,4 +1073,85 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get profileBio => '자기소개';
+
+  @override
+  String get visaFormTitle => '비자 정보 입력';
+
+  @override
+  String get visaFieldRegNumber => '외국인등록번호';
+
+  @override
+  String get visaFieldRegNumberHint => '예: 000000-0000000';
+
+  @override
+  String get visaFieldName => '성명';
+
+  @override
+  String get visaFieldNameHint => '외국인등록증에 적힌 이름';
+
+  @override
+  String get visaFieldCountry => '국가/지역';
+
+  @override
+  String get visaFieldCountryHint => '예: Vietnam';
+
+  @override
+  String get visaFieldVisaType => '체류자격';
+
+  @override
+  String get visaFieldVisaTypeHint => '예: D-2';
+
+  @override
+  String get visaFieldPermissionDate => '허가일자';
+
+  @override
+  String get visaFieldExpiryDate => '만료일자';
+
+  @override
+  String get visaFieldAddressReportDate => '체류지 신고일';
+
+  @override
+  String get visaFieldAddressReportDateHint => '예: 2026.05.11';
+
+  @override
+  String get visaFieldAddress => '체류지';
+
+  @override
+  String get visaFieldAddressHint => '현재 거주 주소';
+
+  @override
+  String get visaFieldRequired => '필수 입력 항목입니다.';
+
+  @override
+  String get visaDateSelect => '선택';
+
+  @override
+  String get visaSelectDateError => '허가일자와 만료일자를 선택해주세요.';
+
+  @override
+  String get visaLoginRequired => '로그인이 필요합니다.';
+
+  @override
+  String get visaSaveSuccess => '비자 정보가 저장되었습니다.';
+
+  @override
+  String get visaSaveFailed => '저장 실패: ';
+
+  @override
+  String get visaSaveButton => '저장하기';
+
+  @override
+  String get visaDDayExpired => '비자 만료일이 지났어요';
+
+  @override
+  String get visaDDayWarning => '비자 만료가 가까워지고 있어요';
+
+  @override
+  String get visaDDayUntil => '비자 만료일까지';
+
+  @override
+  String get visaDDayExpiryLabel => '만료일: ';
+
+  @override
+  String get visaEmptyCard => '비자 정보를 등록하면 홈에서 만료일 D-day를 확인할 수 있어요.';
 }

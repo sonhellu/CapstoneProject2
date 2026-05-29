@@ -1072,4 +1072,85 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get profileBio => '自己紹介';
+
+  @override
+  String get visaFormTitle => '在留資格情報';
+
+  @override
+  String get visaFieldRegNumber => '外国人登録番号';
+
+  @override
+  String get visaFieldRegNumberHint => '例: 000000-0000000';
+
+  @override
+  String get visaFieldName => '氏名';
+
+  @override
+  String get visaFieldNameHint => '在留カードに記載された名前';
+
+  @override
+  String get visaFieldCountry => '国/地域';
+
+  @override
+  String get visaFieldCountryHint => '例: Vietnam';
+
+  @override
+  String get visaFieldVisaType => '在留資格';
+
+  @override
+  String get visaFieldVisaTypeHint => '例: D-2';
+
+  @override
+  String get visaFieldPermissionDate => '許可日';
+
+  @override
+  String get visaFieldExpiryDate => '満了日';
+
+  @override
+  String get visaFieldAddressReportDate => '住所届出日';
+
+  @override
+  String get visaFieldAddressReportDateHint => '例: 2026.05.11';
+
+  @override
+  String get visaFieldAddress => '住所';
+
+  @override
+  String get visaFieldAddressHint => '現住所';
+
+  @override
+  String get visaFieldRequired => '必須項目です。';
+
+  @override
+  String get visaDateSelect => '選択';
+
+  @override
+  String get visaSelectDateError => '許可日と満了日を選択してください。';
+
+  @override
+  String get visaLoginRequired => 'ログインが必要です。';
+
+  @override
+  String get visaSaveSuccess => '在留資格情報が保存されました。';
+
+  @override
+  String get visaSaveFailed => '保存失敗: ';
+
+  @override
+  String get visaSaveButton => '保存';
+
+  @override
+  String get visaDDayExpired => 'ビザの有効期限が過ぎています';
+
+  @override
+  String get visaDDayWarning => 'ビザの有効期限が近づいています';
+
+  @override
+  String get visaDDayUntil => 'ビザ有効期限まで';
+
+  @override
+  String get visaDDayExpiryLabel => '満了日: ';
+
+  @override
+  String get visaEmptyCard => '在留資格情報を登録すると、ホーム画面で満了日D-dayを確認できます。';
 }

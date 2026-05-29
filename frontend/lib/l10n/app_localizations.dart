@@ -2115,6 +2115,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bio'**
   String get profileBio;
+
+  /// No description provided for @visaFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa Information'**
+  String get visaFormTitle;
+
+  /// No description provided for @visaFieldRegNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Foreigner ID Number'**
+  String get visaFieldRegNumber;
+
+  /// No description provided for @visaFieldRegNumberHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 000000-0000000'**
+  String get visaFieldRegNumberHint;
+
+  /// No description provided for @visaFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get visaFieldName;
+
+  /// No description provided for @visaFieldNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name as on ID card'**
+  String get visaFieldNameHint;
+
+  /// No description provided for @visaFieldCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Country / Region'**
+  String get visaFieldCountry;
+
+  /// No description provided for @visaFieldCountryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Vietnam'**
+  String get visaFieldCountryHint;
+
+  /// No description provided for @visaFieldVisaType.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa Type'**
+  String get visaFieldVisaType;
+
+  /// No description provided for @visaFieldVisaTypeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. D-2'**
+  String get visaFieldVisaTypeHint;
+
+  /// No description provided for @visaFieldPermissionDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission Date'**
+  String get visaFieldPermissionDate;
+
+  /// No description provided for @visaFieldExpiryDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiry Date'**
+  String get visaFieldExpiryDate;
+
+  /// No description provided for @visaFieldAddressReportDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Address Report Date'**
+  String get visaFieldAddressReportDate;
+
+  /// No description provided for @visaFieldAddressReportDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 2026.05.11'**
+  String get visaFieldAddressReportDateHint;
+
+  /// No description provided for @visaFieldAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get visaFieldAddress;
+
+  /// No description provided for @visaFieldAddressHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Current residential address'**
+  String get visaFieldAddressHint;
+
+  /// No description provided for @visaFieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required.'**
+  String get visaFieldRequired;
+
+  /// No description provided for @visaDateSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get visaDateSelect;
+
+  /// No description provided for @visaSelectDateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select both permission and expiry dates.'**
+  String get visaSelectDateError;
+
+  /// No description provided for @visaLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Login required.'**
+  String get visaLoginRequired;
+
+  /// No description provided for @visaSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa information saved.'**
+  String get visaSaveSuccess;
+
+  /// No description provided for @visaSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed: '**
+  String get visaSaveFailed;
+
+  /// No description provided for @visaSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get visaSaveButton;
+
+  /// No description provided for @visaDDayExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa has expired'**
+  String get visaDDayExpired;
+
+  /// No description provided for @visaDDayWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa expiry is approaching'**
+  String get visaDDayWarning;
+
+  /// No description provided for @visaDDayUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Until visa expiry'**
+  String get visaDDayUntil;
+
+  /// No description provided for @visaDDayExpiryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiry: '**
+  String get visaDDayExpiryLabel;
+
+  /// No description provided for @visaEmptyCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Register your visa details to see the expiry D-day on the home screen.'**
+  String get visaEmptyCard;
 }
 
 class _AppLocalizationsDelegate

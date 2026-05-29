@@ -1097,4 +1097,87 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get profileBio => 'မိတ်ဆက်';
+
+  @override
+  String get visaFormTitle => 'ဗီဇာသတင်းအချက်အလက်';
+
+  @override
+  String get visaFieldRegNumber => 'နိုင်ငံခြားသားမှတ်ပုံတင်နံပါတ်';
+
+  @override
+  String get visaFieldRegNumberHint => 'ဥပမာ: 000000-0000000';
+
+  @override
+  String get visaFieldName => 'အမည်';
+
+  @override
+  String get visaFieldNameHint => 'မှတ်ပုံတင်ကတ်ပေါ်ရှိ အမည်';
+
+  @override
+  String get visaFieldCountry => 'နိုင်ငံ/ဒေသ';
+
+  @override
+  String get visaFieldCountryHint => 'ဥပမာ: Vietnam';
+
+  @override
+  String get visaFieldVisaType => 'ဗီဇာအမျိုးအစား';
+
+  @override
+  String get visaFieldVisaTypeHint => 'ဥပမာ: D-2';
+
+  @override
+  String get visaFieldPermissionDate => 'ခွင့်ပြုသည့်ရက်';
+
+  @override
+  String get visaFieldExpiryDate => 'သက်တမ်းကုန်ဆုံးသည့်ရက်';
+
+  @override
+  String get visaFieldAddressReportDate => 'လိပ်စာမှတ်တမ်းတင်သည့်ရက်';
+
+  @override
+  String get visaFieldAddressReportDateHint => 'ဥပမာ: 2026.05.11';
+
+  @override
+  String get visaFieldAddress => 'နေရပ်လိပ်စာ';
+
+  @override
+  String get visaFieldAddressHint => 'လက်ရှိနေရပ်လိပ်စာ';
+
+  @override
+  String get visaFieldRequired => 'ဤနေရာ ဖြည့်ရန် လိုအပ်သည်။';
+
+  @override
+  String get visaDateSelect => 'ရွေးချယ်ပါ';
+
+  @override
+  String get visaSelectDateError =>
+      'ခွင့်ပြုသည့်ရက်နှင့် သက်တမ်းကုန်ဆုံးသည့်ရက် ရွေးချယ်ပါ။';
+
+  @override
+  String get visaLoginRequired => 'ကျေးဇူးပြု၍ ဝင်ရောက်ပါ။';
+
+  @override
+  String get visaSaveSuccess => 'ဗီဇာသတင်းအချက်အလက် သိမ်းဆည်းပြီးပါပြီ။';
+
+  @override
+  String get visaSaveFailed => 'သိမ်းဆည်းမှု မအောင်မြင်ပါ: ';
+
+  @override
+  String get visaSaveButton => 'သိမ်းဆည်းမည်';
+
+  @override
+  String get visaDDayExpired => 'ဗီဇာသက်တမ်းကုန်ဆုံးသွားပြီ';
+
+  @override
+  String get visaDDayWarning => 'ဗီဇာသက်တမ်းနီးကပ်လာပြီ';
+
+  @override
+  String get visaDDayUntil => 'ဗီဇာကုန်ဆုံးသည်အထိ';
+
+  @override
+  String get visaDDayExpiryLabel => 'ကုန်ဆုံးသည့်ရက်: ';
+
+  @override
+  String get visaEmptyCard =>
+      'ဗီဇာသတင်းအချက်အလက် မှတ်ပုံတင်ပါ၊ မူလစာမျက်နှာတွင် D-day ကို ကြည့်ရှုနိုင်ပါမည်။';
 }
