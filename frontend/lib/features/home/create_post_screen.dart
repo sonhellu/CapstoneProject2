@@ -112,9 +112,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       if (uid == null) {
         throw Exception('Please sign in before publishing.');
       }
-      final authorName = auth.displayName?.trim().isNotEmpty == true
-          ? auth.displayName!.trim()
-          : 'Demo User';
+      final authorName = auth.nickname;
 
       // Upload picked images to Firebase Storage.
       final imageUrls = await _uploadImages(uid);

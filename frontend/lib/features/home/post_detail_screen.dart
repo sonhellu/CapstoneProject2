@@ -66,7 +66,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final text = _commentCtrl.text.trim();
     if (text.isEmpty) return;
     final auth = context.read<AuthProvider>();
-    final name = auth.displayName ?? auth.userEmail?.split('@').first ?? 'User';
+    final name = auth.nickname;
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
     context
         .read<PostProvider>()
