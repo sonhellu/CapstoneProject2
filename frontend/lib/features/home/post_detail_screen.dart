@@ -10,6 +10,7 @@ import '../auth/providers/auth_provider.dart';
 import 'models/post.dart';
 import 'providers/post_provider.dart';
 import 'widgets/post_card.dart' show postImageHeroTag, postAvatarHeroTag;
+import 'widgets/post_owner_menu.dart';
 import 'widgets/post_translator.dart';
 
 const _langConfig = <String, _LangChip>{
@@ -65,20 +66,28 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final text = _commentCtrl.text.trim();
     if (text.isEmpty) return;
     final auth = context.read<AuthProvider>();
-    final name = auth.displayName ?? auth.userEmail?.split('@').first ?? 'User';
+    final name = auth.nickname;
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
-    context.read<PostProvider>().addComment(
-      widget.post.id,
-      CommentData(
-        id: 'c_${DateTime.now().millisecondsSinceEpoch}',
-        authorName: name,
-        avatarInitial: initial,
-        text: text,
-        time: 'Just now',
-      ),
-      authorName: name,
-      avatarInitial: initial,
-    );
+    context
+        .read<PostProvider>()
+        .addComment(
+          widget.post.id,
+          CommentData(
+            id: 'c_${DateTime.now().millisecondsSinceEpoch}',
+            authorName: name,
+            avatarInitial: initial,
+            text: text,
+            time: 'Just now',
+          ),
+          authorName: name,
+          avatarInitial: initial,
+        )
+        .catchError((_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not save comment.')),
+          );
+        });
     _commentCtrl.clear();
     _commentFocus.unfocus();
   }
@@ -112,7 +121,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // ─────────────────────────── Build ───────────────────────────
   @override
   Widget build(BuildContext context) {
-    final post = context.watch<PostProvider>().getById(widget.post.id) ?? widget.post;
+    final post =
+        context.watch<PostProvider>().getById(widget.post.id) ?? widget.post;
     final hasImages = post.images.isNotEmpty;
 
     return Scaffold(
@@ -133,7 +143,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
             actions: [
               _CircleNavButton(icon: Icons.copy_rounded, onTap: _copyContent),
-              _CircleNavButton(icon: Icons.share_rounded, onTap: () {}),
+              PostOwnerMenu(
+                post: post,
+                currentUserId: context.read<AuthProvider>().uid ?? '',
+                iconColor: Colors.white,
+                onDeleted: () => Navigator.of(context).pop(),
+              ),
               const SizedBox(width: 4),
             ],
             flexibleSpace: hasImages
@@ -194,7 +209,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     Divider(height: 1, color: Theme.of(context).dividerColor),
                     const SizedBox(height: 24),
                     _buildBody(post.content, post.language),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 20),
+                    _buildActionRow(post),
+                    const SizedBox(height: 24),
                     Divider(height: 1, color: Theme.of(context).dividerColor),
                     const SizedBox(height: 20),
                     _buildCommentsSection(),
@@ -343,6 +360,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
+  Widget _buildActionRow(Post post) {
+    return Row(
+      children: [
+        _PostActionButton(
+          icon: Icons.chat_bubble_outline_rounded,
+          label: '${post.comments}',
+          onTap: () => _commentFocus.requestFocus(),
+        ),
+      ],
+    );
+  }
+
   // ─── Comments Section ───
   Widget _buildCommentsSection() {
     return Consumer<PostProvider>(
@@ -386,69 +415,69 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             else
               ...List.generate(comments.length, (i) {
                 final c = comments[i];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Avatar
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: context.primary.withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      c.avatarInitial.toUpperCase(),
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: context.primary,
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Avatar
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: context.primary.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          c.avatarInitial.toUpperCase(),
+                          style: GoogleFonts.notoSansKr(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: context.primary,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              children: [
+                                Text(
+                                  c.authorName,
+                                  style: GoogleFonts.notoSansKr(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: context.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  c.time,
+                                  style: GoogleFonts.notoSansKr(
+                                    fontSize: 11,
+                                    color: context.hintColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
                             Text(
-                              c.authorName,
+                              c.text,
                               style: GoogleFonts.notoSansKr(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: context.onSurface,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              c.time,
-                              style: GoogleFonts.notoSansKr(
-                                fontSize: 11,
-                                color: context.hintColor,
+                                color: context.onSurfaceVar,
+                                height: 1.5,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          c.text,
-                          style: GoogleFonts.notoSansKr(
-                            fontSize: 13,
-                            color: context.onSurfaceVar,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
+                );
               }),
           ],
         );
@@ -522,7 +551,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       ),
     );
   }
-
 }
 
 // ─────────────────────────── Circle Nav Button ───────────────────────────
@@ -545,6 +573,49 @@ class _CircleNavButton extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: Colors.white, size: 18),
+        ),
+      ),
+    );
+  }
+}
+
+class _PostActionButton extends StatelessWidget {
+  const _PostActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: context.subtleFill,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 17, color: context.primary),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: context.primary,
+              ),
+            ),
+          ],
         ),
       ),
     );

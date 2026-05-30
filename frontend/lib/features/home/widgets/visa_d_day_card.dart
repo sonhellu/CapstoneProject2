@@ -4,20 +4,30 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/theme_ext.dart';
+import '../../../l10n/app_localizations.dart';
 
-class VisaDDayCard extends StatelessWidget {
+class VisaDDayCard extends StatefulWidget {
   const VisaDDayCard({super.key});
 
-  Stream<DocumentSnapshot<Map<String, dynamic>>>? _visaInfoStream() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null;
+  @override
+  State<VisaDDayCard> createState() => _VisaDDayCardState();
+}
 
-    return FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('visaInfo')
-        .doc('current')
-        .snapshots();
+class _VisaDDayCardState extends State<VisaDDayCard> {
+  Stream<DocumentSnapshot<Map<String, dynamic>>>? _stream;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _stream = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('visaInfo')
+          .doc('current')
+          .snapshots();
+    }
   }
 
   int _calculateDDay(DateTime expiryDate) {
@@ -28,7 +38,6 @@ class VisaDDayCard extends StatelessWidget {
       expiryDate.month,
       expiryDate.day,
     );
-
     return expiryOnly.difference(todayOnly).inDays;
   }
 
@@ -38,19 +47,11 @@ class VisaDDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stream = _visaInfoStream();
-
-    if (stream == null) {
-      return const SizedBox.shrink();
-    }
+    if (_stream == null) return const SizedBox.shrink();
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: stream,
+      stream: _stream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox.shrink();
-        }
-
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return _EmptyVisaCard();
         }
@@ -85,14 +86,15 @@ class _VisaCardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isExpired = dDay < 0;
     final isWarning = dDay <= 120 && dDay >= 0;
 
     final title = isExpired
-        ? '비자 만료일이 지났어요'
+        ? l10n.visaDDayExpired
         : isWarning
-            ? '비자 만료가 가까워지고 있어요'
-            : '비자 만료일까지';
+            ? l10n.visaDDayWarning
+            : l10n.visaDDayUntil;
 
     final dDayText = isExpired ? 'D+${dDay.abs()}' : 'D-$dDay';
 
@@ -152,7 +154,7 @@ class _VisaCardContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '만료일: $expiryDateText',
+                  '${l10n.visaDDayExpiryLabel}$expiryDateText',
                   style: GoogleFonts.notoSansKr(
                     fontSize: 12,
                     color: context.onSurfaceVar,
@@ -170,6 +172,7 @@ class _VisaCardContent extends StatelessWidget {
 class _EmptyVisaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -193,7 +196,7 @@ class _EmptyVisaCard extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(
             child: Text(
-              '비자 정보를 등록하면 홈에서 만료일 D-day를 확인할 수 있어요.',
+              l10n.visaEmptyCard,
               style: GoogleFonts.notoSansKr(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

@@ -368,15 +368,6 @@ class _ListCard extends StatelessWidget {
         // Stats
         Row(
           children: [
-            Icon(Icons.favorite_border_rounded,
-                size: 13, color: context.hintColor),
-            const SizedBox(width: 3),
-            Text(
-              '${post.likes}',
-              style: GoogleFonts.notoSansKr(
-                  fontSize: 11, color: context.hintColor),
-            ),
-            const SizedBox(width: 10),
             Icon(Icons.chat_bubble_outline_rounded,
                 size: 13, color: context.hintColor),
             const SizedBox(width: 3),

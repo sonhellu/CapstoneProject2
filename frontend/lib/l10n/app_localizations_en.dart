@@ -1099,4 +1099,123 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileBio => 'Bio';
+
+  @override
+  String get visaFormTitle => 'Visa Information';
+
+  @override
+  String get visaFieldRegNumber => 'Foreigner ID Number';
+
+  @override
+  String get visaFieldRegNumberHint => 'e.g. 000000-0000000';
+
+  @override
+  String get visaFieldName => 'Full Name';
+
+  @override
+  String get visaFieldNameHint => 'Name as on ID card';
+
+  @override
+  String get visaFieldCountry => 'Country / Region';
+
+  @override
+  String get visaFieldCountryHint => 'e.g. Vietnam';
+
+  @override
+  String get visaFieldVisaType => 'Visa Type';
+
+  @override
+  String get visaFieldVisaTypeHint => 'e.g. D-2';
+
+  @override
+  String get visaFieldPermissionDate => 'Permission Date';
+
+  @override
+  String get visaFieldExpiryDate => 'Expiry Date';
+
+  @override
+  String get visaFieldAddressReportDate => 'Address Report Date';
+
+  @override
+  String get visaFieldAddressReportDateHint => 'e.g. 2026.05.11';
+
+  @override
+  String get visaFieldAddress => 'Address';
+
+  @override
+  String get visaFieldAddressHint => 'Current residential address';
+
+  @override
+  String get visaFieldRequired => 'This field is required.';
+
+  @override
+  String get visaDateSelect => 'Select';
+
+  @override
+  String get visaSelectDateError =>
+      'Please select both permission and expiry dates.';
+
+  @override
+  String get visaLoginRequired => 'Login required.';
+
+  @override
+  String get visaSaveSuccess => 'Visa information saved.';
+
+  @override
+  String get visaSaveFailed => 'Save failed: ';
+
+  @override
+  String get visaSaveButton => 'Save';
+
+  @override
+  String get visaDDayExpired => 'Visa has expired';
+
+  @override
+  String get visaDDayWarning => 'Visa expiry is approaching';
+
+  @override
+  String get visaDDayUntil => 'Until visa expiry';
+
+  @override
+  String get visaDDayExpiryLabel => 'Expiry: ';
+
+  @override
+  String get visaEmptyCard =>
+      'Register your visa details to see the expiry D-day on the home screen.';
+
+  @override
+  String get rentSectionTitle => '🏠  Nearby Rent Prices';
+
+  @override
+  String get rentBadge => 'Rental';
+
+  @override
+  String get rentDeposit => 'Deposit';
+
+  @override
+  String get rentMonthly => 'Monthly';
+
+  @override
+  String get rentUnit => '만원';
+
+  @override
+  String get rentBuildingUnknown => 'Unknown Building';
+
+  @override
+  String get rentAreaLabel => 'Area';
+
+  @override
+  String get rentFloorLabel => 'Floor';
+
+  @override
+  String get rentBuildYearLabel => 'Built Year';
+
+  @override
+  String get rentDealDateLabel => 'Deal Date';
+
+  @override
+  String get rentFloorUnit => 'F';
+
+  @override
+  String get rentYearUnit => '';
 }

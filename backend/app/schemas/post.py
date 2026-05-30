@@ -33,6 +33,7 @@ class PostResponse(BaseModel):
     is_anonymous: bool
     image_url: Optional[str] = None
     like_count: int
+    comments_count: int = 0
     view_count: int
     created_at: datetime
 

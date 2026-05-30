@@ -84,7 +84,6 @@ class _PinFormSheetState extends State<_PinFormSheet> {
   late bool _isPublic;
   late int _rating;
   bool _isSaving = false;
-  int _photoCount = 0;
 
   // Resolved from addressFuture once geocoding completes
   LocalizedAddress? _resolvedAddress;
@@ -344,19 +343,6 @@ class _PinFormSheetState extends State<_PinFormSheet> {
                 ),
                 const SizedBox(height: 20),
 
-                // ── Photo picker placeholder ─────────────────────
-                _SectionLabel('${l.mapPinSectionPhotos}  ($_photoCount/4)'),
-                const SizedBox(height: 10),
-                _PhotoPickerRow(
-                  l: l,
-                  count: _photoCount,
-                  onAdd: () => setState(() {
-                    if (_photoCount < 4) _photoCount++;
-                  }),
-                  onRemove: () => setState(() {
-                    if (_photoCount > 0) _photoCount--;
-                  }),
-                ),
                 const SizedBox(height: 28),
 
                 // ── Save button ──────────────────────────────────
@@ -496,112 +482,6 @@ class _StarRating extends StatelessWidget {
           ),
         );
       }),
-    );
-  }
-}
-
-// ──────────────────────────── _PhotoPickerRow ────────────────────────────
-
-class _PhotoPickerRow extends StatelessWidget {
-  const _PhotoPickerRow({
-    required this.l,
-    required this.count,
-    required this.onAdd,
-    required this.onRemove,
-  });
-  final AppLocalizations l;
-  final int count;
-  final VoidCallback onAdd;
-  final VoidCallback onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 84,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          if (count < 4)
-            GestureDetector(
-              onTap: onAdd,
-              child: Container(
-                width: 80,
-                height: 80,
-                margin: const EdgeInsets.only(right: 10),
-                decoration: BoxDecoration(
-                  color: _T.background,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _T.gold.withValues(alpha: 0.5),
-                    width: 1.5,
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.add_a_photo_outlined,
-                      color: _T.gold,
-                      size: 24,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l.mapPinAddPhoto,
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
-                        color: _T.gold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ...List.generate(
-            count,
-            (_) => Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  margin: const EdgeInsets.only(right: 10),
-                  decoration: BoxDecoration(
-                    color: _T.gold.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: _T.gold.withValues(alpha: 0.3)),
-                  ),
-                  child: Icon(
-                    Icons.image_rounded,
-                    color: _T.gold.withValues(alpha: 0.5),
-                    size: 30,
-                  ),
-                ),
-                Positioned(
-                  top: -6,
-                  right: 4,
-                  child: GestureDetector(
-                    onTap: onRemove,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        color: _T.danger,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.close_rounded,
-                        size: 12,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

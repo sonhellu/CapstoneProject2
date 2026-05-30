@@ -20,6 +20,7 @@ class AuthProvider extends ChangeNotifier {
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _profileSub;
 
   String? _school;
+  String? _firestoreDisplayName;
 
   UserRepository get _profiles => _userRepository ?? UserRepository.instance;
 
@@ -33,6 +34,17 @@ class AuthProvider extends ChangeNotifier {
   /// University name from Firestore — updates in realtime when profile is saved.
   String? get school => _school;
 
+  /// Display name from Firestore (most up-to-date), falling back to Firebase
+  /// Auth displayName, then the email username.
+  String get nickname =>
+      (_firestoreDisplayName?.trim().isNotEmpty == true
+          ? _firestoreDisplayName!.trim()
+          : null) ??
+      (firebaseUser?.displayName?.trim().isNotEmpty == true
+          ? firebaseUser!.displayName!.trim()
+          : null) ??
+      (userEmail?.split('@').first ?? 'User');
+
   void _onAuthStateChanged(User? user) {
     _profileSub?.cancel();
     if (user != null) {
@@ -41,11 +53,14 @@ class AuthProvider extends ChangeNotifier {
           .doc(user.uid)
           .snapshots()
           .listen((snap) {
-            _school = snap.data()?['school'] as String?;
+            final data = snap.data();
+            _school = data?['school'] as String?;
+            _firestoreDisplayName = data?['displayName'] as String?;
             notifyListeners();
           });
     } else {
       _school = null;
+      _firestoreDisplayName = null;
       notifyListeners();
     }
   }

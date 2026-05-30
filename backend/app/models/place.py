@@ -2,12 +2,13 @@ from sqlalchemy import Column, Integer, String, Numeric, Text, ForeignKey, Boole
 from sqlalchemy.sql import func
 from app.db.base import Base
 
+
 class Place(Base):
     __tablename__ = "places"
 
     place_id = Column(Integer, primary_key=True, index=True)
     api_id = Column(String(100), unique=True)
-    school_id = Column(Integer, ForeignKey("schools.id", ondelete="CASCADE"))
+    school_id = Column(Integer, nullable=True)
     name_ko = Column(String(255), nullable=False)
     name_en = Column(String(255))
     category = Column(String(50), nullable=False)
@@ -17,12 +18,13 @@ class Place(Base):
     is_official = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+
 class Review(Base):
     __tablename__ = "reviews"
 
     review_id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, nullable=False)
     place_id = Column(Integer, ForeignKey("places.place_id", ondelete="CASCADE"), nullable=False)
-    rating = Column(SmallInteger, nullable=False) # CHECK (rating BETWEEN 1 AND 5)
+    rating = Column(SmallInteger, nullable=False)
     content = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

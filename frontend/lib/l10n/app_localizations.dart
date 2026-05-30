@@ -2115,6 +2115,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bio'**
   String get profileBio;
+
+  /// No description provided for @visaFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa Information'**
+  String get visaFormTitle;
+
+  /// No description provided for @visaFieldRegNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Foreigner ID Number'**
+  String get visaFieldRegNumber;
+
+  /// No description provided for @visaFieldRegNumberHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 000000-0000000'**
+  String get visaFieldRegNumberHint;
+
+  /// No description provided for @visaFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get visaFieldName;
+
+  /// No description provided for @visaFieldNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name as on ID card'**
+  String get visaFieldNameHint;
+
+  /// No description provided for @visaFieldCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Country / Region'**
+  String get visaFieldCountry;
+
+  /// No description provided for @visaFieldCountryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Vietnam'**
+  String get visaFieldCountryHint;
+
+  /// No description provided for @visaFieldVisaType.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa Type'**
+  String get visaFieldVisaType;
+
+  /// No description provided for @visaFieldVisaTypeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. D-2'**
+  String get visaFieldVisaTypeHint;
+
+  /// No description provided for @visaFieldPermissionDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission Date'**
+  String get visaFieldPermissionDate;
+
+  /// No description provided for @visaFieldExpiryDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiry Date'**
+  String get visaFieldExpiryDate;
+
+  /// No description provided for @visaFieldAddressReportDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Address Report Date'**
+  String get visaFieldAddressReportDate;
+
+  /// No description provided for @visaFieldAddressReportDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 2026.05.11'**
+  String get visaFieldAddressReportDateHint;
+
+  /// No description provided for @visaFieldAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get visaFieldAddress;
+
+  /// No description provided for @visaFieldAddressHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Current residential address'**
+  String get visaFieldAddressHint;
+
+  /// No description provided for @visaFieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required.'**
+  String get visaFieldRequired;
+
+  /// No description provided for @visaDateSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get visaDateSelect;
+
+  /// No description provided for @visaSelectDateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select both permission and expiry dates.'**
+  String get visaSelectDateError;
+
+  /// No description provided for @visaLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Login required.'**
+  String get visaLoginRequired;
+
+  /// No description provided for @visaSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa information saved.'**
+  String get visaSaveSuccess;
+
+  /// No description provided for @visaSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed: '**
+  String get visaSaveFailed;
+
+  /// No description provided for @visaSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get visaSaveButton;
+
+  /// No description provided for @visaDDayExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa has expired'**
+  String get visaDDayExpired;
+
+  /// No description provided for @visaDDayWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa expiry is approaching'**
+  String get visaDDayWarning;
+
+  /// No description provided for @visaDDayUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Until visa expiry'**
+  String get visaDDayUntil;
+
+  /// No description provided for @visaDDayExpiryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiry: '**
+  String get visaDDayExpiryLabel;
+
+  /// No description provided for @visaEmptyCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Register your visa details to see the expiry D-day on the home screen.'**
+  String get visaEmptyCard;
+
+  /// No description provided for @rentSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🏠  Nearby Rent Prices'**
+  String get rentSectionTitle;
+
+  /// No description provided for @rentBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Rental'**
+  String get rentBadge;
+
+  /// No description provided for @rentDeposit.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get rentDeposit;
+
+  /// No description provided for @rentMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get rentMonthly;
+
+  /// No description provided for @rentUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'만원'**
+  String get rentUnit;
+
+  /// No description provided for @rentBuildingUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Building'**
+  String get rentBuildingUnknown;
+
+  /// No description provided for @rentAreaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Area'**
+  String get rentAreaLabel;
+
+  /// No description provided for @rentFloorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Floor'**
+  String get rentFloorLabel;
+
+  /// No description provided for @rentBuildYearLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Built Year'**
+  String get rentBuildYearLabel;
+
+  /// No description provided for @rentDealDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deal Date'**
+  String get rentDealDateLabel;
+
+  /// No description provided for @rentFloorUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get rentFloorUnit;
+
+  /// No description provided for @rentYearUnit.
+  ///
+  /// In en, this message translates to:
+  /// **''**
+  String get rentYearUnit;
 }
 
 class _AppLocalizationsDelegate

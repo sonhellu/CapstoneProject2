@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.sql import func
 from app.db.base import Base
 
@@ -19,7 +19,7 @@ class User(Base):
     nickname = Column(String(100), nullable=False)
 
     nationality_iso2 = Column(String(2), nullable=True)
-    main_language = Column(String(10), ForeignKey("language.code"), nullable=True)
+    main_language = Column(String(10), nullable=True)
 
     school_id = Column(Integer, nullable=True)
     department_id = Column(Integer, nullable=True)

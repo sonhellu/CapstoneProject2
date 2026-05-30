@@ -1093,4 +1093,123 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get profileBio => 'Giới thiệu';
+
+  @override
+  String get visaFormTitle => 'Thông tin visa';
+
+  @override
+  String get visaFieldRegNumber => 'Số đăng ký người nước ngoài';
+
+  @override
+  String get visaFieldRegNumberHint => 'VD: 000000-0000000';
+
+  @override
+  String get visaFieldName => 'Họ và tên';
+
+  @override
+  String get visaFieldNameHint => 'Tên ghi trên thẻ đăng ký';
+
+  @override
+  String get visaFieldCountry => 'Quốc gia / Vùng lãnh thổ';
+
+  @override
+  String get visaFieldCountryHint => 'VD: Vietnam';
+
+  @override
+  String get visaFieldVisaType => 'Loại visa';
+
+  @override
+  String get visaFieldVisaTypeHint => 'VD: D-2';
+
+  @override
+  String get visaFieldPermissionDate => 'Ngày cấp phép';
+
+  @override
+  String get visaFieldExpiryDate => 'Ngày hết hạn';
+
+  @override
+  String get visaFieldAddressReportDate => 'Ngày đăng ký địa chỉ';
+
+  @override
+  String get visaFieldAddressReportDateHint => 'VD: 2026.05.11';
+
+  @override
+  String get visaFieldAddress => 'Địa chỉ cư trú';
+
+  @override
+  String get visaFieldAddressHint => 'Địa chỉ hiện tại';
+
+  @override
+  String get visaFieldRequired => 'Trường này là bắt buộc.';
+
+  @override
+  String get visaDateSelect => 'Chọn ngày';
+
+  @override
+  String get visaSelectDateError =>
+      'Vui lòng chọn ngày cấp phép và ngày hết hạn.';
+
+  @override
+  String get visaLoginRequired => 'Vui lòng đăng nhập.';
+
+  @override
+  String get visaSaveSuccess => 'Đã lưu thông tin visa.';
+
+  @override
+  String get visaSaveFailed => 'Lưu thất bại: ';
+
+  @override
+  String get visaSaveButton => 'Lưu';
+
+  @override
+  String get visaDDayExpired => 'Visa đã hết hạn';
+
+  @override
+  String get visaDDayWarning => 'Visa sắp hết hạn';
+
+  @override
+  String get visaDDayUntil => 'Còn lại đến khi visa hết hạn';
+
+  @override
+  String get visaDDayExpiryLabel => 'Hết hạn: ';
+
+  @override
+  String get visaEmptyCard =>
+      'Đăng ký thông tin visa để xem ngày hết hạn D-day trên màn hình chính.';
+
+  @override
+  String get rentSectionTitle => '🏠  Giá thuê nhà khu vực';
+
+  @override
+  String get rentBadge => 'Thuê nhà';
+
+  @override
+  String get rentDeposit => 'Bảo chứng';
+
+  @override
+  String get rentMonthly => 'Thuê tháng';
+
+  @override
+  String get rentUnit => '만원';
+
+  @override
+  String get rentBuildingUnknown => 'Không rõ tên tòa nhà';
+
+  @override
+  String get rentAreaLabel => 'Diện tích';
+
+  @override
+  String get rentFloorLabel => 'Tầng';
+
+  @override
+  String get rentBuildYearLabel => 'Năm xây';
+
+  @override
+  String get rentDealDateLabel => 'Ngày GD';
+
+  @override
+  String get rentFloorUnit => 'F';
+
+  @override
+  String get rentYearUnit => '';
 }

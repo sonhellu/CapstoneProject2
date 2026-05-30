@@ -9,7 +9,7 @@ from app.core.config import settings
 router = APIRouter(prefix="/rent", tags=["Rent"])
 
 _RENT_API_URL = (
-    "http://apis.data.go.kr/1613000/RTMSDataSvcRHRent/"
+    "https://apis.data.go.kr/1613000/RTMSDataSvcRHRent/"
     "getRTMSDataSvcRHRent"
 )
 
@@ -50,6 +50,13 @@ async def get_rent_data(
                 "deposit": item.findtext("deposit"),
                 "monthlyRent": item.findtext("monthlyRent"),
                 "exclusiveArea": item.findtext("excluUseAr"),
+                "buildingName": (item.findtext("aptNm") or "").strip(),
+                "district": (item.findtext("umdNm") or "").strip(),
+                "floor": item.findtext("floor"),
+                "buildYear": item.findtext("buildYear"),
+                "dealYear": item.findtext("dealYear"),
+                "dealMonth": item.findtext("dealMonth"),
+                "dealDay": item.findtext("dealDay"),
             }
         )
     return result

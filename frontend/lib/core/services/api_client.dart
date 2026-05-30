@@ -17,7 +17,7 @@ class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
   // ── Base URL ───────────────────────────────────────────────────────────────
-  static const String baseUrl = 'https://hicampus-api.up.railway.app';
+  static const String baseUrl = 'https://capstoneproject2-production-f16d.up.railway.app';
 
   static const _kTimeout = Duration(seconds: 10);
 

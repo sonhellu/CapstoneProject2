@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'widgets/visa_d_day_card.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +19,7 @@ import 'models/post.dart';
 import 'post_list_screen.dart';
 import 'providers/post_provider.dart';
 import 'widgets/post_card.dart';
+import 'widgets/rent_section.dart';
 import '../schedule/widgets/schedule_preview_widget.dart';
 import '../university_web/university_web_screen.dart';
 
@@ -34,13 +33,10 @@ class _BannerItem {
   const _BannerItem(this.imageUrl, this.caption, {this.websiteUrl});
 }
 
-const _banners = [
-  _BannerItem(
-    'https://picsum.photos/seed/kmu/800/400',
-    'Keimyung University',
-    websiteUrl: 'https://www.kmu.ac.kr',
-  ),
-];
+String _universityImageUrl(String uniName) {
+  final slug = uniName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
+  return 'https://picsum.photos/seed/$slug/800/400';
+}
 
 // ─────────────────────────── Screen ───────────────────────────
 class HomeTabScreen extends StatefulWidget {
@@ -93,7 +89,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final mq = MediaQuery.of(context);
     final auth = context.watch<AuthProvider>();
     final userName = auth.displayName ?? 'Student';
     final schoolName = auth.school ?? 'Keimyung University';
@@ -110,10 +105,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     final campusPosts = posts
         .where((p) => p.category == 'Campus' || p.category == 'Academic')
         .toList(growable: false);
-    // viewPadding: physical safe area; not reduced when keyboard opens (unlike padding.bottom).
-    final safeBottom = mq.viewPadding.bottom;
-    final navBarHeight = kBottomNavigationBarHeight + safeBottom;
-    final fabBottomPadding = math.max(0.0, navBarHeight + 40.0);
+    const fabBottomPadding = 24.0;
+    final navBarHeight = kBottomNavigationBarHeight;
 
     return Scaffold(
       backgroundColor: context.bg,
@@ -140,6 +133,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               child: VisaDDayCard(),
             ),
           ),
+          const SliverToBoxAdapter(child: RentSection()),
           SliverToBoxAdapter(
             child: _SectionHeader(
               title: l.homeIntlNews,
@@ -225,7 +219,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   // ─── Banner ───
   Widget _buildBanner(String userName, University uni) {
     final item = _BannerItem(
-      _banners.first.imageUrl,
+      _universityImageUrl(uni.name),
       uni.name,
       websiteUrl: uni.websiteUrl ?? 'https://www.${uni.defaultDomain}',
     );
@@ -262,7 +256,6 @@ class _BannerCard extends StatelessWidget {
   final _BannerItem item;
   final String userName;
 
-  // ToDo: Needs onTap: () in 'Keimyung University' image
   @override
   Widget build(BuildContext context) {
     final p = context.primary;

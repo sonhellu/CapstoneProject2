@@ -1071,4 +1071,121 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get profileBio => '简介';
+
+  @override
+  String get visaFormTitle => '签证信息';
+
+  @override
+  String get visaFieldRegNumber => '外国人登记号';
+
+  @override
+  String get visaFieldRegNumberHint => '例: 000000-0000000';
+
+  @override
+  String get visaFieldName => '姓名';
+
+  @override
+  String get visaFieldNameHint => '与登记证上一致的姓名';
+
+  @override
+  String get visaFieldCountry => '国家/地区';
+
+  @override
+  String get visaFieldCountryHint => '例: Vietnam';
+
+  @override
+  String get visaFieldVisaType => '居留资格';
+
+  @override
+  String get visaFieldVisaTypeHint => '例: D-2';
+
+  @override
+  String get visaFieldPermissionDate => '许可日期';
+
+  @override
+  String get visaFieldExpiryDate => '到期日期';
+
+  @override
+  String get visaFieldAddressReportDate => '住址申报日';
+
+  @override
+  String get visaFieldAddressReportDateHint => '例: 2026.05.11';
+
+  @override
+  String get visaFieldAddress => '居住地址';
+
+  @override
+  String get visaFieldAddressHint => '当前居住地址';
+
+  @override
+  String get visaFieldRequired => '此项为必填项。';
+
+  @override
+  String get visaDateSelect => '选择';
+
+  @override
+  String get visaSelectDateError => '请选择许可日期和到期日期。';
+
+  @override
+  String get visaLoginRequired => '请先登录。';
+
+  @override
+  String get visaSaveSuccess => '签证信息已保存。';
+
+  @override
+  String get visaSaveFailed => '保存失败: ';
+
+  @override
+  String get visaSaveButton => '保存';
+
+  @override
+  String get visaDDayExpired => '签证已过期';
+
+  @override
+  String get visaDDayWarning => '签证即将过期';
+
+  @override
+  String get visaDDayUntil => '距签证到期';
+
+  @override
+  String get visaDDayExpiryLabel => '到期日: ';
+
+  @override
+  String get visaEmptyCard => '注册签证信息后，可在主页查看到期倒计时。';
+
+  @override
+  String get rentSectionTitle => '🏠  周边租房价格';
+
+  @override
+  String get rentBadge => '租房';
+
+  @override
+  String get rentDeposit => '押金';
+
+  @override
+  String get rentMonthly => '月租';
+
+  @override
+  String get rentUnit => '万韩元';
+
+  @override
+  String get rentBuildingUnknown => '楼栋名未知';
+
+  @override
+  String get rentAreaLabel => '专用面积';
+
+  @override
+  String get rentFloorLabel => '楼层';
+
+  @override
+  String get rentBuildYearLabel => '建造年份';
+
+  @override
+  String get rentDealDateLabel => '交易日';
+
+  @override
+  String get rentFloorUnit => '层';
+
+  @override
+  String get rentYearUnit => '年';
 }
