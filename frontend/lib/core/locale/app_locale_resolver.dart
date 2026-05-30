@@ -11,8 +11,8 @@ import '../services/translation_service.dart';
 /// // 'vi', 'en', 'ja', 'zh-CN', ...
 /// ```
 abstract final class AppLocaleResolver {
-  /// Returns the Papago-compatible language code for the current
-  /// locale, e.g. 'vi' when the app is in Vietnamese.
+  /// Returns the language code for the current locale,
+  /// e.g. 'vi' when the app is in Vietnamese.
   ///
   /// Falls back to [LangCode.en] if the locale cannot be resolved.
   static String targetLang(BuildContext context) {
