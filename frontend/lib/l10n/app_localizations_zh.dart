@@ -1152,4 +1152,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get visaEmptyCard => '注册签证信息后，可在主页查看到期倒计时。';
+
+  @override
+  String get rentSectionTitle => '🏠  周边租房价格';
+
+  @override
+  String get rentBadge => '租房';
+
+  @override
+  String get rentDeposit => '押金';
+
+  @override
+  String get rentMonthly => '月租';
+
+  @override
+  String get rentUnit => '万韩元';
+
+  @override
+  String get rentBuildingUnknown => '楼栋名未知';
+
+  @override
+  String get rentAreaLabel => '专用面积';
+
+  @override
+  String get rentFloorLabel => '楼层';
+
+  @override
+  String get rentBuildYearLabel => '建造年份';
+
+  @override
+  String get rentDealDateLabel => '交易日';
+
+  @override
+  String get rentFloorUnit => '层';
+
+  @override
+  String get rentYearUnit => '年';
 }

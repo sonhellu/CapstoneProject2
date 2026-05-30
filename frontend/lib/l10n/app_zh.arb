@@ -418,7 +418,6 @@
   "visaInfoSubtitle": "请注册签证信息以接收到期提醒。",
   "profileGender": "性别",
   "profileBio": "简介",
-
   "visaFormTitle": "签证信息",
   "visaFieldRegNumber": "外国人登记号",
   "visaFieldRegNumberHint": "例: 000000-0000000",
@@ -445,5 +444,17 @@
   "visaDDayWarning": "签证即将过期",
   "visaDDayUntil": "距签证到期",
   "visaDDayExpiryLabel": "到期日: ",
-  "visaEmptyCard": "注册签证信息后，可在主页查看到期倒计时。"
+  "visaEmptyCard": "注册签证信息后，可在主页查看到期倒计时。",
+  "rentSectionTitle": "🏠  周边租房价格",
+  "rentBadge": "租房",
+  "rentDeposit": "押金",
+  "rentMonthly": "月租",
+  "rentUnit": "万韩元",
+  "rentBuildingUnknown": "楼栋名未知",
+  "rentAreaLabel": "专用面积",
+  "rentFloorLabel": "楼层",
+  "rentBuildYearLabel": "建造年份",
+  "rentDealDateLabel": "交易日",
+  "rentFloorUnit": "层",
+  "rentYearUnit": "年"
 }

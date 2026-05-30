@@ -1182,4 +1182,40 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get visaEmptyCard =>
       'Register your visa details to see the expiry D-day on the home screen.';
+
+  @override
+  String get rentSectionTitle => '🏠  Nearby Rent Prices';
+
+  @override
+  String get rentBadge => 'Rental';
+
+  @override
+  String get rentDeposit => 'Deposit';
+
+  @override
+  String get rentMonthly => 'Monthly';
+
+  @override
+  String get rentUnit => '만원';
+
+  @override
+  String get rentBuildingUnknown => 'Unknown Building';
+
+  @override
+  String get rentAreaLabel => 'Area';
+
+  @override
+  String get rentFloorLabel => 'Floor';
+
+  @override
+  String get rentBuildYearLabel => 'Built Year';
+
+  @override
+  String get rentDealDateLabel => 'Deal Date';
+
+  @override
+  String get rentFloorUnit => 'F';
+
+  @override
+  String get rentYearUnit => '';
 }

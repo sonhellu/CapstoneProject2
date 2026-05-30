@@ -742,7 +742,6 @@
   "visaInfoSubtitle": "Register your visa details to receive expiry alerts.",
   "profileGender": "Gender",
   "profileBio": "Bio",
-
   "visaFormTitle": "Visa Information",
   "visaFieldRegNumber": "Foreigner ID Number",
   "visaFieldRegNumberHint": "e.g. 000000-0000000",
@@ -769,5 +768,17 @@
   "visaDDayWarning": "Visa expiry is approaching",
   "visaDDayUntil": "Until visa expiry",
   "visaDDayExpiryLabel": "Expiry: ",
-  "visaEmptyCard": "Register your visa details to see the expiry D-day on the home screen."
+  "visaEmptyCard": "Register your visa details to see the expiry D-day on the home screen.",
+  "rentSectionTitle": "🏠  Nearby Rent Prices",
+  "rentBadge": "Rental",
+  "rentDeposit": "Deposit",
+  "rentMonthly": "Monthly",
+  "rentUnit": "만원",
+  "rentBuildingUnknown": "Unknown Building",
+  "rentAreaLabel": "Area",
+  "rentFloorLabel": "Floor",
+  "rentBuildYearLabel": "Built Year",
+  "rentDealDateLabel": "Deal Date",
+  "rentFloorUnit": "F",
+  "rentYearUnit": ""
 }

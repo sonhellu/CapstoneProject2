@@ -1176,4 +1176,40 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get visaEmptyCard =>
       'Đăng ký thông tin visa để xem ngày hết hạn D-day trên màn hình chính.';
+
+  @override
+  String get rentSectionTitle => '🏠  Giá thuê nhà khu vực';
+
+  @override
+  String get rentBadge => 'Thuê nhà';
+
+  @override
+  String get rentDeposit => 'Bảo chứng';
+
+  @override
+  String get rentMonthly => 'Thuê tháng';
+
+  @override
+  String get rentUnit => '만원';
+
+  @override
+  String get rentBuildingUnknown => 'Không rõ tên tòa nhà';
+
+  @override
+  String get rentAreaLabel => 'Diện tích';
+
+  @override
+  String get rentFloorLabel => 'Tầng';
+
+  @override
+  String get rentBuildYearLabel => 'Năm xây';
+
+  @override
+  String get rentDealDateLabel => 'Ngày GD';
+
+  @override
+  String get rentFloorUnit => 'F';
+
+  @override
+  String get rentYearUnit => '';
 }

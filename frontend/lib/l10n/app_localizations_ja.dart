@@ -1153,4 +1153,40 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get visaEmptyCard => '在留資格情報を登録すると、ホーム画面で満了日D-dayを確認できます。';
+
+  @override
+  String get rentSectionTitle => '🏠  近隣の賃貸情報';
+
+  @override
+  String get rentBadge => '賃貸';
+
+  @override
+  String get rentDeposit => '保証金';
+
+  @override
+  String get rentMonthly => '月額';
+
+  @override
+  String get rentUnit => '万ウォン';
+
+  @override
+  String get rentBuildingUnknown => '建物名不明';
+
+  @override
+  String get rentAreaLabel => '専有面積';
+
+  @override
+  String get rentFloorLabel => '階';
+
+  @override
+  String get rentBuildYearLabel => '築年数';
+
+  @override
+  String get rentDealDateLabel => '取引日';
+
+  @override
+  String get rentFloorUnit => '階';
+
+  @override
+  String get rentYearUnit => '年';
 }

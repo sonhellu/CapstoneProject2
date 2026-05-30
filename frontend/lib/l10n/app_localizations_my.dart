@@ -1180,4 +1180,40 @@ class AppLocalizationsMy extends AppLocalizations {
   @override
   String get visaEmptyCard =>
       'ဗီဇာသတင်းအချက်အလက် မှတ်ပုံတင်ပါ၊ မူလစာမျက်နှာတွင် D-day ကို ကြည့်ရှုနိုင်ပါမည်။';
+
+  @override
+  String get rentSectionTitle => '🏠  နားနီးအိမ်ငှားနှုန်း';
+
+  @override
+  String get rentBadge => 'ငှားရမ်း';
+
+  @override
+  String get rentDeposit => 'အာမခံ';
+
+  @override
+  String get rentMonthly => 'လစဉ်';
+
+  @override
+  String get rentUnit => '만원';
+
+  @override
+  String get rentBuildingUnknown => 'အဆောက်အဦနာမည်မသိ';
+
+  @override
+  String get rentAreaLabel => 'အကျယ်';
+
+  @override
+  String get rentFloorLabel => 'အထပ်';
+
+  @override
+  String get rentBuildYearLabel => 'တည်ဆောက်သည့်နှစ်';
+
+  @override
+  String get rentDealDateLabel => 'ငှားရမ်းသည့်ရက်';
+
+  @override
+  String get rentFloorUnit => 'F';
+
+  @override
+  String get rentYearUnit => '';
 }

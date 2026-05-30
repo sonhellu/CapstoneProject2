@@ -143,7 +143,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
             actions: [
               _CircleNavButton(icon: Icons.copy_rounded, onTap: _copyContent),
-              _CircleNavButton(icon: Icons.share_rounded, onTap: () {}),
               PostOwnerMenu(
                 post: post,
                 currentUserId: context.read<AuthProvider>().uid ?? '',
@@ -364,19 +363,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget _buildActionRow(Post post) {
     return Row(
       children: [
-        _PostActionButton(
-          icon: Icons.favorite_border_rounded,
-          label: '${post.likes}',
-          onTap: () {
-            context.read<PostProvider>().toggleLike(post.id).catchError((_) {
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Could not update like.')),
-              );
-            });
-          },
-        ),
-        const SizedBox(width: 10),
         _PostActionButton(
           icon: Icons.chat_bubble_outline_rounded,
           label: '${post.comments}',

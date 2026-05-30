@@ -1154,4 +1154,40 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get visaEmptyCard => '비자 정보를 등록하면 홈에서 만료일 D-day를 확인할 수 있어요.';
+
+  @override
+  String get rentSectionTitle => '🏠  주변 전월세 시세';
+
+  @override
+  String get rentBadge => '전월세';
+
+  @override
+  String get rentDeposit => '보증';
+
+  @override
+  String get rentMonthly => '월세';
+
+  @override
+  String get rentUnit => '만원';
+
+  @override
+  String get rentBuildingUnknown => '건물명 미상';
+
+  @override
+  String get rentAreaLabel => '전용면적';
+
+  @override
+  String get rentFloorLabel => '층';
+
+  @override
+  String get rentBuildYearLabel => '건축년도';
+
+  @override
+  String get rentDealDateLabel => '거래일';
+
+  @override
+  String get rentFloorUnit => '층';
+
+  @override
+  String get rentYearUnit => '년';
 }

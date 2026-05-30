@@ -418,7 +418,6 @@
   "visaInfoSubtitle": "在留期限の通知を受けるために情報を登録してください。",
   "profileGender": "性別",
   "profileBio": "自己紹介",
-
   "visaFormTitle": "在留資格情報",
   "visaFieldRegNumber": "外国人登録番号",
   "visaFieldRegNumberHint": "例: 000000-0000000",
@@ -445,5 +444,17 @@
   "visaDDayWarning": "ビザの有効期限が近づいています",
   "visaDDayUntil": "ビザ有効期限まで",
   "visaDDayExpiryLabel": "満了日: ",
-  "visaEmptyCard": "在留資格情報を登録すると、ホーム画面で満了日D-dayを確認できます。"
+  "visaEmptyCard": "在留資格情報を登録すると、ホーム画面で満了日D-dayを確認できます。",
+  "rentSectionTitle": "🏠  近隣の賃貸情報",
+  "rentBadge": "賃貸",
+  "rentDeposit": "保証金",
+  "rentMonthly": "月額",
+  "rentUnit": "万ウォン",
+  "rentBuildingUnknown": "建物名不明",
+  "rentAreaLabel": "専有面積",
+  "rentFloorLabel": "階",
+  "rentBuildYearLabel": "築年数",
+  "rentDealDateLabel": "取引日",
+  "rentFloorUnit": "階",
+  "rentYearUnit": "年"
 }

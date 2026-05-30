@@ -418,7 +418,6 @@
   "visaInfoSubtitle": "Đăng ký thông tin visa để nhận thông báo hết hạn.",
   "profileGender": "Giới tính",
   "profileBio": "Giới thiệu",
-
   "visaFormTitle": "Thông tin visa",
   "visaFieldRegNumber": "Số đăng ký người nước ngoài",
   "visaFieldRegNumberHint": "VD: 000000-0000000",
@@ -445,5 +444,17 @@
   "visaDDayWarning": "Visa sắp hết hạn",
   "visaDDayUntil": "Còn lại đến khi visa hết hạn",
   "visaDDayExpiryLabel": "Hết hạn: ",
-  "visaEmptyCard": "Đăng ký thông tin visa để xem ngày hết hạn D-day trên màn hình chính."
+  "visaEmptyCard": "Đăng ký thông tin visa để xem ngày hết hạn D-day trên màn hình chính.",
+  "rentSectionTitle": "🏠  Giá thuê nhà khu vực",
+  "rentBadge": "Thuê nhà",
+  "rentDeposit": "Bảo chứng",
+  "rentMonthly": "Thuê tháng",
+  "rentUnit": "만원",
+  "rentBuildingUnknown": "Không rõ tên tòa nhà",
+  "rentAreaLabel": "Diện tích",
+  "rentFloorLabel": "Tầng",
+  "rentBuildYearLabel": "Năm xây",
+  "rentDealDateLabel": "Ngày GD",
+  "rentFloorUnit": "F",
+  "rentYearUnit": ""
 }

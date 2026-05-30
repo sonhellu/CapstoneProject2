@@ -1,10 +1,6 @@
-import 'dart:io';
-
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/theme_ext.dart';
@@ -19,7 +15,6 @@ const Color _kWarningOrange = Color(0xFFE65100);
 abstract final class _Cfg {
   static const titleMax = 100;
   static const contentMax = 2000;
-  static const maxPhotos = 1;
 
   static const categories = [
     'International 🌏',
@@ -65,10 +60,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   String _category = _Cfg.categories[0];
   String _language = 'Vietnamese';
-  final List<XFile> _images = [];
   bool _isPublishing = false;
 
-  // Only the Publish button + CharCounter rebuild on text change.
   late final ValueNotifier<bool> _canPublish;
 
   @override
@@ -77,7 +70,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     _canPublish = ValueNotifier(false);
     _titleCtrl.addListener(_onTextChanged);
     _contentCtrl.addListener(_onTextChanged);
-    // Auto-focus title after first frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _titleFocus.requestFocus();
     });
@@ -114,9 +106,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       }
       final authorName = auth.nickname;
 
-      // Upload picked images to Firebase Storage.
-      final imageUrls = await _uploadImages(uid);
-
       if (!mounted) return;
 
       final post = Post(
@@ -131,7 +120,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         ),
         time: 'Just now',
         category: _normalizeCategory(_category),
-        images: imageUrls,
+        images: const [],
         language: _normalizeLanguage(_language),
         likes: 0,
         comments: 0,
@@ -147,22 +136,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
     }
-  }
-
-  Future<List<String>> _uploadImages(String uid) async {
-    if (_images.isEmpty) return const [];
-    final storage = FirebaseStorage.instance;
-    final ts = DateTime.now().millisecondsSinceEpoch;
-    final urls = <String>[];
-    for (var i = 0; i < _images.length; i++) {
-      final ref = storage.ref('posts/$uid/${ts}_$i.jpg');
-      await ref.putFile(
-        File(_images[i].path),
-        SettableMetadata(contentType: 'image/jpeg'),
-      );
-      urls.add(await ref.getDownloadURL());
-    }
-    return urls;
   }
 
   String _normalizeCategory(String category) => switch (category) {
@@ -185,20 +158,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     _ => 'EN',
   };
 
-  Future<void> _pickImage(ImageSource source) async {
-    if (_images.length >= _Cfg.maxPhotos) return;
-    final picker = ImagePicker();
-    final file = await picker.pickImage(source: source, imageQuality: 85);
-    if (file == null) return;
-    HapticFeedback.lightImpact();
-    setState(() => _images.add(file));
-  }
-
-  void _removeImage(int index) {
-    HapticFeedback.lightImpact();
-    setState(() => _images.removeAt(index));
-  }
-
   void _openLanguagePicker() {
     showModalBottomSheet<void>(
       context: context,
@@ -212,9 +171,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         final onS = ctx.onSurface;
         return SafeArea(
           top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               const SizedBox(height: 12),
               Container(
                 width: 36,
@@ -266,6 +226,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               const SizedBox(height: 8),
             ],
           ),
+          ),
         );
       },
     );
@@ -300,13 +261,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ),
         ),
         centerTitle: true,
-      ),
-      // bottomNavigationBar is automatically pushed above the keyboard
-      // when resizeToAvoidBottomInset: true — no custom animation needed.
-      bottomNavigationBar: _BottomBar(
-        canAddPhoto: _images.length < _Cfg.maxPhotos,
-        onGallery: () => _pickImage(ImageSource.gallery),
-        onCamera: () => _pickImage(ImageSource.camera),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
@@ -390,7 +344,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             child: TextField(
               controller: _contentCtrl,
               focusNode: _contentFocus,
-              // maxLines: null avoids internal scrolling — outer ListView scrolls.
               maxLines: null,
               minLines: 7,
               maxLength: _Cfg.contentMax,
@@ -415,14 +368,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
-
-          // ── Photos ──
-          _Label(
-            '${l.createPostPhotos}  (${_images.length}/${_Cfg.maxPhotos})',
-          ),
-          const SizedBox(height: 10),
-          _buildPhotoWrap(),
           const SizedBox(height: 32),
 
           // ── Publish — only this widget rebuilds when typing ──
@@ -471,88 +416,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       ),
     );
   }
-
-  Widget _buildPhotoWrap() {
-    final p = context.primary;
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        ...List.generate(
-          _images.length,
-          (i) => Stack(
-            clipBehavior: Clip.none,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Image.file(
-                  File(_images[i].path),
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned(
-                top: -6,
-                right: -6,
-                child: GestureDetector(
-                  onTap: () => _removeImage(i),
-                  child: Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 13,
-                      color: Theme.of(context).colorScheme.onError,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (_images.length < _Cfg.maxPhotos)
-          GestureDetector(
-            onTap: () => _pickImage(ImageSource.gallery),
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: context.cardFill,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: p.withValues(alpha: 0.35),
-                  width: 1.5,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add_photo_alternate_outlined, color: p, size: 26),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppLocalizations.of(context)!.createPostAddPhoto,
-                    style: GoogleFonts.notoSansKr(
-                      fontSize: 10,
-                      color: p,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
 }
 
 // ──────────────────────────── _FieldBox ────────────────────────────
-/// White card wrapper for collapsed TextField — provides the visible border.
 class _FieldBox extends StatelessWidget {
   const _FieldBox({required this.child});
   final Widget child;
@@ -567,81 +433,6 @@ class _FieldBox extends StatelessWidget {
         border: Border.all(color: context.outline),
       ),
       child: child,
-    );
-  }
-}
-
-// ──────────────────────────── _BottomBar ────────────────────────────
-class _BottomBar extends StatelessWidget {
-  const _BottomBar({
-    required this.canAddPhoto,
-    required this.onGallery,
-    required this.onCamera,
-  });
-  final bool canAddPhoto;
-  final VoidCallback onGallery;
-  final VoidCallback onCamera;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.cardFill,
-        border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Row(
-            children: [
-              _BarBtn(
-                icon: Icons.photo_library_outlined,
-                label: AppLocalizations.of(context)!.createPostGallery,
-                onTap: canAddPhoto ? onGallery : null,
-              ),
-              const SizedBox(width: 20),
-              _BarBtn(
-                icon: Icons.camera_alt_outlined,
-                label: AppLocalizations.of(context)!.createPostCamera,
-                onTap: canAddPhoto ? onCamera : null,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BarBtn extends StatelessWidget {
-  const _BarBtn({required this.icon, required this.label, required this.onTap});
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: onTap != null ? 1.0 : 0.35,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 22, color: context.primary),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.notoSansKr(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: context.primary,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -666,7 +457,6 @@ class _Label extends StatelessWidget {
 }
 
 // ──────────────────────────── _CharCounter ────────────────────────────
-/// Uses ValueListenableBuilder — only this Text rebuilds on every keystroke.
 class _CharCounter extends StatelessWidget {
   const _CharCounter({required this.ctrl, required this.max});
   final TextEditingController ctrl;

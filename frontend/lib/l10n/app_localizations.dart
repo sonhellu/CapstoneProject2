@@ -2277,6 +2277,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Register your visa details to see the expiry D-day on the home screen.'**
   String get visaEmptyCard;
+
+  /// No description provided for @rentSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'🏠  Nearby Rent Prices'**
+  String get rentSectionTitle;
+
+  /// No description provided for @rentBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Rental'**
+  String get rentBadge;
+
+  /// No description provided for @rentDeposit.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get rentDeposit;
+
+  /// No description provided for @rentMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get rentMonthly;
+
+  /// No description provided for @rentUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'만원'**
+  String get rentUnit;
+
+  /// No description provided for @rentBuildingUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Building'**
+  String get rentBuildingUnknown;
+
+  /// No description provided for @rentAreaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Area'**
+  String get rentAreaLabel;
+
+  /// No description provided for @rentFloorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Floor'**
+  String get rentFloorLabel;
+
+  /// No description provided for @rentBuildYearLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Built Year'**
+  String get rentBuildYearLabel;
+
+  /// No description provided for @rentDealDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deal Date'**
+  String get rentDealDateLabel;
+
+  /// No description provided for @rentFloorUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get rentFloorUnit;
+
+  /// No description provided for @rentYearUnit.
+  ///
+  /// In en, this message translates to:
+  /// **''**
+  String get rentYearUnit;
 }
 
 class _AppLocalizationsDelegate

@@ -184,7 +184,6 @@ class _MainShellState extends State<MainShell> {
 
     return Scaffold(
       backgroundColor: context.bg,
-      extendBody: true,
       body: Stack(
         fit: StackFit.expand,
         children: [

@@ -418,7 +418,6 @@
   "visaInfoSubtitle": "သက်တမ်းကုန်ဆုံးသတိပေးချက် ရရန် ဗီဇာ အချက်အလက် ထည့်သွင်းပါ။",
   "profileGender": "ကျား/မ",
   "profileBio": "မိတ်ဆက်",
-
   "visaFormTitle": "ဗီဇာသတင်းအချက်အလက်",
   "visaFieldRegNumber": "နိုင်ငံခြားသားမှတ်ပုံတင်နံပါတ်",
   "visaFieldRegNumberHint": "ဥပမာ: 000000-0000000",
@@ -445,5 +444,17 @@
   "visaDDayWarning": "ဗီဇာသက်တမ်းနီးကပ်လာပြီ",
   "visaDDayUntil": "ဗီဇာကုန်ဆုံးသည်အထိ",
   "visaDDayExpiryLabel": "ကုန်ဆုံးသည့်ရက်: ",
-  "visaEmptyCard": "ဗီဇာသတင်းအချက်အလက် မှတ်ပုံတင်ပါ၊ မူလစာမျက်နှာတွင် D-day ကို ကြည့်ရှုနိုင်ပါမည်။"
+  "visaEmptyCard": "ဗီဇာသတင်းအချက်အလက် မှတ်ပုံတင်ပါ၊ မူလစာမျက်နှာတွင် D-day ကို ကြည့်ရှုနိုင်ပါမည်။",
+  "rentSectionTitle": "🏠  နားနီးအိမ်ငှားနှုန်း",
+  "rentBadge": "ငှားရမ်း",
+  "rentDeposit": "အာမခံ",
+  "rentMonthly": "လစဉ်",
+  "rentUnit": "만원",
+  "rentBuildingUnknown": "အဆောက်အဦနာမည်မသိ",
+  "rentAreaLabel": "အကျယ်",
+  "rentFloorLabel": "အထပ်",
+  "rentBuildYearLabel": "တည်ဆောက်သည့်နှစ်",
+  "rentDealDateLabel": "ငှားရမ်းသည့်ရက်",
+  "rentFloorUnit": "F",
+  "rentYearUnit": ""
 }
