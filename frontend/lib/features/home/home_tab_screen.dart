@@ -12,6 +12,8 @@ import '../../core/navigation/app_transitions.dart';
 import '../../core/theme/theme_ext.dart';
 import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/locale/app_locale_resolver.dart';
+import '../../core/services/webview_translation/webview_controller.dart';
 import '../auth/data/university_data.dart';
 import '../auth/providers/auth_provider.dart';
 import 'create_post_screen.dart';
@@ -21,7 +23,6 @@ import 'providers/post_provider.dart';
 import 'widgets/post_card.dart';
 import 'widgets/rent_section.dart';
 import '../schedule/widgets/schedule_preview_widget.dart';
-import '../university_web/university_web_screen.dart';
 
 const double _kBannerRadius = 16.0;
 
@@ -262,10 +263,11 @@ class _BannerCard extends StatelessWidget {
     return GestureDetector(
       onTap: item.websiteUrl == null
           ? null
-          : () => openUniversityWeb(
-              context,
+          : () => WebTranslation.open(
+              context: context,
               url: item.websiteUrl!,
               title: item.caption,
+              targetLangCode: AppLocaleResolver.targetLang(context),
             ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(_kBannerRadius),
