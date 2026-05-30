@@ -34,7 +34,7 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
 
   final _api = ApiClient();
 
-  // JS: DOM traversal → collect text nodes with IDs
+  // JS: DOM traversal → collect text nodes first, then wrap (must NOT modify DOM during walk)
   static const _extractJs = '''
     (function() {
       var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
@@ -44,21 +44,27 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
           return node.nodeValue.trim().length > 1 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
         }
       });
-      var items = [];
-      var id = 0;
+
+      var collected = [];
       var node;
       while ((node = walker.nextNode())) {
         var clean = node.nodeValue.replace(/[\\x00-\\x1F\\x7F]/g,'').replace(/\\s+/g,' ').trim();
         if (clean.length > 1 && /[a-zA-Z가-힣]/.test(clean)) {
-          var wrapper = document.createElement('hi-tr');
-          wrapper.setAttribute('data-id', id);
-          wrapper.style.display = 'inline';
-          node.parentNode.insertBefore(wrapper, node);
-          wrapper.appendChild(node);
-          items.push({id: id, text: clean});
-          id++;
+          collected.push({node: node, text: clean});
         }
       }
+
+      var items = [];
+      for (var i = 0; i < collected.length; i++) {
+        var entry = collected[i];
+        var wrapper = document.createElement('hi-tr');
+        wrapper.setAttribute('data-id', i);
+        wrapper.style.display = 'inline';
+        entry.node.parentNode.insertBefore(wrapper, entry.node);
+        wrapper.appendChild(entry.node);
+        items.push({id: i, text: entry.text});
+      }
+
       return JSON.stringify(items);
     })();
   ''';
