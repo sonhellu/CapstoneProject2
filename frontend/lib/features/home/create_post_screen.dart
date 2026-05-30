@@ -17,9 +17,9 @@ const Color _kWarningOrange = Color(0xFFE65100);
 
 // ──────────────────────────── Config ────────────────────────────
 abstract final class _Cfg {
-  static const titleMax   = 100;
+  static const titleMax = 100;
   static const contentMax = 2000;
-  static const maxPhotos  = 1;
+  static const maxPhotos = 1;
 
   static const categories = [
     'International 🌏',
@@ -31,16 +31,21 @@ abstract final class _Cfg {
   ];
 
   static const languages = [
-    'Korean', 'Vietnamese', 'English', 'Japanese', 'Chinese', 'Myanmar',
+    'Korean',
+    'Vietnamese',
+    'English',
+    'Japanese',
+    'Chinese',
+    'Myanmar',
   ];
 
   static const langFlags = {
-    'Korean':     '🇰🇷',
+    'Korean': '🇰🇷',
     'Vietnamese': '🇻🇳',
-    'English':    '🇺🇸',
-    'Japanese':   '🇯🇵',
-    'Chinese':    '🇨🇳',
-    'Myanmar':    '🇲🇲',
+    'English': '🇺🇸',
+    'Japanese': '🇯🇵',
+    'Chinese': '🇨🇳',
+    'Myanmar': '🇲🇲',
   };
 }
 
@@ -53,9 +58,9 @@ class CreatePostScreen extends StatefulWidget {
 }
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
-  final _titleCtrl    = TextEditingController();
-  final _contentCtrl  = TextEditingController();
-  final _titleFocus   = FocusNode();
+  final _titleCtrl = TextEditingController();
+  final _contentCtrl = TextEditingController();
+  final _titleFocus = FocusNode();
   final _contentFocus = FocusNode();
 
   String _category = _Cfg.categories[0];
@@ -103,7 +108,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     try {
       final auth = context.read<AuthProvider>();
-      final uid = auth.uid ?? 'anon';
+      final uid = auth.uid;
+      if (uid == null) {
+        throw Exception('Please sign in before publishing.');
+      }
       final authorName = auth.displayName?.trim().isNotEmpty == true
           ? auth.displayName!.trim()
           : 'Demo User';
@@ -132,10 +140,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         userId: uid,
       );
 
-      context.read<PostProvider>().addPost(post);
+      await context.read<PostProvider>().addPost(post);
       if (mounted) Navigator.of(context).pop();
-    } catch (_) {
-      if (mounted) setState(() => _isPublishing = false);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isPublishing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
     }
   }
 
@@ -156,24 +168,24 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   String _normalizeCategory(String category) => switch (category) {
-        'International 🌏' => 'International',
-        'Campus 🇰🇷' => 'Campus',
-        'Scholarship 🎓' => 'Scholarship',
-        'Housing 🏠' => 'Housing',
-        'Academic 📚' => 'Academic',
-        'Lost & Found 🔍' => 'Campus',
-        _ => 'Campus',
-      };
+    'International 🌏' => 'International',
+    'Campus 🇰🇷' => 'Campus',
+    'Scholarship 🎓' => 'Scholarship',
+    'Housing 🏠' => 'Housing',
+    'Academic 📚' => 'Academic',
+    'Lost & Found 🔍' => 'Campus',
+    _ => 'Campus',
+  };
 
   String _normalizeLanguage(String language) => switch (language) {
-        'Korean' => 'KR',
-        'Vietnamese' => 'VN',
-        'English' => 'EN',
-        'Japanese' => 'JA',
-        'Chinese' => 'ZH',
-        'Myanmar' => 'MY',
-        _ => 'EN',
-      };
+    'Korean' => 'KR',
+    'Vietnamese' => 'VN',
+    'English' => 'EN',
+    'Japanese' => 'JA',
+    'Chinese' => 'ZH',
+    'Myanmar' => 'MY',
+    _ => 'EN',
+  };
 
   Future<void> _pickImage(ImageSource source) async {
     if (_images.length >= _Cfg.maxPhotos) return;
@@ -229,20 +241,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: _Cfg.languages.length,
                 itemBuilder: (_, i) {
-                  final lang  = _Cfg.languages[i];
-                  final flag  = _Cfg.langFlags[lang] ?? '🌐';
+                  final lang = _Cfg.languages[i];
+                  final flag = _Cfg.langFlags[lang] ?? '🌐';
                   final isSel = lang == _language;
                   return ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 20),
-                    leading: Text(flag,
-                        style: const TextStyle(fontSize: 22)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                    leading: Text(flag, style: const TextStyle(fontSize: 22)),
                     title: Text(
                       lang,
                       style: GoogleFonts.notoSansKr(
                         fontSize: 15,
-                        fontWeight:
-                            isSel ? FontWeight.w700 : FontWeight.w400,
+                        fontWeight: isSel ? FontWeight.w700 : FontWeight.w400,
                         color: isSel ? p : onS,
                       ),
                     ),
@@ -277,8 +286,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         elevation: 0,
         scrolledUnderElevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.close_rounded,
-              size: 22, color: context.onSurfaceVar),
+          icon: Icon(
+            Icons.close_rounded,
+            size: 22,
+            color: context.onSurfaceVar,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -307,11 +319,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           Wrap(
             spacing: 10,
             runSpacing: 10,
-            children: _Cfg.categories.map((cat) => _CategoryChip(
-              label: cat,
-              selected: _category == cat,
-              onTap: () => setState(() => _category = cat),
-            )).toList(),
+            children: _Cfg.categories
+                .map(
+                  (cat) => _CategoryChip(
+                    label: cat,
+                    selected: _category == cat,
+                    onTap: () => setState(() => _category = cat),
+                  ),
+                )
+                .toList(),
           ),
           const SizedBox(height: 24),
 
@@ -330,19 +346,28 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               focusNode: _titleFocus,
               maxLength: _Cfg.titleMax,
               buildCounter:
-                  (_, {required currentLength, required isFocused, maxLength}) =>
-                      null,
+                  (
+                    _, {
+                    required currentLength,
+                    required isFocused,
+                    maxLength,
+                  }) => null,
               inputFormatters: [
                 LengthLimitingTextInputFormatter(_Cfg.titleMax),
               ],
               style: GoogleFonts.notoSansKr(
-                  fontSize: 15, color: context.onSurface, height: 1.4),
+                fontSize: 15,
+                color: context.onSurface,
+                height: 1.4,
+              ),
               textInputAction: TextInputAction.next,
               onEditingComplete: _contentFocus.requestFocus,
               decoration: InputDecoration.collapsed(
                 hintText: l.createPostTitleHint,
                 hintStyle: GoogleFonts.notoSansKr(
-                    fontSize: 15, color: context.hintColor),
+                  fontSize: 15,
+                  color: context.hintColor,
+                ),
               ),
             ),
           ),
@@ -372,21 +397,32 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               minLines: 7,
               maxLength: _Cfg.contentMax,
               buildCounter:
-                  (_, {required currentLength, required isFocused, maxLength}) =>
-                      null,
+                  (
+                    _, {
+                    required currentLength,
+                    required isFocused,
+                    maxLength,
+                  }) => null,
               style: GoogleFonts.notoSansKr(
-                  fontSize: 14, color: context.onSurface, height: 1.75),
+                fontSize: 14,
+                color: context.onSurface,
+                height: 1.75,
+              ),
               decoration: InputDecoration.collapsed(
                 hintText: l.createPostContentHint,
                 hintStyle: GoogleFonts.notoSansKr(
-                    fontSize: 14, color: context.hintColor),
+                  fontSize: 14,
+                  color: context.hintColor,
+                ),
               ),
             ),
           ),
           const SizedBox(height: 20),
 
           // ── Photos ──
-          _Label('${l.createPostPhotos}  (${_images.length}/${_Cfg.maxPhotos})'),
+          _Label(
+            '${l.createPostPhotos}  (${_images.length}/${_Cfg.maxPhotos})',
+          ),
           const SizedBox(height: 10),
           _buildPhotoWrap(),
           const SizedBox(height: 32),
@@ -412,8 +448,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final p = context.primary;
     return ListTile(
       onTap: _openLanguagePicker,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       tileColor: context.cardFill,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -432,8 +467,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         AppLocalizations.of(context)!.createPostLanguage,
         style: GoogleFonts.notoSansKr(fontSize: 11, color: p),
       ),
-      trailing:
-          Icon(Icons.keyboard_arrow_down_rounded, color: context.onSurfaceVar),
+      trailing: Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: context.onSurfaceVar,
+      ),
     );
   }
 
@@ -443,38 +480,43 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       spacing: 10,
       runSpacing: 10,
       children: [
-        ...List.generate(_images.length, (i) => Stack(
-          clipBehavior: Clip.none,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: Image.file(
-                File(_images[i].path),
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned(
-              top: -6,
-              right: -6,
-              child: GestureDetector(
-                onTap: () => _removeImage(i),
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.error,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.close_rounded,
-                      size: 13,
-                      color: Theme.of(context).colorScheme.onError),
+        ...List.generate(
+          _images.length,
+          (i) => Stack(
+            clipBehavior: Clip.none,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.file(
+                  File(_images[i].path),
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
                 ),
               ),
-            ),
-          ],
-        )),
+              Positioned(
+                top: -6,
+                right: -6,
+                child: GestureDetector(
+                  onTap: () => _removeImage(i),
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.error,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 13,
+                      color: Theme.of(context).colorScheme.onError,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         if (_images.length < _Cfg.maxPhotos)
           GestureDetector(
             onTap: () => _pickImage(ImageSource.gallery),
@@ -484,7 +526,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               decoration: BoxDecoration(
                 color: context.cardFill,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: p.withValues(alpha: 0.35), width: 1.5),
+                border: Border.all(
+                  color: p.withValues(alpha: 0.35),
+                  width: 1.5,
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -494,7 +539,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   Text(
                     AppLocalizations.of(context)!.createPostAddPhoto,
                     style: GoogleFonts.notoSansKr(
-                        fontSize: 10, color: p, fontWeight: FontWeight.w700),
+                      fontSize: 10,
+                      color: p,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
@@ -569,11 +617,7 @@ class _BottomBar extends StatelessWidget {
 }
 
 class _BarBtn extends StatelessWidget {
-  const _BarBtn({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _BarBtn({required this.icon, required this.label, required this.onTap});
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
@@ -635,13 +679,13 @@ class _CharCounter extends StatelessWidget {
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: ctrl,
       builder: (_, val, _) {
-        final len   = val.text.length;
+        final len = val.text.length;
         final ratio = len / max;
         final color = ratio >= 0.95
             ? Theme.of(context).colorScheme.error
             : ratio >= 0.80
-                ? _kWarningOrange
-                : context.hintColor;
+            ? _kWarningOrange
+            : context.hintColor;
         return Text(
           '$len / $max',
           style: GoogleFonts.notoSansKr(fontSize: 11, color: color),
@@ -683,8 +727,7 @@ class _PublishButton extends StatelessWidget {
                 height: 22,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(cs.onPrimary),
+                  valueColor: AlwaysStoppedAnimation<Color>(cs.onPrimary),
                 ),
               )
             : Text(
@@ -716,8 +759,7 @@ class _CategoryChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
           color: selected ? context.primary : context.cardFill,
           borderRadius: BorderRadius.circular(12),

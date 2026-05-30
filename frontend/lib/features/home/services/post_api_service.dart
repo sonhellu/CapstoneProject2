@@ -29,28 +29,40 @@ class PostApiService {
 
   Future<Post> createPost(Post post) async {
     final res = await _api.post('/api/posts/', body: post.toJson());
-    if (res.statusCode != 201) throw Exception('Failed to create post');
+    if (res.statusCode != 201) {
+      throw Exception(_message(res, 'Failed to create post'));
+    }
     return Post.fromJson(jsonDecode(utf8.decode(res.bodyBytes)));
   }
 
-  Future<void> updatePost(String id, {required String title, required String content}) async {
-    final res = await _api.patch('/api/posts/$id', body: {
-      'title': title,
-      'content': content,
-    });
-    if (res.statusCode != 200) throw Exception('Failed to update post');
+  Future<void> updatePost(
+    String id, {
+    required String title,
+    required String content,
+  }) async {
+    final res = await _api.patch(
+      '/api/posts/$id',
+      body: {'title': title, 'content': content},
+    );
+    if (res.statusCode != 200) {
+      throw Exception(_message(res, 'Failed to update post'));
+    }
   }
 
   Future<void> deletePost(String id) async {
     final res = await _api.delete('/api/posts/$id');
-    if (res.statusCode != 204) throw Exception('Failed to delete post');
+    if (res.statusCode != 204) {
+      throw Exception(_message(res, 'Failed to delete post'));
+    }
   }
 
   Future<List<CommentData>> fetchComments(String postId) async {
     final res = await _api.get('/api/posts/$postId/comments');
     if (res.statusCode != 200) return [];
     final List data = jsonDecode(utf8.decode(res.bodyBytes));
-    return data.map((item) => CommentData.fromJson(item as Map<String, dynamic>)).toList();
+    return data
+        .map((item) => CommentData.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   Future<CommentData> addComment(
@@ -59,13 +71,35 @@ class PostApiService {
     required String authorName,
     required String avatarInitial,
   }) async {
-    final res = await _api.post('/api/posts/$postId/comments', body: {
-      'content': content,
-      'is_anonymous': false,
-      'author_name': authorName,
-      'author_avatar_initial': avatarInitial,
-    });
-    if (res.statusCode != 201) throw Exception('Failed to add comment');
+    final res = await _api.post(
+      '/api/posts/$postId/comments',
+      body: {
+        'content': content,
+        'is_anonymous': false,
+        'author_name': authorName,
+        'author_avatar_initial': avatarInitial,
+      },
+    );
+    if (res.statusCode != 201) {
+      throw Exception(_message(res, 'Failed to add comment'));
+    }
     return CommentData.fromJson(jsonDecode(utf8.decode(res.bodyBytes)));
+  }
+
+  Future<Post> likePost(String id) async {
+    final res = await _api.post('/api/posts/$id/like');
+    if (res.statusCode != 200) {
+      throw Exception(_message(res, 'Failed to like post'));
+    }
+    return Post.fromJson(jsonDecode(utf8.decode(res.bodyBytes)));
+  }
+
+  String _message(dynamic res, String fallback) {
+    try {
+      final body = jsonDecode(utf8.decode(res.bodyBytes));
+      final detail = body['detail'];
+      if (detail is String && detail.isNotEmpty) return '$fallback: $detail';
+    } catch (_) {}
+    return '$fallback (${res.statusCode})';
   }
 }

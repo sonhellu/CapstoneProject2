@@ -15,12 +15,12 @@ import 'visa_info_form_screen.dart';
 const double _kCardRadius = 16.0;
 
 List<BoxShadow> _cardShadow(BuildContext context) => [
-      BoxShadow(
-        color: Colors.black.withValues(alpha: context.isDark ? 0.35 : 0.08),
-        blurRadius: 10,
-        offset: const Offset(0, 4),
-      ),
-    ];
+  BoxShadow(
+    color: Colors.black.withValues(alpha: context.isDark ? 0.35 : 0.08),
+    blurRadius: 10,
+    offset: const Offset(0, 4),
+  ),
+];
 
 // ─────────────────────────── Mock Data ───────────────────────────
 class _ProfileData {
@@ -50,16 +50,15 @@ class _ProfileData {
     String? major,
     String? nationality,
     String? email,
-  }) =>
-      _ProfileData(
-        fullName: fullName ?? this.fullName,
-        username: username ?? this.username,
-        nativeLanguage: nativeLanguage ?? this.nativeLanguage,
-        university: university ?? this.university,
-        major: major ?? this.major,
-        nationality: nationality ?? this.nationality,
-        email: email ?? this.email,
-      );
+  }) => _ProfileData(
+    fullName: fullName ?? this.fullName,
+    username: username ?? this.username,
+    nativeLanguage: nativeLanguage ?? this.nativeLanguage,
+    university: university ?? this.university,
+    major: major ?? this.major,
+    nationality: nationality ?? this.nationality,
+    email: email ?? this.email,
+  );
 }
 
 // ─────────────────────────── Screen ───────────────────────────
@@ -82,13 +81,27 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   late final TextEditingController _langCtrl;
 
   static const _languages = [
-    'Vietnamese', 'English', 'Korean', 'Japanese',
-    'Chinese', 'Myanmar', 'Thai', 'French', 'Spanish',
+    'Vietnamese',
+    'English',
+    'Korean',
+    'Japanese',
+    'Chinese',
+    'Myanmar',
+    'Thai',
+    'French',
+    'Spanish',
   ];
 
   static const _nationalities = [
-    'Vietnamese', 'Korean', 'Japanese', 'Chinese',
-    'American', 'British', 'Myanmar', 'Thai', 'French',
+    'Vietnamese',
+    'Korean',
+    'Japanese',
+    'Chinese',
+    'American',
+    'British',
+    'Myanmar',
+    'Thai',
+    'French',
   ];
 
   static const _universities = [
@@ -145,7 +158,8 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
       _profile = _ProfileData(
         fullName: data['displayName'] as String? ?? _profile.fullName,
         username: _profile.username,
-        nativeLanguage: data['nativeLanguage'] as String? ?? _profile.nativeLanguage,
+        nativeLanguage:
+            data['nativeLanguage'] as String? ?? _profile.nativeLanguage,
         university: data['school'] as String? ?? _profile.university,
         major: data['major'] as String? ?? _profile.major,
         nationality: data['nationality'] as String? ?? _profile.nationality,
@@ -173,12 +187,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     setState(() => _isEditMode = true);
   }
 
-  void _openVisaInfoForm(){
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const VisaInfoFormScreen(),
-      ),
-    );
+  void _openVisaInfoForm() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const VisaInfoFormScreen()));
   }
 
   void _cancelEdit() => setState(() => _isEditMode = false);
@@ -194,7 +206,9 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         title: Text(
           l.profileLogout,
           style: GoogleFonts.notoSansKr(
-              fontWeight: FontWeight.w700, color: onSurface),
+            fontWeight: FontWeight.w700,
+            color: onSurface,
+          ),
         ),
         content: Text(
           l.profileLogoutConfirm,
@@ -203,14 +217,20 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l.btnCancel,
-                style: GoogleFonts.notoSansKr(color: onSurfaceVar)),
+            child: Text(
+              l.btnCancel,
+              style: GoogleFonts.notoSansKr(color: onSurfaceVar),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l.profileLogout,
-                style: GoogleFonts.notoSansKr(
-                    color: Colors.red, fontWeight: FontWeight.w700)),
+            child: Text(
+              l.profileLogout,
+              style: GoogleFonts.notoSansKr(
+                color: Colors.red,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
@@ -276,7 +296,9 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         bottom: false,
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
-            20, 24, 20,
+            20,
+            24,
+            20,
             kBottomNavigationBarHeight +
                 MediaQuery.of(context).padding.bottom +
                 20,
@@ -378,15 +400,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           children: [
             Consumer<ThemeController>(
               builder: (context, themeCtrl, _) {
-                final dark =
-                    Theme.of(context).brightness == Brightness.dark;
+                final dark = Theme.of(context).brightness == Brightness.dark;
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      dark
-                          ? Icons.dark_mode_rounded
-                          : Icons.light_mode_rounded,
+                      dark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
                       size: 18,
                       color: primary,
                     ),
@@ -414,13 +433,11 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
               borderRadius: BorderRadius.circular(20),
               onTap: () => LanguageBottomSheet.show(context),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.language_rounded,
-                        size: 18, color: primary),
+                    Icon(Icons.language_rounded, size: 18, color: primary),
                     const SizedBox(width: 4),
                     Text(
                       l.settingsLanguage,
@@ -494,7 +511,11 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
 // ─────────────────────────── Display Card ───────────────────────────
 class _DisplayCard extends StatelessWidget {
-  const _DisplayCard({super.key, required this.profile, required this.isVerified});
+  const _DisplayCard({
+    super.key,
+    required this.profile,
+    required this.isVerified,
+  });
 
   final _ProfileData profile;
   final bool isVerified;
@@ -516,9 +537,7 @@ class _DisplayCard extends StatelessWidget {
             icon: Icons.school_outlined,
             label: l.profileUniversity,
             value: profile.university,
-            badge: isVerified
-                ? const _VerifiedBadge()
-                : null,
+            badge: isVerified ? const _VerifiedBadge() : null,
           ),
           _divider(context),
           _InfoRow(
@@ -687,10 +706,7 @@ class _Card extends StatelessWidget {
             ),
           ),
           Divider(height: 1, color: Theme.of(context).dividerColor),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: child,
-          ),
+          Padding(padding: const EdgeInsets.all(16), child: child),
         ],
       ),
     );
@@ -743,10 +759,7 @@ class _InfoRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (badge != null) ...[
-                      const SizedBox(width: 6),
-                      badge!,
-                    ],
+                    if (badge != null) ...[const SizedBox(width: 6), badge!],
                   ],
                 ),
               ],
@@ -795,14 +808,12 @@ class _Field extends StatelessWidget {
     required this.label,
     required this.controller,
     this.readOnly = false,
-    this.maxLines = 1,
   });
 
   final IconData icon;
   final String label;
   final TextEditingController controller;
   final bool readOnly;
-  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -811,19 +822,24 @@ class _Field extends StatelessWidget {
     return TextField(
       controller: controller,
       readOnly: readOnly,
-      maxLines: maxLines,
+      maxLines: 1,
       style: GoogleFonts.notoSansKr(
         fontSize: 14,
         color: readOnly ? context.onSurfaceVar : context.onSurface,
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle:
-            GoogleFonts.notoSansKr(fontSize: 13, color: context.onSurfaceVar),
+        labelStyle: GoogleFonts.notoSansKr(
+          fontSize: 13,
+          color: context.onSurfaceVar,
+        ),
         prefixIcon: Icon(icon, size: 20, color: p),
         filled: true,
         fillColor: readOnly ? context.surfaceVar : context.cardFill,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 14,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: outline),
@@ -892,8 +908,11 @@ class _TapField extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.keyboard_arrow_down_rounded,
-                color: context.onSurfaceVar, size: 20),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: context.onSurfaceVar,
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -915,8 +934,9 @@ class _SaveButton extends StatelessWidget {
         onPressed: isSaving ? null : onSave,
         style: ElevatedButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.primary,
-          disabledBackgroundColor:
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
+          disabledBackgroundColor: Theme.of(
+            context,
+          ).colorScheme.primary.withValues(alpha: 0.6),
           foregroundColor: Colors.white,
           shape: const StadiumBorder(),
           elevation: 0,
@@ -970,7 +990,6 @@ class _LogoutButton extends StatelessWidget {
     );
   }
 }
-
 
 // ─────────────────────────── Picker Sheet ───────────────────────────
 class _PickerSheet extends StatelessWidget {
@@ -1030,16 +1049,17 @@ class _PickerSheet extends StatelessWidget {
                   opt,
                   style: GoogleFonts.notoSansKr(
                     fontSize: 14,
-                    fontWeight:
-                        selected ? FontWeight.w700 : FontWeight.w400,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
                     color: selected
                         ? Theme.of(context).colorScheme.primary
                         : Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 trailing: selected
-                    ? Icon(Icons.check_rounded,
-                        color: Theme.of(context).colorScheme.primary)
+                    ? Icon(
+                        Icons.check_rounded,
+                        color: Theme.of(context).colorScheme.primary,
+                      )
                     : null,
               );
             },
@@ -1065,9 +1085,7 @@ class _VisaInfoBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: context.primary.withValues(alpha: 0.25),
-          ),
+          border: Border.all(color: context.primary.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
@@ -1103,10 +1121,7 @@ class _VisaInfoBanner extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: context.primary,
-            ),
+            Icon(Icons.chevron_right_rounded, color: context.primary),
           ],
         ),
       ),

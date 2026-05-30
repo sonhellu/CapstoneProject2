@@ -64,25 +64,28 @@ class Post {
     int? likes,
     int? comments,
     String? userId,
-  }) =>
-      Post(
-        id: id ?? this.id,
-        title: title ?? this.title,
-        content: content ?? this.content,
-        author: author ?? this.author,
-        time: time ?? this.time,
-        category: category ?? this.category,
-        images: images ?? this.images,
-        language: language ?? this.language,
-        likes: likes ?? this.likes,
-        comments: comments ?? this.comments,
-        userId: userId ?? this.userId,
-      );
+  }) => Post(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    content: content ?? this.content,
+    author: author ?? this.author,
+    time: time ?? this.time,
+    category: category ?? this.category,
+    images: images ?? this.images,
+    language: language ?? this.language,
+    likes: likes ?? this.likes,
+    comments: comments ?? this.comments,
+    userId: userId ?? this.userId,
+  );
 
   factory Post.fromJson(Map<String, dynamic> json) {
     final isAnon = json['is_anonymous'] as bool? ?? false;
-    final name = isAnon ? 'Anonymous' : (json['author_name'] as String? ?? 'Unknown');
-    final initial = isAnon ? 'A' : (json['author_avatar_initial'] as String? ?? '?');
+    final name = isAnon
+        ? 'Anonymous'
+        : (json['author_name'] as String? ?? 'Unknown');
+    final initial = isAnon
+        ? 'A'
+        : (json['author_avatar_initial'] as String? ?? '?');
     return Post(
       id: json['id'].toString(),
       title: json['title'] as String,
@@ -95,10 +98,12 @@ class Post {
       ),
       time: _timeAgo(json['created_at'] as String),
       category: json['category'] as String? ?? 'Campus',
-      images: json['image_url'] != null ? [json['image_url'] as String] : const [],
+      images: json['image_url'] != null
+          ? [json['image_url'] as String]
+          : const [],
       language: _langTag(json['language_code'] as String?),
       likes: json['like_count'] as int? ?? 0,
-      comments: 0,
+      comments: json['comments_count'] as int? ?? 0,
       userId: json['firebase_uid'] as String? ?? '',
     );
   }
@@ -137,8 +142,12 @@ class CommentData {
     final isAnon = json['is_anonymous'] as bool? ?? false;
     return CommentData(
       id: json['id'].toString(),
-      authorName: isAnon ? 'Anonymous' : (json['author_name'] as String? ?? 'Unknown'),
-      avatarInitial: isAnon ? 'A' : (json['author_avatar_initial'] as String? ?? '?'),
+      authorName: isAnon
+          ? 'Anonymous'
+          : (json['author_name'] as String? ?? 'Unknown'),
+      avatarInitial: isAnon
+          ? 'A'
+          : (json['author_avatar_initial'] as String? ?? '?'),
       text: json['content'] as String,
       time: _timeAgo(json['created_at'] as String),
     );
