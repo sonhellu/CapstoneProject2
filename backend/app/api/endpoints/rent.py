@@ -9,7 +9,7 @@ from app.core.config import settings
 router = APIRouter(prefix="/rent", tags=["Rent"])
 
 _RENT_API_URL = (
-    "http://apis.data.go.kr/1613000/RTMSDataSvcRHRent/"
+    "https://apis.data.go.kr/1613000/RTMSDataSvcRHRent/"
     "getRTMSDataSvcRHRent"
 )
 
