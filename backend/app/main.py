@@ -6,6 +6,7 @@ from app.core.config import settings
 from app.db.session import engine
 from app.db.base import Base
 from app.api import posts
+import app.models
 
 Base.metadata.create_all(bind=engine)
 

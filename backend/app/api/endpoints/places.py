@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.schemas.place import PlaceCreate
 from app.models.place import Place, Review
-from app.services.translation import translate_text
-# DB 세션 연결용 함수 필요 (예: get_db)
+from app.models.translation import translate_text
+from app.db.session import get_db
 
 router = APIRouter()
 

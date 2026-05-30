@@ -1,15 +1,9 @@
-# app/models/user.py (또는 models.py)
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, FetchedValue
 from sqlalchemy.sql import func
-from app.db.base import Base  # 팀의 Base 설정에 맞게 import
+from app.db.base import Base
 
-class Language(Base):
-    __tablename__ = "language"
-    
-    code = Column(String(10), primary_key=True)
-    name = Column(String(50), nullable=False)
-
-class User(Base):
+# Users Table
+class Users(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
