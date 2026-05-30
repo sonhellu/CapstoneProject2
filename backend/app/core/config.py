@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -28,6 +29,13 @@ class Settings(BaseSettings):
         if self.DATABASE_URL:
             # Railway uses postgres:// — SQLAlchemy requires postgresql://
             return self.DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        pg_host = os.getenv("PGHOST")
+        if pg_host:
+            pg_user = os.getenv("PGUSER", self.POSTGRES_USER)
+            pg_password = os.getenv("PGPASSWORD", self.POSTGRES_PASSWORD)
+            pg_port = os.getenv("PGPORT", str(self.POSTGRES_PORT))
+            pg_db = os.getenv("PGDATABASE", self.POSTGRES_DB)
+            return f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_db}"
         return (
             f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
@@ -35,4 +43,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-

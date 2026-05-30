@@ -31,8 +31,6 @@ class _ProfileData {
   String major;
   String nationality;
   String email;
-  String bio;
-  String gender;
 
   _ProfileData({
     required this.fullName,
@@ -42,8 +40,6 @@ class _ProfileData {
     required this.major,
     required this.nationality,
     required this.email,
-    this.bio = '',
-    this.gender = 'other',
   });
 
   _ProfileData copyWith({
@@ -54,8 +50,6 @@ class _ProfileData {
     String? major,
     String? nationality,
     String? email,
-    String? bio,
-    String? gender,
   }) =>
       _ProfileData(
         fullName: fullName ?? this.fullName,
@@ -65,8 +59,6 @@ class _ProfileData {
         major: major ?? this.major,
         nationality: nationality ?? this.nationality,
         email: email ?? this.email,
-        bio: bio ?? this.bio,
-        gender: gender ?? this.gender,
       );
 }
 
@@ -88,9 +80,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   // Controllers
   late final TextEditingController _nameCtrl;
   late final TextEditingController _langCtrl;
-  late final TextEditingController _bioCtrl;
-
-  static const _genders = ['male', 'female', 'other'];
 
   static const _languages = [
     'Vietnamese', 'English', 'Korean', 'Japanese',
@@ -144,7 +133,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     _editDraft = _profile.copyWith();
     _nameCtrl = TextEditingController(text: _profile.fullName);
     _langCtrl = TextEditingController(text: _profile.nativeLanguage);
-    _bioCtrl  = TextEditingController(text: _profile.bio);
     _loadProfile();
   }
 
@@ -162,13 +150,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         major: data['major'] as String? ?? _profile.major,
         nationality: data['nationality'] as String? ?? _profile.nationality,
         email: data['email'] as String? ?? _profile.email,
-        bio: data['bio'] as String? ?? '',
-        gender: data['gender'] as String? ?? 'other',
       );
       _editDraft = _profile.copyWith();
       _nameCtrl.text = _profile.fullName;
       _langCtrl.text = _profile.nativeLanguage;
-      _bioCtrl.text  = _profile.bio;
     });
   }
 
@@ -176,7 +161,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   void dispose() {
     _nameCtrl.dispose();
     _langCtrl.dispose();
-    _bioCtrl.dispose();
     super.dispose();
   }
 
@@ -186,7 +170,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     _editDraft = _profile.copyWith();
     _nameCtrl.text = _profile.fullName;
     _langCtrl.text = _profile.nativeLanguage;
-    _bioCtrl.text  = _profile.bio;
     setState(() => _isEditMode = true);
   }
 
@@ -249,15 +232,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         school: _editDraft.university,
         nationality: _editDraft.nationality,
         major: _editDraft.major,
-        bio: _bioCtrl.text.trim(),
-        gender: _editDraft.gender,
       );
     }
     if (!mounted) return;
     setState(() {
       _profile = _editDraft.copyWith(
         fullName: newName.isNotEmpty ? newName : _editDraft.fullName,
-        bio: _bioCtrl.text.trim(),
       );
       _isEditMode = false;
       _isSaving = false;
@@ -326,12 +306,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                         draft: _editDraft,
                         nameCtrl: _nameCtrl,
                         langCtrl: _langCtrl,
-                        bioCtrl: _bioCtrl,
                         languages: _languages,
                         nationalities: _nationalities,
                         universities: _universities,
                         majors: _majors,
-                        genders: _genders,
                         isSaving: _isSaving,
                         onPickLanguage: () => _pickFromSheet(
                           title: l.profileNativeLang,
@@ -364,14 +342,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                           current: _editDraft.nationality,
                           onSelected: (v) => setState(() {
                             _editDraft = _editDraft.copyWith(nationality: v);
-                          }),
-                        ),
-                        onPickGender: () => _pickFromSheet(
-                          title: 'Gender',
-                          options: _genders,
-                          current: _editDraft.gender,
-                          onSelected: (v) => setState(() {
-                            _editDraft = _editDraft.copyWith(gender: v);
                           }),
                         ),
                         onCancel: _cancelEdit,
@@ -564,20 +534,6 @@ class _DisplayCard extends StatelessWidget {
           ),
           _divider(context),
           _InfoRow(
-            icon: Icons.wc_outlined,
-            label: l.profileGender,
-            value: profile.gender,
-          ),
-          if (profile.bio.isNotEmpty) ...[
-            _divider(context),
-            _InfoRow(
-              icon: Icons.info_outline_rounded,
-              label: l.profileBio,
-              value: profile.bio,
-            ),
-          ],
-          _divider(context),
-          _InfoRow(
             icon: Icons.email_outlined,
             label: l.profileEmail,
             value: profile.email,
@@ -598,18 +554,15 @@ class _EditForm extends StatelessWidget {
     required this.draft,
     required this.nameCtrl,
     required this.langCtrl,
-    required this.bioCtrl,
     required this.languages,
     required this.nationalities,
     required this.universities,
     required this.majors,
-    required this.genders,
     required this.isSaving,
     required this.onPickLanguage,
     required this.onPickUniversity,
     required this.onPickMajor,
     required this.onPickNationality,
-    required this.onPickGender,
     required this.onCancel,
     required this.onSave,
   });
@@ -617,18 +570,15 @@ class _EditForm extends StatelessWidget {
   final _ProfileData draft;
   final TextEditingController nameCtrl;
   final TextEditingController langCtrl;
-  final TextEditingController bioCtrl;
   final List<String> languages;
   final List<String> nationalities;
   final List<String> universities;
   final List<String> majors;
-  final List<String> genders;
   final bool isSaving;
   final VoidCallback onPickLanguage;
   final VoidCallback onPickUniversity;
   final VoidCallback onPickMajor;
   final VoidCallback onPickNationality;
-  final VoidCallback onPickGender;
   final VoidCallback onCancel;
   final VoidCallback onSave;
 
@@ -674,20 +624,6 @@ class _EditForm extends StatelessWidget {
                 label: l.profileNationality,
                 value: draft.nationality,
                 onTap: onPickNationality,
-              ),
-              const SizedBox(height: 16),
-              _TapField(
-                icon: Icons.wc_outlined,
-                label: l.profileGender,
-                value: draft.gender,
-                onTap: onPickGender,
-              ),
-              const SizedBox(height: 16),
-              _Field(
-                icon: Icons.info_outline_rounded,
-                label: l.profileBio,
-                controller: bioCtrl,
-                maxLines: 3,
               ),
               const SizedBox(height: 16),
               _Field(

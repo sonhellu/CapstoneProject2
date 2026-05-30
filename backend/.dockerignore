@@ -1,0 +1,17 @@
+.DS_Store
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Keep production secrets out of the image. Inject these via Railway variables.
+firebase-service-account.json
+hicampus-firebase.json
+*-firebase.json
+
+build/
+dist/
+*.egg-info/

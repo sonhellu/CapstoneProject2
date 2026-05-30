@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../auth/services/auth_service.dart';
@@ -32,12 +31,15 @@ class ScheduleProvider extends ChangeNotifier {
   final List<ScheduleActivity> _items = [];
   StreamSubscription<List<ScheduleActivity>>? _scheduleSub;
   StreamSubscription<User?>? _authSub;
+  bool _hasLoaded = false;
+  String? _errorMessage;
 
   // ── Public reads ──────────────────────────────────────────────────────────
 
   List<ScheduleActivity> get all => List.unmodifiable(_items);
+  String? get errorMessage => _errorMessage;
 
-  bool get isLoading => _items.isEmpty && _authService.currentUser != null;
+  bool get isLoading => !_hasLoaded && _authService.currentUser != null;
 
   /// All activities for [day], sorted by start time.
   List<ScheduleActivity> activitiesFor(DateTime day) {
@@ -121,6 +123,8 @@ class ScheduleProvider extends ChangeNotifier {
     _scheduleSub?.cancel();
     _scheduleSub = null;
     _items.clear();
+    _hasLoaded = false;
+    _errorMessage = null;
     notifyListeners();
 
     if (user == null) return;
@@ -136,6 +140,8 @@ class ScheduleProvider extends ChangeNotifier {
     _items
       ..clear()
       ..addAll(activities);
+    _hasLoaded = true;
+    _errorMessage = null;
     notifyListeners();
   }
 
@@ -157,7 +163,10 @@ class ScheduleProvider extends ChangeNotifier {
   }
 
   void _onError(Object e) {
-    if (kDebugMode) debugPrint('[ScheduleProvider] Firestore error: $e');
+    _hasLoaded = true;
+    _errorMessage = e.toString();
+    debugPrint('[ScheduleProvider] Firestore error: $e');
+    notifyListeners();
   }
 
   // ── Dispose ───────────────────────────────────────────────────────────────

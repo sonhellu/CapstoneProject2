@@ -23,7 +23,7 @@ class Review(Base):
     __tablename__ = "reviews"
 
     review_id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, nullable=False)
     place_id = Column(Integer, ForeignKey("places.place_id", ondelete="CASCADE"), nullable=False)
     rating = Column(SmallInteger, nullable=False)
     content = Column(Text)

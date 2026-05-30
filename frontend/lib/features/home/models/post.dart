@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 /// Domain model for a community post.
 class PostAuthor {
   const PostAuthor({
@@ -79,6 +81,48 @@ class Post {
         userId: userId ?? this.userId,
       );
 
+  factory Post.fromFirestore(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data();
+    final isAnon = data['isAnonymous'] as bool? ?? false;
+    final ts = data['createdAt'] as Timestamp?;
+    final dt = ts?.toDate() ?? DateTime.now();
+    return Post(
+      id: doc.id,
+      title: data['title'] as String? ?? '',
+      content: data['content'] as String? ?? '',
+      author: PostAuthor(
+        name: isAnon ? 'Anonymous' : (data['authorName'] as String? ?? 'Unknown'),
+        school: data['authorSchool'] as String? ?? '',
+        major: '',
+        avatarInitial: isAnon ? 'A' : (data['authorAvatarInitial'] as String? ?? '?'),
+      ),
+      time: _timeAgoFromDateTime(dt),
+      category: data['category'] as String? ?? 'Campus',
+      images: List<String>.from(data['images'] as List? ?? []),
+      language: data['language'] as String? ?? 'EN',
+      likes: (data['likeCount'] as num?)?.toInt() ?? 0,
+      comments: (data['commentCount'] as num?)?.toInt() ?? 0,
+      userId: data['userId'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toFirestore() => {
+    'title': title,
+    'content': content,
+    'authorName': author.name,
+    'authorAvatarInitial': author.avatarInitial,
+    'authorSchool': author.school,
+    'category': category,
+    'language': language,
+    'isAnonymous': false,
+    'likeCount': likes,
+    'likedBy': const <String>[],
+    'commentCount': comments,
+    'userId': userId,
+    'images': images,
+    'createdAt': FieldValue.serverTimestamp(),
+  };
+
   factory Post.fromJson(Map<String, dynamic> json) {
     final isAnon = json['is_anonymous'] as bool? ?? false;
     final name = isAnon ? 'Anonymous' : (json['author_name'] as String? ?? 'Unknown');
@@ -146,6 +190,15 @@ class CommentData {
 }
 
 // ─────────────────────────── Helpers ───────────────────────────
+
+String _timeAgoFromDateTime(DateTime dt) {
+  final diff = DateTime.now().difference(dt);
+  if (diff.inMinutes < 1) return 'Just now';
+  if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  if (diff.inDays == 1) return 'Yesterday';
+  return '${diff.inDays}d ago';
+}
 
 String _timeAgo(String isoDate) {
   final dt = DateTime.tryParse(isoDate)?.toLocal() ?? DateTime.now();
