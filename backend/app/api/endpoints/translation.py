@@ -4,9 +4,12 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 import httpx
 
+from app.core.config import settings
+
 router = APIRouter(prefix="/translate", tags=["Translation"])
 
 _MYMEMORY_URL = "https://api.mymemory.translated.net/get"
+_GOOGLE_URL = "https://translation.googleapis.com/language/translate/v2"
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
@@ -36,16 +39,35 @@ class DetectResponse(BaseModel):
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-async def _translate_one(text: str, source: str, target: str) -> str:
-    """Translate a single text via MyMemory API. Returns original on failure."""
-    if not text.strip() or source == target:
-        return text
-    langpair = f"{source}|{target}"
+async def _translate_via_google(text: str, source: str, target: str) -> Optional[str]:
+    """Google Cloud Translation API. Returns None when key absent or on failure."""
+    key = settings.GOOGLE_TRANSLATOR_API_KEY
+    if not key:
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            res = await client.post(
+                _GOOGLE_URL,
+                params={"key": key},
+                json={"q": text, "source": source, "target": target, "format": "text"},
+            )
+        if res.status_code != 200:
+            return None
+        data = res.json()
+        translations = data.get("data", {}).get("translations", [])
+        translated = translations[0].get("translatedText", "") if translations else ""
+        return translated or None
+    except Exception:
+        return None
+
+
+async def _translate_via_mymemory(text: str, source: str, target: str) -> str:
+    """MyMemory free API fallback. Returns original on failure."""
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             res = await client.get(
                 _MYMEMORY_URL,
-                params={"q": text, "langpair": langpair},
+                params={"q": text, "langpair": f"{source}|{target}"},
             )
         if res.status_code != 200:
             return text
@@ -58,27 +80,40 @@ async def _translate_one(text: str, source: str, target: str) -> str:
         return text
 
 
+async def _detect_lang(text: str) -> Optional[str]:
+    try:
+        from langdetect import detect
+        return detect(text)
+    except Exception:
+        return None
+
+
+async def _translate_one(text: str, source: str, target: str) -> str:
+    if not text.strip() or source == target:
+        return text
+    effective_source = source
+    if source == "auto":
+        effective_source = (await _detect_lang(text)) or "ko"
+    if effective_source == target:
+        return text
+    result = await _translate_via_google(text, effective_source, target)
+    return result if result is not None else await _translate_via_mymemory(text, effective_source, target)
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("", response_model=TranslationResponse)
 async def translate(request: TranslationRequest):
-    """Batch translate items via MyMemory (free, no API key required)."""
     results = []
     for item in request.items:
-        source = request.source_lang if request.source_lang != "auto" else "ko"
-        translated = await _translate_one(item.text, source, request.target_lang)
+        translated = await _translate_one(item.text, request.source_lang, request.target_lang)
         results.append(TranslatedItem(id=item.id, translated=translated))
     return TranslationResponse(results=results)
 
 
 @router.post("/detect", response_model=DetectResponse)
 async def detect_language(request: DetectRequest):
-    """Detect the language of a text using langdetect."""
     if not request.text.strip():
         return DetectResponse(lang=None)
-    try:
-        from langdetect import detect
-        lang = detect(request.text)
-        return DetectResponse(lang=lang)
-    except Exception:
-        return DetectResponse(lang=None)
+    lang = await _detect_lang(request.text)
+    return DetectResponse(lang=lang)

@@ -1,9 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
-import 'package:http/http.dart' as http;
 
-import '../config/api_keys.dart';
+import 'api_client.dart';
 
 // ──────────────────────────── Language codes ────────────────────────────
 
@@ -43,16 +42,14 @@ abstract final class LangCode {
 
 // ──────────────────────────── Service (Singleton) ────────────────────────────
 
-/// Translation service backed by Google Cloud Translation API v2.
-/// Free tier: 500,000 characters/month.
-/// Requires API key in ApiKeys.googleTranslateApiKey.
+/// Translation service backed by the HiCampus backend (/api/translate).
+/// The backend uses Google Cloud Translation API when GOOGLE_TRANSLATOR_API_KEY
+/// is configured on Railway, falling back to MyMemory otherwise.
 class TranslationService {
   TranslationService._();
   static final instance = TranslationService._();
 
-  static const _baseUrl =
-      'https://translation.googleapis.com/language/translate/v2';
-
+  final _api = ApiClient();
   final _translationCache = <String, String>{};
   final _detectCache      = <String, String?>{};
   static const _kMaxCache = 250;
@@ -68,36 +65,28 @@ class TranslationService {
     required String to,
   }) {
     if (text.trim().isEmpty) return false;
-    if (ApiKeys.googleTranslateApiKey.isEmpty) return false;
     final f = LangCode.normalize(from);
     final t = LangCode.normalize(to);
     return f != t && LangCode.isSupported(t);
   }
 
-  /// Detects the language of [text] via Google Cloud Translation API.
+  /// Detects the language of [text] via the backend.
   /// Returns a LangCode string (e.g. 'ko', 'vi') or null on failure.
   Future<String?> detectLanguage(String text) async {
     final key = text.trim();
-    if (key.isEmpty || ApiKeys.googleTranslateApiKey.isEmpty) return null;
+    if (key.isEmpty) return null;
     if (_detectCache.containsKey(key)) return _detectCache[key];
 
     try {
-      final uri = Uri.parse('$_baseUrl/detect')
-          .replace(queryParameters: {'key': ApiKeys.googleTranslateApiKey});
-
-      final res = await http
-          .post(
-            uri,
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'q': key}),
-          )
-          .timeout(const Duration(seconds: 6));
+      final res = await _api.post(
+        '/api/translate/detect',
+        body: {'text': key},
+      );
 
       if (res.statusCode != 200) return null;
 
-      final data       = jsonDecode(res.body) as Map<String, dynamic>;
-      final detections = data['data']?['detections'] as List?;
-      final lang       = detections?.first?.first?['language'] as String?;
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      final lang = data['lang'] as String?;
       final normalized = lang != null ? LangCode.fromTag(lang) : null;
 
       _remember(_detectCache, key, normalized, _kMaxCache);
@@ -108,7 +97,7 @@ class TranslationService {
     }
   }
 
-  /// Translates [text] from [from] to [to].
+  /// Translates [text] from [from] to [to] via the backend.
   /// Returns [text] unchanged on error or unsupported pair.
   Future<String> translateText(
     String text, {
@@ -126,27 +115,24 @@ class TranslationService {
     }
 
     try {
-      final uri = Uri.parse(_baseUrl)
-          .replace(queryParameters: {'key': ApiKeys.googleTranslateApiKey});
-
-      final res = await http
-          .post(
-            uri,
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'q': text.trim(),
-              'source': f,
-              'target': t,
-              'format': 'text',
-            }),
-          )
-          .timeout(const Duration(seconds: 10));
+      final res = await _api.post(
+        '/api/translate',
+        body: {
+          'items': [
+            {'id': 1, 'text': text.trim()}
+          ],
+          'source_lang': f,
+          'target_lang': t,
+        },
+      );
 
       if (res.statusCode != 200) return text;
 
-      final data        = jsonDecode(res.body) as Map<String, dynamic>;
-      final translations = data['data']?['translations'] as List?;
-      final translated  = translations?.first?['translatedText'] as String?;
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      final results = data['results'] as List?;
+      final translated = results?.isNotEmpty == true
+          ? results!.first['translated'] as String?
+          : null;
 
       if (translated == null || translated.trim().isEmpty) return text;
       _remember(_translationCache, cacheKey, translated, _kMaxCache);
