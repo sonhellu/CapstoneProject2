@@ -25,6 +25,16 @@ class Settings(BaseSettings):
     NAVER_MAP_CLIENT_SECRET: str = ""
     PUBLIC_DATA_SERVICE_KEY: str = ""
 
+    def _is_remote_db(self) -> bool:
+        """True when running on Railway (has DATABASE_URL or PGHOST env var)."""
+        return bool(self.DATABASE_URL or os.getenv("PGHOST"))
+
+    def db_connect_args(self) -> dict:
+        """SSL args: require on Railway, disabled locally."""
+        if self._is_remote_db():
+            return {"sslmode": "require"}
+        return {}
+
     def get_database_url(self) -> str:
         if self.DATABASE_URL:
             # Railway uses postgres:// — SQLAlchemy requires postgresql://
