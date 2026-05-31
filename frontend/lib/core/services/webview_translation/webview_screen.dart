@@ -244,7 +244,13 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
   Future<void> _runTranslation({bool showWhenEmpty = true}) async {
     if (_translating || _webCtrl == null) return;
     final targetLang = LangCode.normalize(widget.targetLangCode);
-    if (targetLang == LangCode.ko || !LangCode.isSupported(targetLang)) return;
+    debugPrint(
+      '[HiTr] runTranslation target=$targetLang raw=${widget.targetLangCode}',
+    );
+    if (!LangCode.isSupported(targetLang)) {
+      debugPrint('[HiTr] skip: unsupported target language $targetLang');
+      return;
+    }
 
     final runId = ++_translationRunId;
     _hidePanelTimer?.cancel();
@@ -281,18 +287,18 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
         return;
       }
 
-      // 2. Filter — Korean only, skip pure dates/numbers
+      // 2. Filter — translate meaningful visible text, skip pure dates/numbers
       // RegExp runs in Dart: no WKWebView encoding concern.
       final dateRe = RegExp(r'^\d{2,4}[\.\-/]\d{1,2}[\.\-/]\d{1,2}$');
       final numRe = RegExp(r'^[0-9\s\.\:\-]+$');
-      final koreanRe = RegExp(r'[가-힣]'); // Hangul Syllables
+      final letterRe = RegExp(r'[A-Za-z가-힣一-龥ぁ-ゟ゠-ヿက-႟]');
 
       final idsByText = <String, List<int>>{};
       final representativeItems = <Map<String, dynamic>>[];
       final idsByRepresentativeId = <int, List<int>>{};
       for (final item in allItems) {
         final text = _normalizeWebText(item['text'] as String);
-        if (!koreanRe.hasMatch(text)) continue;
+        if (!letterRe.hasMatch(text)) continue;
         if (dateRe.hasMatch(text) || numRe.hasMatch(text)) continue;
         final id = _asInt(item['id']);
         if (id < 0) continue;
@@ -396,7 +402,7 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
       '/api/translate',
       body: {
         'items': chunk.map((e) => {'id': e['id'], 'text': e['text']}).toList(),
-        'source_lang': LangCode.ko,
+        'source_lang': 'auto',
         'target_lang': targetLang,
       },
       timeout: _translationTimeout,

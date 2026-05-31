@@ -52,10 +52,13 @@ async def _translate_via_google(
     if not key:
         return None
     try:
+        payload = {"q": text, "target": target, "format": "text"}
+        if source != "auto":
+            payload["source"] = source
         res = await client.post(
             _GOOGLE_URL,
             params={"key": key},
-            json={"q": text, "source": source, "target": target, "format": "text"},
+            json=payload,
         )
         if res.status_code != 200:
             return None
@@ -78,10 +81,13 @@ async def _translate_batch_via_google(
     if not key or not texts:
         return None
     try:
+        payload = {"q": texts, "target": target, "format": "text"}
+        if source != "auto":
+            payload["source"] = source
         res = await client.post(
             _GOOGLE_URL,
             params={"key": key},
-            json={"q": texts, "source": source, "target": target, "format": "text"},
+            json=payload,
         )
         if res.status_code != 200:
             return None
@@ -159,10 +165,9 @@ async def _translate_batch(
     texts = [item.text for item in batch]
     if source == target:
         return texts
-    if source != "auto":
-        translated = await _translate_batch_via_google(client, texts, source, target)
-        if translated is not None:
-            return translated
+    translated = await _translate_batch_via_google(client, texts, source, target)
+    if translated is not None:
+        return translated
     return await asyncio.gather(*[
         _translate_one(
             client,
