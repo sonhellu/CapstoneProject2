@@ -187,19 +187,3 @@ def add_comment(
     db.refresh(comment)
     return comment
 
-
-@router.post("/{post_id}/like", response_model=PostResponse)
-def like_post(
-    post_id: int,
-    uid: str = Depends(get_current_uid),
-    db: Session = Depends(get_db),
-):
-    del uid
-    post = _get_post_or_404(post_id, db)
-    post.like_count = (post.like_count or 0) + 1
-    db.commit()
-    db.refresh(post)
-    comments_count = db.query(func.count(Comment.id)).filter(
-        Comment.post_id == post.id
-    ).scalar() or 0
-    return _post_payload(post, comments_count)

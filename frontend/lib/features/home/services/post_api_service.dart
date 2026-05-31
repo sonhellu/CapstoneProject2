@@ -86,14 +86,6 @@ class PostApiService {
     return CommentData.fromJson(jsonDecode(utf8.decode(res.bodyBytes)));
   }
 
-  Future<Post> likePost(String id) async {
-    final res = await _api.post('/api/posts/$id/like');
-    if (res.statusCode != 200) {
-      throw Exception(_message(res, 'Failed to like post'));
-    }
-    return Post.fromJson(jsonDecode(utf8.decode(res.bodyBytes)));
-  }
-
   String _message(dynamic res, String fallback) {
     try {
       final body = jsonDecode(utf8.decode(res.bodyBytes));

@@ -170,27 +170,4 @@ class PostProvider extends ChangeNotifier {
       rethrow;
     }
   }
-
-  Future<void> toggleLike(String id) async {
-    final idx = _posts.indexWhere((p) => p.id == id);
-    if (idx == -1) return;
-    final p = _posts[idx];
-    _posts[idx] = p.copyWith(likes: p.likes + 1);
-    notifyListeners();
-    try {
-      final saved = await PostApiService.instance.likePost(id);
-      final newIdx = _posts.indexWhere((item) => item.id == id);
-      if (newIdx != -1) {
-        _posts[newIdx] = saved;
-        notifyListeners();
-      }
-    } catch (_) {
-      final rollbackIdx = _posts.indexWhere((item) => item.id == id);
-      if (rollbackIdx != -1) {
-        _posts[rollbackIdx] = p;
-        notifyListeners();
-      }
-      rethrow;
-    }
-  }
 }

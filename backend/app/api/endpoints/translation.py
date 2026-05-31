@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Optional
 
 from fastapi import APIRouter
@@ -104,10 +105,17 @@ async def _translate_one(text: str, source: str, target: str) -> str:
 
 @router.post("", response_model=TranslationResponse)
 async def translate(request: TranslationRequest):
-    results = []
-    for item in request.items:
-        translated = await _translate_one(item.text, request.source_lang, request.target_lang)
-        results.append(TranslatedItem(id=item.id, translated=translated))
+    _BATCH = 20  # concurrent requests per batch — avoids rate-limit spikes
+    items = request.items[:200]  # hard cap
+    results: list[TranslatedItem] = []
+    for i in range(0, len(items), _BATCH):
+        batch = items[i:i + _BATCH]
+        translations = await asyncio.gather(*[
+            _translate_one(item.text, request.source_lang, request.target_lang)
+            for item in batch
+        ])
+        for item, translated in zip(batch, translations):
+            results.append(TranslatedItem(id=item.id, translated=translated))
     return TranslationResponse(results=results)
 
 
