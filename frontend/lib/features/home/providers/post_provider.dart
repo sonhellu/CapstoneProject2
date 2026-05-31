@@ -4,8 +4,12 @@ import '../models/post.dart';
 import '../services/post_api_service.dart';
 
 class PostProvider extends ChangeNotifier {
-  PostProvider() {
-    _bootstrap();
+  PostProvider({bool autoLoad = true}) {
+    if (autoLoad) {
+      _bootstrap();
+    } else {
+      _loading = false;
+    }
   }
 
   bool _loading = true;
@@ -31,50 +35,26 @@ class PostProvider extends ChangeNotifier {
       List.unmodifiable(_commentsMap[postId] ?? []);
 
   Future<void> _bootstrap() async {
+    _loading = true;
+    _error = null;
+    notifyListeners();
+
     try {
       final fetched = await PostApiService.instance.fetchPosts();
       _posts
         ..clear()
         ..addAll(fetched);
+      _commentsMap.removeWhere(
+        (postId, _) => !_posts.any((post) => post.id == postId),
+      );
     } catch (e) {
       _error = e.toString();
-      // Fallback to mock data when backend is unreachable
-      _posts
-        ..clear()
-        ..addAll(List<Post>.from(mockPosts));
-      _seedComments();
+      _posts.clear();
+      _commentsMap.clear();
     } finally {
       _loading = false;
       notifyListeners();
     }
-  }
-
-  void _seedComments() {
-    _commentsMap['p1'] = [
-      CommentData(
-        id: 'c1_1',
-        authorName: 'Tanaka Yuki',
-        avatarInitial: 'T',
-        text: 'Really helpful! Thanks for sharing 🙏',
-        time: '1h ago',
-      ),
-      CommentData(
-        id: 'c1_2',
-        authorName: 'Ahmed Hassan',
-        avatarInitial: 'A',
-        text: 'I wish I had this guide when I first came here...',
-        time: '3h ago',
-      ),
-    ];
-    _commentsMap['p2'] = [
-      CommentData(
-        id: 'c2_1',
-        authorName: 'Linh Pham',
-        avatarInitial: 'L',
-        text: 'Thank you so much! This is exactly what I needed.',
-        time: '2h ago',
-      ),
-    ];
   }
 
   Future<void> loadComments(String postId) async {

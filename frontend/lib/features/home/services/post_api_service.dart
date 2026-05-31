@@ -19,7 +19,9 @@ class PostApiService {
     if (lastId != null) params['last_id'] = lastId.toString();
 
     final res = await _api.get('/api/posts/', queryParams: params);
-    if (res.statusCode != 200) return [];
+    if (res.statusCode != 200) {
+      throw Exception(_message(res, 'Failed to load posts'));
+    }
 
     final List data = jsonDecode(utf8.decode(res.bodyBytes));
     return data
@@ -58,7 +60,9 @@ class PostApiService {
 
   Future<List<CommentData>> fetchComments(String postId) async {
     final res = await _api.get('/api/posts/$postId/comments');
-    if (res.statusCode != 200) return [];
+    if (res.statusCode != 200) {
+      throw Exception(_message(res, 'Failed to load comments'));
+    }
     final List data = jsonDecode(utf8.decode(res.bodyBytes));
     return data
         .map((item) => CommentData.fromJson(item as Map<String, dynamic>))

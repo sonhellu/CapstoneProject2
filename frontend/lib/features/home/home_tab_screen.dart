@@ -97,7 +97,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       (u) => u.name == schoolName,
       orElse: () => koreanUniversities.first,
     );
-    final posts = context.watch<PostProvider>().posts;
+    final postProvider = context.watch<PostProvider>();
+    final posts = postProvider.posts;
     final internationalPosts = posts
         .where(
           (p) => p.category == 'International' || p.category == 'Scholarship',
@@ -135,37 +136,45 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             ),
           ),
           const SliverToBoxAdapter(child: RentSection()),
-          SliverToBoxAdapter(
-            child: _SectionHeader(
-              title: l.homeIntlNews,
-              onViewAll: _openPostList,
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: internationalPosts.isEmpty
-                ? const _EmptySection()
-                : _buildInternationalList(internationalPosts),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 8)),
-          // ── Campus vertical section ──
-          SliverToBoxAdapter(
-            child: _SectionHeader(
-              title: l.homeCampusLife,
-              onViewAll: _openPostList,
-            ),
-          ),
-          if (campusPosts.isEmpty)
-            const SliverToBoxAdapter(child: _EmptySection())
-          else
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, navBarHeight + 16),
-              sliver: SliverList.separated(
-                itemCount: campusPosts.length,
-                separatorBuilder: (context, i) => const SizedBox(height: 10),
-                itemBuilder: (context, i) =>
-                    PostCard(post: campusPosts[i], style: PostCardStyle.list),
+          if (postProvider.isLoading)
+            const SliverToBoxAdapter(child: _FeedLoadingSection())
+          else if (postProvider.error != null)
+            SliverToBoxAdapter(
+              child: _FeedErrorSection(onRetry: () => postProvider.refresh()),
+            )
+          else ...[
+            SliverToBoxAdapter(
+              child: _SectionHeader(
+                title: l.homeIntlNews,
+                onViewAll: _openPostList,
               ),
             ),
+            SliverToBoxAdapter(
+              child: internationalPosts.isEmpty
+                  ? const _EmptySection()
+                  : _buildInternationalList(internationalPosts),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            // ── Campus vertical section ──
+            SliverToBoxAdapter(
+              child: _SectionHeader(
+                title: l.homeCampusLife,
+                onViewAll: _openPostList,
+              ),
+            ),
+            if (campusPosts.isEmpty)
+              const SliverToBoxAdapter(child: _EmptySection())
+            else
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, navBarHeight + 16),
+                sliver: SliverList.separated(
+                  itemCount: campusPosts.length,
+                  separatorBuilder: (context, i) => const SizedBox(height: 10),
+                  itemBuilder: (context, i) =>
+                      PostCard(post: campusPosts[i], style: PostCardStyle.list),
+                ),
+              ),
+          ],
         ],
       ),
     );
@@ -242,10 +251,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
         itemCount: posts.length,
         separatorBuilder: (context, i) => const SizedBox(width: 12),
-        itemBuilder: (context, i) => PostCard(
-          post: posts[i],
-          style: PostCardStyle.horizontal,
-        ),
+        itemBuilder: (context, i) =>
+            PostCard(post: posts[i], style: PostCardStyle.horizontal),
       ),
     );
   }
@@ -352,6 +359,57 @@ class _EmptySection extends StatelessWidget {
                 color: context.onSurfaceVar,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedLoadingSection extends StatelessWidget {
+  const _FeedLoadingSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      height: 128,
+      child: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+
+class _FeedErrorSection extends StatelessWidget {
+  const _FeedErrorSection({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.cardFill,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: context.outline),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.cloud_off_rounded, color: context.primary, size: 24),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l.errorNetwork,
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: context.onSurfaceVar,
+                ),
+              ),
+            ),
+            TextButton(onPressed: onRetry, child: Text(l.alertTryAgain)),
           ],
         ),
       ),

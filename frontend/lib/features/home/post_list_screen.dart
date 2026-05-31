@@ -75,7 +75,8 @@ class _PostListScreenState extends State<PostListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final posts = _filtered(context.watch<PostProvider>().posts);
+    final provider = context.watch<PostProvider>();
+    final posts = _filtered(provider.posts);
 
     return Scaffold(
       backgroundColor: context.bg,
@@ -88,7 +89,11 @@ class _PostListScreenState extends State<PostListScreen> {
             _buildCategoryRow(),
             _buildSortRow(posts.length),
             Expanded(
-              child: posts.isEmpty
+              child: provider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : provider.error != null
+                  ? _buildError(provider)
+                  : posts.isEmpty
                   ? _buildEmpty()
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
@@ -265,6 +270,37 @@ class _PostListScreenState extends State<PostListScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildError(PostProvider provider) {
+    final l = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off_rounded, size: 56, color: context.hintColor),
+            const SizedBox(height: 12),
+            Text(
+              l.errorNetwork,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 15,
+                color: context.onSurfaceVar,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              onPressed: () => provider.refresh(),
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: Text(l.alertTryAgain),
+            ),
+          ],
+        ),
       ),
     );
   }
