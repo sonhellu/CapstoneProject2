@@ -17,7 +17,8 @@ class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
   // ── Base URL ───────────────────────────────────────────────────────────────
-  static const String baseUrl = 'https://capstoneproject2-production-f16d.up.railway.app';
+  static const String baseUrl =
+      'https://capstoneproject2-production-f16d.up.railway.app';
 
   static const _kTimeout = Duration(seconds: 10);
 
@@ -37,18 +38,16 @@ class ApiClient {
   Future<http.Response> post(
     String path, {
     Map<String, dynamic>? body,
+    Duration? timeout,
   }) async {
     final uri = _uri(path);
     final headers = await _authHeaders();
     return _client
         .post(uri, headers: headers, body: jsonEncode(body ?? {}))
-        .timeout(_kTimeout);
+        .timeout(timeout ?? _kTimeout);
   }
 
-  Future<http.Response> put(
-    String path, {
-    Map<String, dynamic>? body,
-  }) async {
+  Future<http.Response> put(String path, {Map<String, dynamic>? body}) async {
     final uri = _uri(path);
     final headers = await _authHeaders();
     return _client
@@ -56,10 +55,7 @@ class ApiClient {
         .timeout(_kTimeout);
   }
 
-  Future<http.Response> patch(
-    String path, {
-    Map<String, dynamic>? body,
-  }) async {
+  Future<http.Response> patch(String path, {Map<String, dynamic>? body}) async {
     final uri = _uri(path);
     final headers = await _authHeaders();
     return _client

@@ -37,9 +37,11 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
     if (_query.isEmpty) return chats;
     final q = _query.toLowerCase();
     return chats
-        .where((c) =>
-            c.partner.name.toLowerCase().contains(q) ||
-            c.lastMessage.toLowerCase().contains(q))
+        .where(
+          (c) =>
+              c.partner.name.toLowerCase().contains(q) ||
+              c.lastMessage.toLowerCase().contains(q),
+        )
         .toList();
   }
 
@@ -62,10 +64,9 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
         onFind: (gender, language) {
           Navigator.pop(ctx);
           Navigator.of(context).push(
-            AppTransitions.fadeSlide(SearchPartnerScreen(
-              gender: gender,
-              language: language,
-            )),
+            AppTransitions.fadeSlide(
+              SearchPartnerScreen(gender: gender, language: language),
+            ),
           );
         },
       ),
@@ -89,8 +90,11 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
           onPressed: _openMatchFilter,
           backgroundColor: context.primary,
           elevation: 4,
-          child: Icon(Icons.person_search_rounded,
-              color: cs.onPrimary, size: 26),
+          child: Icon(
+            Icons.person_search_rounded,
+            color: cs.onPrimary,
+            size: 26,
+          ),
         ),
       ),
       body: SafeArea(
@@ -128,35 +132,34 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
                         return SliverFillRemaining(child: _buildEmpty());
                       }
                       return SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, i) {
-                            final chat = chats[i];
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _ChatTile(
-                                  chat: chat,
-                                  onTap: () => Navigator.of(context).push(
-                                    AppTransitions.fadeSlide(
-                                      ChatDetailScreen(chat: chat),
-                                    ),
+                        delegate: SliverChildBuilderDelegate((context, i) {
+                          final chat = chats[i];
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _ChatTile(
+                                chat: chat,
+                                onTap: () => Navigator.of(context).push(
+                                  AppTransitions.fadeSlide(
+                                    ChatDetailScreen(chat: chat),
                                   ),
                                 ),
-                                if (i < chats.length - 1)
-                                  Divider(
-                                      height: 1,
-                                      indent: 80,
-                                      color: Theme.of(context).dividerColor),
-                              ],
-                            );
-                          },
-                          childCount: chats.length,
-                        ),
+                              ),
+                              if (i < chats.length - 1)
+                                Divider(
+                                  height: 1,
+                                  indent: 80,
+                                  color: Theme.of(context).dividerColor,
+                                ),
+                            ],
+                          );
+                        }, childCount: chats.length),
                       );
                     },
                   ),
                   SliverToBoxAdapter(
-                      child: SizedBox(height: navBarHeight + 16)),
+                    child: SizedBox(height: navBarHeight + 16),
+                  ),
                 ],
               ),
             ),
@@ -210,18 +213,24 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
         controller: _searchCtrl,
         autofocus: true,
         onChanged: (v) => setState(() => _query = v),
-        style:
-            GoogleFonts.notoSansKr(fontSize: 14, color: context.onSurface),
+        style: GoogleFonts.notoSansKr(fontSize: 14, color: context.onSurface),
         decoration: InputDecoration(
           hintText: l.chatSearchConversations,
           hintStyle: GoogleFonts.notoSansKr(
-              fontSize: 14, color: context.hintColor),
-          prefixIcon: Icon(Icons.search_rounded,
-              size: 20, color: context.onSurfaceVar),
+            fontSize: 14,
+            color: context.hintColor,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            size: 20,
+            color: context.onSurfaceVar,
+          ),
           filled: true,
           fillColor: context.bg,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 10,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -265,23 +274,30 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
           Text(
             l.chatEmptySubtitle,
             style: GoogleFonts.notoSansKr(
-                fontSize: 13, color: context.onSurfaceVar),
+              fontSize: 13,
+              color: context.onSurfaceVar,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _openMatchFilter,
-            icon: Icon(Icons.person_search_rounded, size: 18, color: cs.onPrimary),
+            icon: Icon(
+              Icons.person_search_rounded,
+              size: 18,
+              color: cs.onPrimary,
+            ),
             label: Text(
               l.chatFindPartnerButton,
               style: GoogleFonts.notoSansKr(
-                  fontSize: 14, fontWeight: FontWeight.w700),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: p,
               foregroundColor: cs.onPrimary,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: const StadiumBorder(),
               elevation: 0,
             ),
@@ -311,10 +327,7 @@ class _ChatTabScreenState extends State<ChatTabScreen> {
 
 // ─────────────────────────── Incoming Requests Section ───────────────────────────
 class _IncomingRequestsSection extends StatelessWidget {
-  const _IncomingRequestsSection({
-    required this.requests,
-    required this.ctrl,
-  });
+  const _IncomingRequestsSection({required this.requests, required this.ctrl});
 
   final List<ChatRequestModel> requests;
   final ChatController ctrl;
@@ -352,7 +365,9 @@ class _IncomingRequestsSection extends StatelessWidget {
                 const SizedBox(width: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 7, vertical: 2),
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF5722),
                     borderRadius: BorderRadius.circular(10),
@@ -369,26 +384,28 @@ class _IncomingRequestsSection extends StatelessWidget {
               ],
             ),
           ),
-          ...requests.map((req) => _RequestTile(
-                request: req,
-                onAccept: () => ctrl.acceptRequest(req.id),
-                onDecline: () => ctrl.declineRequest(req.id),
-                onAccepted: (convId) {
-                  if (!context.mounted) return;
-                  Navigator.of(context).push(
-                    AppTransitions.fadeSlide(
-                      ChatDetailScreen(
-                        chat: ChatModel(
-                          id: convId,
-                          partner: req.sender,
-                          lastMessage: '',
-                          lastTime: '',
-                        ),
+          ...requests.map(
+            (req) => _RequestTile(
+              request: req,
+              onAccept: () => ctrl.acceptRequest(req.id),
+              onDecline: () => ctrl.declineRequest(req.id),
+              onAccepted: (convId) {
+                if (!context.mounted) return;
+                Navigator.of(context).push(
+                  AppTransitions.fadeSlide(
+                    ChatDetailScreen(
+                      chat: ChatModel(
+                        id: convId,
+                        partner: req.sender,
+                        lastMessage: '',
+                        lastTime: '',
                       ),
                     ),
-                  );
-                },
-              )),
+                  ),
+                );
+              },
+            ),
+          ),
           Divider(height: 1, color: Theme.of(context).dividerColor),
         ],
       ),
@@ -407,6 +424,7 @@ class _RequestTile extends StatefulWidget {
   final ChatRequestModel request;
   final Future<String> Function() onAccept;
   final Future<void> Function() onDecline;
+
   /// Called with the new [convId] after [onAccept] completes successfully.
   final void Function(String convId) onAccepted;
 
@@ -451,8 +469,7 @@ class _RequestTileState extends State<_RequestTile> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          _Avatar(
-              initial: sender.avatarInitial, size: 44, fontSize: 16),
+          _Avatar(initial: sender.avatarInitial, size: 44, fontSize: 16),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -469,7 +486,9 @@ class _RequestTileState extends State<_RequestTile> {
                 Text(
                   '${sender.nativeLanguage} → ${sender.learningLanguage}',
                   style: GoogleFonts.notoSansKr(
-                      fontSize: 11, color: context.onSurfaceVar),
+                    fontSize: 11,
+                    color: context.onSurfaceVar,
+                  ),
                 ),
               ],
             ),
@@ -486,7 +505,9 @@ class _RequestTileState extends State<_RequestTile> {
               onPressed: () => _handle(widget.onDecline),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 6),
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 minimumSize: Size.zero,
                 side: BorderSide(color: context.outline.withValues(alpha: 0.5)),
                 shape: const StadiumBorder(),
@@ -494,9 +515,10 @@ class _RequestTileState extends State<_RequestTile> {
               child: Text(
                 l.chatRequestDecline,
                 style: GoogleFonts.notoSansKr(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: context.onSurfaceVar),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: context.onSurfaceVar,
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -507,7 +529,9 @@ class _RequestTileState extends State<_RequestTile> {
                 backgroundColor: p,
                 foregroundColor: cs.onPrimary,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 6),
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 minimumSize: Size.zero,
                 elevation: 0,
                 shape: const StadiumBorder(),
@@ -515,7 +539,9 @@ class _RequestTileState extends State<_RequestTile> {
               child: Text(
                 l.chatRequestAccept,
                 style: GoogleFonts.notoSansKr(
-                    fontSize: 12, fontWeight: FontWeight.w700),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],
@@ -562,8 +588,7 @@ class _ChatTile extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: const Color(0xFF4CAF50),
                         shape: BoxShape.circle,
-                        border: Border.all(
-                            color: ring, width: 2),
+                        border: Border.all(color: ring, width: 2),
                       ),
                     ),
                   ),
@@ -593,9 +618,7 @@ class _ChatTile extends StatelessWidget {
                         chat.lastTime,
                         style: GoogleFonts.notoSansKr(
                           fontSize: 11,
-                          color: hasUnread
-                              ? p
-                              : context.hintColor,
+                          color: hasUnread ? p : context.hintColor,
                           fontWeight: hasUnread
                               ? FontWeight.w600
                               : FontWeight.w400,
@@ -669,7 +692,16 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
   String _language = 'Any';
 
   static const _languages = [
-    'Any', 'Vietnamese', 'Korean', 'English', 'Japanese', 'Chinese',
+    'Any',
+    'Vietnamese',
+    'Korean',
+    'English',
+    'Japanese',
+    'Chinese',
+    'Myanmar',
+    'Thai',
+    'French',
+    'Spanish',
   ];
 
   @override
@@ -711,8 +743,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                   color: p.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.person_search_rounded,
-                    color: p, size: 20),
+                child: Icon(Icons.person_search_rounded, color: p, size: 20),
               ),
               const SizedBox(width: 12),
               Text(
@@ -752,9 +783,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: selected
-                          ? p
-                          : context.subtleFill,
+                      color: selected ? p : context.subtleFill,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: selected
@@ -768,8 +797,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                       style: GoogleFonts.notoSansKr(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color:
-                            selected ? cs.onPrimary : context.onSurfaceVar,
+                        color: selected ? cs.onPrimary : context.onSurfaceVar,
                       ),
                     ),
                   ),
@@ -793,18 +821,19 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
             runSpacing: 8,
             children: _languages.map((lang) {
               final selected = _language == lang;
-              final displayText =
-                  lang == 'Any' ? l.chatFilterLanguageAny : lang;
+              final displayText = lang == 'Any'
+                  ? l.chatFilterLanguageAny
+                  : lang;
               return GestureDetector(
                 onTap: () => setState(() => _language = lang),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: selected
-                        ? p
-                        : context.subtleFill,
+                    color: selected ? p : context.subtleFill,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: selected
@@ -817,8 +846,7 @@ class _MatchFilterSheetState extends State<_MatchFilterSheet> {
                     style: GoogleFonts.notoSansKr(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color:
-                          selected ? cs.onPrimary : context.onSurfaceVar,
+                      color: selected ? cs.onPrimary : context.onSurfaceVar,
                     ),
                   ),
                 ),
@@ -872,10 +900,7 @@ class _SkeletonTile extends StatelessWidget {
           Container(
             width: 52,
             height: 52,
-            decoration: BoxDecoration(
-              color: fill,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: fill, shape: BoxShape.circle),
           ),
           const SizedBox(width: 14),
           // ── Two text lines ──
@@ -917,11 +942,7 @@ class _SkeletonTile extends StatelessWidget {
 
 // ─────────────────────────── Avatar ───────────────────────────
 class _Avatar extends StatelessWidget {
-  const _Avatar({
-    required this.initial,
-    this.size = 44,
-    this.fontSize = 16,
-  });
+  const _Avatar({required this.initial, this.size = 44, this.fontSize = 16});
   final String initial;
   final double size;
   final double fontSize;
@@ -932,10 +953,7 @@ class _Avatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: cs.primary,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: Text(
         initial.toUpperCase(),

@@ -36,7 +36,10 @@ class _FakeAuthService extends AuthService {
     required String password,
   }) async {
     // Simulate login: do nothing (no Firebase call)
-    throw FirebaseAuthException(code: 'test-mode', message: 'Test mode — no real sign in');
+    throw FirebaseAuthException(
+      code: 'test-mode',
+      message: 'Test mode — no real sign in',
+    );
   }
 
   @override
@@ -57,7 +60,8 @@ class _FakeScheduleRepository extends ScheduleRepository {
   _FakeScheduleRepository() : super(firestore: null);
 
   @override
-  Stream<List<ScheduleActivity>> watchActivities(String uid) => const Stream.empty();
+  Stream<List<ScheduleActivity>> watchActivities(String uid) =>
+      const Stream.empty();
 
   @override
   Future<void> save(String uid, ScheduleActivity activity) async {}
@@ -88,7 +92,7 @@ void main() {
               scheduleRepository: fakeSchedule,
             ),
           ),
-          ChangeNotifierProvider(create: (_) => PostProvider()),
+          ChangeNotifierProvider(create: (_) => PostProvider(autoLoad: false)),
           ChangeNotifierProvider(create: (_) => LocaleController()),
           ChangeNotifierProvider(create: (_) => ThemeController()),
           ChangeNotifierProvider(create: (_) => NaverMapSdkController()),
@@ -120,7 +124,9 @@ void main() {
     expect(find.text('Đăng nhập'), findsWidgets);
   });
 
-  testWidgets('Màn hình login hiển thị đúng locale vi', (WidgetTester tester) async {
+  testWidgets('Màn hình login hiển thị đúng locale vi', (
+    WidgetTester tester,
+  ) async {
     final fakeAuth = _FakeAuthService();
     final fakeSchedule = _FakeScheduleRepository();
 
@@ -136,7 +142,7 @@ void main() {
               scheduleRepository: fakeSchedule,
             ),
           ),
-          ChangeNotifierProvider(create: (_) => PostProvider()),
+          ChangeNotifierProvider(create: (_) => PostProvider(autoLoad: false)),
           ChangeNotifierProvider(create: (_) => LocaleController()),
           ChangeNotifierProvider(create: (_) => ThemeController()),
           ChangeNotifierProvider(create: (_) => NaverMapSdkController()),

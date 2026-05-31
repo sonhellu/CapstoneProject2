@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'widgets/visa_d_day_card.dart';
 import 'package:flutter/services.dart';
 
@@ -12,6 +11,8 @@ import '../../core/navigation/app_transitions.dart';
 import '../../core/theme/theme_ext.dart';
 import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/locale/app_locale_resolver.dart';
+import '../../core/services/webview_translation/webview_controller.dart';
 import '../auth/data/university_data.dart';
 import '../auth/providers/auth_provider.dart';
 import 'create_post_screen.dart';
@@ -21,21 +22,39 @@ import 'providers/post_provider.dart';
 import 'widgets/post_card.dart';
 import 'widgets/rent_section.dart';
 import '../schedule/widgets/schedule_preview_widget.dart';
-import '../university_web/university_web_screen.dart';
 
 const double _kBannerRadius = 16.0;
 
 // ─────────────────────────── Banner Data ───────────────────────────
 class _BannerItem {
-  final String imageUrl;
+  final String imageAsset;
   final String caption;
   final String? websiteUrl;
-  const _BannerItem(this.imageUrl, this.caption, {this.websiteUrl});
+  const _BannerItem(this.imageAsset, this.caption, {this.websiteUrl});
 }
 
-String _universityImageUrl(String uniName) {
-  final slug = uniName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
-  return 'https://picsum.photos/seed/$slug/800/400';
+const Map<String, String> _universityImageAssets = {
+  'Seoul National University': 'assets/university/seoul.jpg',
+  'KAIST': 'assets/university/kaist.jpg',
+  'Yonsei University': 'assets/university/yonsei.jpg',
+  'Korea University': 'assets/university/korea.jpg',
+  'POSTECH': 'assets/university/postch.jpg',
+  'Sungkyunkwan University': 'assets/university/sungkyunkwan.jpg',
+  'Keimyung University': 'assets/university/keimyung.jpeg',
+  'Kyungpook National University': 'assets/university/kyungbook.jpg',
+  'Yeungnam University': 'assets/university/yeungnam.jpg',
+  'Daegu University': 'assets/university/daegu.jpg',
+};
+
+String _universityImageAsset(String uniName) {
+  return _universityImageAssets[uniName] ?? 'assets/university/kmu_banner.jpg';
+}
+
+University? _findUniversity(String schoolName) {
+  for (final uni in koreanUniversities) {
+    if (uni.name == schoolName) return uni;
+  }
+  return null;
 }
 
 // ─────────────────────────── Screen ───────────────────────────
@@ -92,11 +111,9 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     final auth = context.watch<AuthProvider>();
     final userName = auth.displayName ?? 'Student';
     final schoolName = auth.school ?? 'Keimyung University';
-    final uni = koreanUniversities.firstWhere(
-      (u) => u.name == schoolName,
-      orElse: () => koreanUniversities.first,
-    );
-    final posts = context.watch<PostProvider>().posts;
+    final uni = _findUniversity(schoolName);
+    final postProvider = context.watch<PostProvider>();
+    final posts = postProvider.posts;
     final internationalPosts = posts
         .where(
           (p) => p.category == 'International' || p.category == 'Scholarship',
@@ -124,7 +141,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
         controller: _scrollController,
         slivers: [
           SliverToBoxAdapter(child: _buildAppBar(schoolName)),
-          SliverToBoxAdapter(child: _buildBanner(userName, uni)),
+          SliverToBoxAdapter(child: _buildBanner(userName, schoolName, uni)),
           const SliverToBoxAdapter(child: SchedulePreviewWidget()),
           // ── International horizontal section ──
           const SliverToBoxAdapter(
@@ -134,37 +151,45 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             ),
           ),
           const SliverToBoxAdapter(child: RentSection()),
-          SliverToBoxAdapter(
-            child: _SectionHeader(
-              title: l.homeIntlNews,
-              onViewAll: _openPostList,
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: internationalPosts.isEmpty
-                ? const _EmptySection()
-                : _buildInternationalList(internationalPosts),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 8)),
-          // ── Campus vertical section ──
-          SliverToBoxAdapter(
-            child: _SectionHeader(
-              title: l.homeCampusLife,
-              onViewAll: _openPostList,
-            ),
-          ),
-          if (campusPosts.isEmpty)
-            const SliverToBoxAdapter(child: _EmptySection())
-          else
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, navBarHeight + 16),
-              sliver: SliverList.separated(
-                itemCount: campusPosts.length,
-                separatorBuilder: (context, i) => const SizedBox(height: 10),
-                itemBuilder: (context, i) =>
-                    PostCard(post: campusPosts[i], style: PostCardStyle.list),
+          if (postProvider.isLoading)
+            const SliverToBoxAdapter(child: _FeedLoadingSection())
+          else if (postProvider.error != null)
+            SliverToBoxAdapter(
+              child: _FeedErrorSection(onRetry: () => postProvider.refresh()),
+            )
+          else ...[
+            SliverToBoxAdapter(
+              child: _SectionHeader(
+                title: l.homeIntlNews,
+                onViewAll: _openPostList,
               ),
             ),
+            SliverToBoxAdapter(
+              child: internationalPosts.isEmpty
+                  ? const _EmptySection()
+                  : _buildInternationalList(internationalPosts),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            // ── Campus vertical section ──
+            SliverToBoxAdapter(
+              child: _SectionHeader(
+                title: l.homeCampusLife,
+                onViewAll: _openPostList,
+              ),
+            ),
+            if (campusPosts.isEmpty)
+              const SliverToBoxAdapter(child: _EmptySection())
+            else
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, navBarHeight + 16),
+                sliver: SliverList.separated(
+                  itemCount: campusPosts.length,
+                  separatorBuilder: (context, i) => const SizedBox(height: 10),
+                  itemBuilder: (context, i) =>
+                      PostCard(post: campusPosts[i], style: PostCardStyle.list),
+                ),
+              ),
+          ],
         ],
       ),
     );
@@ -217,11 +242,13 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   }
 
   // ─── Banner ───
-  Widget _buildBanner(String userName, University uni) {
+  Widget _buildBanner(String userName, String schoolName, University? uni) {
     final item = _BannerItem(
-      _universityImageUrl(uni.name),
-      uni.name,
-      websiteUrl: uni.websiteUrl ?? 'https://www.${uni.defaultDomain}',
+      _universityImageAsset(schoolName),
+      schoolName,
+      websiteUrl: uni == null
+          ? null
+          : (uni.websiteUrl ?? 'https://www.${uni.defaultDomain}'),
     );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -241,10 +268,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
         itemCount: posts.length,
         separatorBuilder: (context, i) => const SizedBox(width: 12),
-        itemBuilder: (context, i) => PostCard(
-          post: posts[i],
-          style: PostCardStyle.horizontal,
-        ),
+        itemBuilder: (context, i) =>
+            PostCard(post: posts[i], style: PostCardStyle.horizontal),
       ),
     );
   }
@@ -262,20 +287,21 @@ class _BannerCard extends StatelessWidget {
     return GestureDetector(
       onTap: item.websiteUrl == null
           ? null
-          : () => openUniversityWeb(
-              context,
+          : () => WebTranslation.open(
+              context: context,
               url: item.websiteUrl!,
               title: item.caption,
+              targetLangCode: AppLocaleResolver.targetLang(context),
             ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(_kBannerRadius),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CachedNetworkImage(
-              imageUrl: item.imageUrl,
+            Image.asset(
+              item.imageAsset,
               fit: BoxFit.cover,
-              errorWidget: (context, url, error) => Container(
+              errorBuilder: (context, error, stackTrace) => Container(
                 color: p.withValues(alpha: 0.15),
                 child: Icon(Icons.image_outlined, color: p, size: 48),
               ),
@@ -350,6 +376,57 @@ class _EmptySection extends StatelessWidget {
                 color: context.onSurfaceVar,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedLoadingSection extends StatelessWidget {
+  const _FeedLoadingSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      height: 128,
+      child: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+
+class _FeedErrorSection extends StatelessWidget {
+  const _FeedErrorSection({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.cardFill,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: context.outline),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.cloud_off_rounded, color: context.primary, size: 24),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l.errorNetwork,
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: context.onSurfaceVar,
+                ),
+              ),
+            ),
+            TextButton(onPressed: onRetry, child: Text(l.alertTryAgain)),
           ],
         ),
       ),

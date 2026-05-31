@@ -16,6 +16,51 @@ import 'services/chat_service.dart';
 
 const Color _kOnlineGreen = Color(0xFF4CAF50);
 
+String _chatPresenceLabel(BuildContext context, {required bool isOnline}) {
+  if (isOnline) return AppLocalizations.of(context)!.partnerOnline;
+  return switch (Localizations.localeOf(context).languageCode) {
+    'ko' => '오프라인',
+    'vi' => 'Ngoại tuyến',
+    'ja' => 'オフライン',
+    'zh' => '离线',
+    'my' => 'အော့ဖ်လိုင်း',
+    _ => 'Offline',
+  };
+}
+
+String _chatInputHint(BuildContext context) {
+  return switch (Localizations.localeOf(context).languageCode) {
+    'ko' => '메시지를 입력하세요...',
+    'vi' => 'Nhập tin nhắn...',
+    'ja' => 'メッセージを入力...',
+    'zh' => '输入消息...',
+    'my' => 'စာတို ရိုက်ထည့်ပါ...',
+    _ => 'Type a message...',
+  };
+}
+
+String _chatLoadOlderLabel(BuildContext context) {
+  return switch (Localizations.localeOf(context).languageCode) {
+    'ko' => '이전 메시지 보기',
+    'vi' => 'Tải tin nhắn cũ hơn',
+    'ja' => '古いメッセージを表示',
+    'zh' => '加载更早的消息',
+    'my' => 'အဟောင်းစာတိုများ ဖွင့်ရန်',
+    _ => 'Load older messages',
+  };
+}
+
+String _chatCopiedLabel(BuildContext context) {
+  return switch (Localizations.localeOf(context).languageCode) {
+    'ko' => '메시지를 복사했습니다',
+    'vi' => 'Đã sao chép tin nhắn',
+    'ja' => 'メッセージをコピーしました',
+    'zh' => '消息已复制',
+    'my' => 'စာတိုကို ကူးယူပြီးပါပြီ',
+    _ => 'Message copied',
+  };
+}
+
 // ─────────────────────────── Screen ───────────────────────────
 class ChatDetailScreen extends StatefulWidget {
   const ChatDetailScreen({super.key, required this.chat});
@@ -510,26 +555,32 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
             ],
           ),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                partner.name,
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: onS,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  partner.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: onS,
+                  ),
                 ),
-              ),
-              Text(
-                partner.isOnline ? 'Online' : 'Offline',
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 11,
-                  color: partner.isOnline ? _kOnlineGreen : context.hintColor,
-                  fontWeight: FontWeight.w500,
+                Text(
+                  _chatPresenceLabel(context, isOnline: partner.isOnline),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 11,
+                    color: partner.isOnline ? _kOnlineGreen : context.hintColor,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -623,7 +674,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
       color: context.cardFill,
       padding: EdgeInsets.only(
         left: 12,
-        right: 8,
+        right: 12,
         top: 10,
         bottom: MediaQuery.of(context).padding.bottom + 10,
       ),
@@ -665,7 +716,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                   color: context.onSurface,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Type a message…',
+                  hintText: _chatInputHint(context),
                   hintStyle: GoogleFonts.notoSansKr(
                     fontSize: 14,
                     color: context.hintColor,
@@ -754,7 +805,7 @@ class _LoadOlderButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Load older messages',
+                  _chatLoadOlderLabel(context),
                   style: GoogleFonts.notoSansKr(
                     fontSize: 12,
                     color: context.onSurfaceVar,
@@ -837,6 +888,7 @@ class _BubbleTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMe = message.isSentBy(currentUid);
+    final maxBubbleWidth = MediaQuery.sizeOf(context).width * 0.74;
 
     if (message.type == MessageType.system) {
       return Padding(
@@ -871,44 +923,56 @@ class _BubbleTile extends StatelessWidget {
               const SizedBox(width: 6),
             ],
 
+            // Reserve avatar-sized space on the left for own messages so the
+            // bubble can sit flush against the right content edge.
+            if (isMe) const SizedBox(width: 40),
+
             // Bubble column
             Flexible(
-              child: Column(
-                crossAxisAlignment: isMe
-                    ? CrossAxisAlignment.end
-                    : CrossAxisAlignment.start,
-                children: [
-                  if (message.type == MessageType.location &&
-                      message.locationData != null)
-                    _LocationBubble(location: message.locationData!, isMe: isMe)
-                  else
-                    _Bubble(
-                      key: ValueKey('${message.id}:${message.content}'),
-                      message: message,
-                      isMe: isMe,
-                      isGroupStart: isGroupStart,
-                      isGroupEnd: isGroupEnd,
-                      partnerLangTag: isMe ? null : partnerLangTag,
-                    ),
-                  if (isGroupEnd)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 3, left: 2, right: 2),
-                      child: Text(
-                        _formatTime(message.timestamp),
-                        style: GoogleFonts.notoSansKr(
-                          fontSize: 10,
-                          color: context.hintColor,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxBubbleWidth),
+                child: Column(
+                  crossAxisAlignment: isMe
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
+                  children: [
+                    if (message.type == MessageType.location &&
+                        message.locationData != null)
+                      _LocationBubble(
+                        location: message.locationData!,
+                        isMe: isMe,
+                      )
+                    else
+                      _Bubble(
+                        key: ValueKey('${message.id}:${message.content}'),
+                        message: message,
+                        isMe: isMe,
+                        isGroupStart: isGroupStart,
+                        isGroupEnd: isGroupEnd,
+                        partnerLangTag: isMe ? null : partnerLangTag,
+                      ),
+                    if (isGroupEnd)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 3,
+                          left: 2,
+                          right: 2,
+                        ),
+                        child: Text(
+                          _formatTime(message.timestamp),
+                          style: GoogleFonts.notoSansKr(
+                            fontSize: 10,
+                            color: context.hintColor,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
 
             // Spacer on right for partner messages
             if (!isMe) const SizedBox(width: 40),
-            // Spacer on left for my messages
-            if (isMe) const SizedBox(width: 40),
           ],
         ),
       ), // Padding
@@ -1097,7 +1161,7 @@ class _BubbleState extends State<_Bubble> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'Message copied',
+                  _chatCopiedLabel(context),
                   style: GoogleFonts.notoSansKr(fontSize: 13),
                 ),
                 duration: const Duration(seconds: 1),
@@ -1828,7 +1892,7 @@ class _PartnerProfileSheet extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'Online',
+                  _chatPresenceLabel(context, isOnline: true),
                   style: GoogleFonts.notoSansKr(
                     fontSize: 12,
                     color: _kOnlineGreen,

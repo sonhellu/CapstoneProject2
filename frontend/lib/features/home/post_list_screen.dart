@@ -23,12 +23,16 @@ class PostListScreen extends StatefulWidget {
 class _PostListScreenState extends State<PostListScreen> {
   final _searchCtrl = TextEditingController();
   bool _isSearchOpen = false;
-  String _sortMode = 'Recent'; // 'Recent' | 'Popular'
   String _query = '';
   String _selectedCategory = 'All';
 
   static const _kCategories = [
-    'All', 'Campus', 'International', 'Scholarship', 'Housing', 'Academic',
+    'All',
+    'Campus',
+    'International',
+    'Scholarship',
+    'Housing',
+    'Academic',
   ];
 
   @override
@@ -57,16 +61,13 @@ class _PostListScreenState extends State<PostListScreen> {
     if (_query.isNotEmpty) {
       final q = _query.toLowerCase();
       list = list
-          .where((p) =>
-              p.title.toLowerCase().contains(q) ||
-              p.author.name.toLowerCase().contains(q) ||
-              p.category.toLowerCase().contains(q))
+          .where(
+            (p) =>
+                p.title.toLowerCase().contains(q) ||
+                p.author.name.toLowerCase().contains(q) ||
+                p.category.toLowerCase().contains(q),
+          )
           .toList();
-    }
-
-    // sort
-    if (_sortMode == 'Popular') {
-      list.sort((a, b) => b.likes.compareTo(a.likes));
     }
 
     return list;
@@ -74,7 +75,8 @@ class _PostListScreenState extends State<PostListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final posts = _filtered(context.watch<PostProvider>().posts);
+    final provider = context.watch<PostProvider>();
+    final posts = _filtered(provider.posts);
 
     return Scaffold(
       backgroundColor: context.bg,
@@ -87,16 +89,19 @@ class _PostListScreenState extends State<PostListScreen> {
             _buildCategoryRow(),
             _buildSortRow(posts.length),
             Expanded(
-              child: posts.isEmpty
+              child: provider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : provider.error != null
+                  ? _buildError(provider)
+                  : posts.isEmpty
                   ? _buildEmpty()
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                       itemCount: posts.length,
-                      separatorBuilder: (context, i) => const SizedBox(height: 12),
-                      itemBuilder: (context, i) => PostCard(
-                            post: posts[i],
-                            style: PostCardStyle.list,
-                          ),
+                      separatorBuilder: (context, i) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, i) =>
+                          PostCard(post: posts[i], style: PostCardStyle.list),
                     ),
             ),
           ],
@@ -163,12 +168,17 @@ class _PostListScreenState extends State<PostListScreen> {
             fontSize: 14,
             color: context.hintColor,
           ),
-          prefixIcon: Icon(Icons.search_rounded,
-              size: 20, color: context.onSurfaceVar),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            size: 20,
+            color: context.onSurfaceVar,
+          ),
           filled: true,
           fillColor: context.bg,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 10,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -197,7 +207,10 @@ class _PostListScreenState extends State<PostListScreen> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: selected ? context.primary : context.subtleFill,
                     borderRadius: BorderRadius.circular(20),
@@ -236,19 +249,6 @@ class _PostListScreenState extends State<PostListScreen> {
               color: context.hintColor,
             ),
           ),
-          const Spacer(),
-          _SortChip(
-            label: l.communitySortRecent,
-            selected: _sortMode == 'Recent',
-            onTap: () => setState(() => _sortMode = 'Recent'),
-          ),
-          const SizedBox(width: 8),
-          _SortChip(
-            label: l.communitySortPopular,
-            icon: Icons.local_fire_department_rounded,
-            selected: _sortMode == 'Popular',
-            onTap: () => setState(() => _sortMode = 'Popular'),
-          ),
         ],
       ),
     );
@@ -273,54 +273,31 @@ class _PostListScreenState extends State<PostListScreen> {
       ),
     );
   }
-}
 
-// ─────────────────────────── Sort Chip ───────────────────────────
-class _SortChip extends StatelessWidget {
-  const _SortChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    this.icon,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final fg = selected ? cs.onPrimary : context.onSurfaceVar;
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: selected ? context.primary : context.subtleFill,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
+  Widget _buildError(PostProvider provider) {
+    final l = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[
-              Icon(icon,
-                  size: 13,
-                  color: fg),
-              const SizedBox(width: 4),
-            ],
+            Icon(Icons.cloud_off_rounded, size: 56, color: context.hintColor),
+            const SizedBox(height: 12),
             Text(
-              label,
+              l.errorNetwork,
+              textAlign: TextAlign.center,
               style: GoogleFonts.notoSansKr(
-                fontSize: 12,
+                fontSize: 15,
+                color: context.onSurfaceVar,
                 fontWeight: FontWeight.w600,
-                color: fg,
               ),
+            ),
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              onPressed: () => provider.refresh(),
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: Text(l.alertTryAgain),
             ),
           ],
         ),

@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/theme_ext.dart';
@@ -15,6 +19,12 @@ const Color _kWarningOrange = Color(0xFFE65100);
 abstract final class _Cfg {
   static const titleMax = 100;
   static const contentMax = 2000;
+  static const maxPhotoBytes = 5 * 1024 * 1024;
+  static const photoUrlRetryDelays = [
+    Duration(milliseconds: 250),
+    Duration(milliseconds: 500),
+    Duration(milliseconds: 900),
+  ];
 
   static const categories = [
     'International 🌏',
@@ -61,7 +71,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   String _category = _Cfg.categories[0];
   String _language = 'Vietnamese';
   bool _isPublishing = false;
+  Uint8List? _selectedPhotoBytes;
+  String? _selectedPhotoName;
+  String? _selectedPhotoContentType;
 
+  final _imagePicker = ImagePicker();
   late final ValueNotifier<bool> _canPublish;
 
   @override
@@ -98,6 +112,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     HapticFeedback.mediumImpact();
     setState(() => _isPublishing = true);
 
+    String? uploadedImageUrl;
     try {
       final auth = context.read<AuthProvider>();
       final uid = auth.uid;
@@ -107,6 +122,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       final authorName = auth.nickname;
 
       if (!mounted) return;
+
+      uploadedImageUrl = await _uploadSelectedPhoto(uid);
+      if (!mounted) {
+        if (uploadedImageUrl != null) {
+          unawaited(_deleteUploadedPhoto(uploadedImageUrl));
+        }
+        return;
+      }
 
       final post = Post(
         id: 'user_${DateTime.now().millisecondsSinceEpoch}',
@@ -120,7 +143,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         ),
         time: 'Just now',
         category: _normalizeCategory(_category),
-        images: const [],
+        images: uploadedImageUrl == null ? const [] : [uploadedImageUrl],
         language: _normalizeLanguage(_language),
         likes: 0,
         comments: 0,
@@ -130,12 +153,191 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       await context.read<PostProvider>().addPost(post);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
+      if (uploadedImageUrl != null) {
+        unawaited(_deleteUploadedPhoto(uploadedImageUrl));
+      }
       if (!mounted) return;
       setState(() => _isPublishing = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(content: Text(_publishFailedMessage(context, e))),
       );
     }
+  }
+
+  Future<void> _pickPhoto(ImageSource source) async {
+    if (_isPublishing) return;
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1600,
+        imageQuality: 82,
+      );
+      if (picked == null) return;
+
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+      if (bytes.lengthInBytes > _Cfg.maxPhotoBytes) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_photoTooLargeMessage(context))));
+        return;
+      }
+
+      setState(() {
+        _selectedPhotoBytes = bytes;
+        _selectedPhotoName = picked.name;
+        _selectedPhotoContentType = _contentTypeForPickedImage(picked);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_photoPickFailedMessage(context))));
+    }
+  }
+
+  Future<String?> _uploadSelectedPhoto(String uid) async {
+    final bytes = _selectedPhotoBytes;
+    if (bytes == null) return null;
+
+    final contentType = _selectedPhotoContentType ?? 'image/jpeg';
+    final ext = _extensionForContentType(contentType);
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}.$ext';
+    final ref = FirebaseStorage.instance.ref('posts/$uid/$fileName');
+    final snapshot = await ref.putData(
+      bytes,
+      SettableMetadata(contentType: contentType),
+    );
+    return _downloadUrlWithRetry(snapshot.ref);
+  }
+
+  Future<String> _downloadUrlWithRetry(Reference ref) async {
+    for (
+      var attempt = 0;
+      attempt <= _Cfg.photoUrlRetryDelays.length;
+      attempt++
+    ) {
+      try {
+        await ref.getMetadata();
+        return await ref.getDownloadURL();
+      } on FirebaseException catch (e) {
+        final canRetry =
+            e.code == 'object-not-found' &&
+            attempt < _Cfg.photoUrlRetryDelays.length;
+        if (!canRetry) rethrow;
+        await Future<void>.delayed(_Cfg.photoUrlRetryDelays[attempt]);
+      }
+    }
+    return ref.getDownloadURL();
+  }
+
+  Future<void> _deleteUploadedPhoto(String imageUrl) async {
+    try {
+      await FirebaseStorage.instance.refFromURL(imageUrl).delete();
+    } catch (_) {}
+  }
+
+  void _removeSelectedPhoto() {
+    if (_isPublishing) return;
+    setState(() {
+      _selectedPhotoBytes = null;
+      _selectedPhotoName = null;
+      _selectedPhotoContentType = null;
+    });
+  }
+
+  String _contentTypeForPickedImage(XFile image) {
+    final mimeType = image.mimeType;
+    if (mimeType != null && mimeType.startsWith('image/')) return mimeType;
+
+    final lowerName = image.name.toLowerCase();
+    if (lowerName.endsWith('.png')) return 'image/png';
+    if (lowerName.endsWith('.webp')) return 'image/webp';
+    if (lowerName.endsWith('.heic')) return 'image/heic';
+    if (lowerName.endsWith('.heif')) return 'image/heif';
+    return 'image/jpeg';
+  }
+
+  String _extensionForContentType(String contentType) {
+    return switch (contentType.toLowerCase()) {
+      'image/png' => 'png',
+      'image/webp' => 'webp',
+      'image/heic' => 'heic',
+      'image/heif' => 'heif',
+      _ => 'jpg',
+    };
+  }
+
+  String _photoTooLargeMessage(BuildContext context) {
+    return switch (Localizations.localeOf(context).languageCode) {
+      'ko' => '사진은 5MB 이하로 선택해 주세요.',
+      'en' => 'Please choose an image under 5 MB.',
+      'ja' => '5MB以下の画像を選択してください。',
+      'zh' => '请选择小于 5 MB 的图片。',
+      'my' => '5 MB အောက်ရှိ ပုံကို ရွေးပါ။',
+      _ => 'Vui lòng chọn ảnh dưới 5 MB.',
+    };
+  }
+
+  String _photoPickFailedMessage(BuildContext context) {
+    return switch (Localizations.localeOf(context).languageCode) {
+      'ko' => '사진을 불러오지 못했습니다.',
+      'en' => 'Could not load the image.',
+      'ja' => '画像を読み込めませんでした。',
+      'zh' => '无法加载图片。',
+      'my' => 'ပုံကို ဖွင့်၍မရပါ။',
+      _ => 'Không thể tải ảnh.',
+    };
+  }
+
+  String _publishFailedMessage(BuildContext context, Object error) {
+    if (error is FirebaseException && error.plugin == 'firebase_storage') {
+      return _storageErrorMessage(context, error.code);
+    }
+
+    final message = error.toString().replaceFirst('Exception: ', '');
+    if (message.contains('[firebase_storage/object-not-found]')) {
+      return _storageErrorMessage(context, 'object-not-found');
+    }
+    if (message.contains('[firebase_storage/unauthorized]')) {
+      return _storageErrorMessage(context, 'unauthorized');
+    }
+    return message;
+  }
+
+  String _storageErrorMessage(BuildContext context, String code) {
+    final lang = Localizations.localeOf(context).languageCode;
+    if (code == 'object-not-found') {
+      return switch (lang) {
+        'ko' => 'Firebase Storage가 아직 설정되지 않았습니다. Storage를 활성화한 뒤 다시 시도해 주세요.',
+        'en' =>
+          'Firebase Storage is not set up yet. Enable Storage, deploy rules, then try again.',
+        'ja' => 'Firebase Storage が未設定です。Storage を有効化してルールをデプロイしてください。',
+        'zh' => 'Firebase Storage 尚未设置。请先启用 Storage 并部署规则。',
+        'my' =>
+          'Firebase Storage မသတ်မှတ်ရသေးပါ။ Storage ကိုဖွင့်ပြီး rules deploy လုပ်ပါ။',
+        _ =>
+          'Firebase Storage chưa được bật. Hãy bật Storage, deploy rules rồi thử lại.',
+      };
+    }
+    if (code == 'unauthorized') {
+      return switch (lang) {
+        'ko' => '사진 업로드 권한이 없습니다. Storage rules를 확인해 주세요.',
+        'en' => 'No permission to upload images. Please check Storage rules.',
+        'ja' => '画像をアップロードする権限がありません。Storage rules を確認してください。',
+        'zh' => '没有上传图片权限。请检查 Storage rules。',
+        'my' => 'ပုံတင်ရန် ခွင့်ပြုချက်မရှိပါ။ Storage rules ကို စစ်ဆေးပါ။',
+        _ => 'Chưa có quyền upload ảnh. Hãy kiểm tra Firebase Storage rules.',
+      };
+    }
+    return switch (lang) {
+      'ko' => '사진을 업로드하지 못했습니다.',
+      'en' => 'Could not upload the image.',
+      'ja' => '画像をアップロードできませんでした。',
+      'zh' => '无法上传图片。',
+      'my' => 'ပုံကို upload လုပ်၍မရပါ။',
+      _ => 'Không thể upload ảnh.',
+    };
   }
 
   String _normalizeCategory(String category) => switch (category) {
@@ -175,57 +377,59 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: ctx.outline.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(2),
+                const SizedBox(height: 12),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: ctx.outline.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                l.createPostLanguage,
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: onS,
+                const SizedBox(height: 16),
+                Text(
+                  l.createPostLanguage,
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: onS,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _Cfg.languages.length,
-                itemBuilder: (_, i) {
-                  final lang = _Cfg.languages[i];
-                  final flag = _Cfg.langFlags[lang] ?? '🌐';
-                  final isSel = lang == _language;
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                    leading: Text(flag, style: const TextStyle(fontSize: 22)),
-                    title: Text(
-                      lang,
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 15,
-                        fontWeight: isSel ? FontWeight.w700 : FontWeight.w400,
-                        color: isSel ? p : onS,
+                const SizedBox(height: 8),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _Cfg.languages.length,
+                  itemBuilder: (_, i) {
+                    final lang = _Cfg.languages[i];
+                    final flag = _Cfg.langFlags[lang] ?? '🌐';
+                    final isSel = lang == _language;
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
                       ),
-                    ),
-                    trailing: isSel
-                        ? Icon(Icons.check_rounded, color: p)
-                        : null,
-                    onTap: () {
-                      setState(() => _language = lang);
-                      Navigator.pop(ctx);
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
+                      leading: Text(flag, style: const TextStyle(fontSize: 22)),
+                      title: Text(
+                        lang,
+                        style: GoogleFonts.notoSansKr(
+                          fontSize: 15,
+                          fontWeight: isSel ? FontWeight.w700 : FontWeight.w400,
+                          color: isSel ? p : onS,
+                        ),
+                      ),
+                      trailing: isSel
+                          ? Icon(Icons.check_rounded, color: p)
+                          : null,
+                      onTap: () {
+                        setState(() => _language = lang);
+                        Navigator.pop(ctx);
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
         );
       },
@@ -368,6 +572,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 20),
+
+          // ── Photo ──
+          _PhotoPickerSection(
+            imageBytes: _selectedPhotoBytes,
+            fileName: _selectedPhotoName,
+            isPublishing: _isPublishing,
+            onGallery: () => _pickPhoto(ImageSource.gallery),
+            onCamera: () => _pickPhoto(ImageSource.camera),
+            onRemove: _removeSelectedPhoto,
+          ),
           const SizedBox(height: 32),
 
           // ── Publish — only this widget rebuilds when typing ──
@@ -479,6 +694,206 @@ class _CharCounter extends StatelessWidget {
           style: GoogleFonts.notoSansKr(fontSize: 11, color: color),
         );
       },
+    );
+  }
+}
+
+// ──────────────────────────── _PhotoPickerSection ────────────────────────────
+class _PhotoPickerSection extends StatelessWidget {
+  const _PhotoPickerSection({
+    required this.imageBytes,
+    required this.fileName,
+    required this.isPublishing,
+    required this.onGallery,
+    required this.onCamera,
+    required this.onRemove,
+  });
+
+  final Uint8List? imageBytes;
+  final String? fileName;
+  final bool isPublishing;
+  final VoidCallback onGallery;
+  final VoidCallback onCamera;
+  final VoidCallback onRemove;
+
+  bool get hasImage => imageBytes != null;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Label(l.createPostPhotos),
+        const SizedBox(height: 10),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: hasImage
+              ? _SelectedPhotoPreview(
+                  key: const ValueKey('selected-photo'),
+                  imageBytes: imageBytes!,
+                  fileName: fileName,
+                  enabled: !isPublishing,
+                  onRemove: onRemove,
+                )
+              : Container(
+                  key: const ValueKey('empty-photo'),
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: context.cardFill,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: context.outline),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: context.primary.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.add_photo_alternate_rounded,
+                          color: context.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          l.createPostAddPhoto,
+                          style: GoogleFonts.notoSansKr(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: context.onSurface,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: l.createPostGallery,
+                        onPressed: isPublishing ? null : onGallery,
+                        icon: Icon(
+                          Icons.photo_library_rounded,
+                          color: isPublishing ? cs.outline : context.primary,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: l.createPostCamera,
+                        onPressed: isPublishing ? null : onCamera,
+                        icon: Icon(
+                          Icons.photo_camera_rounded,
+                          color: isPublishing ? cs.outline : context.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+        ),
+        if (hasImage) ...[
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: isPublishing ? null : onGallery,
+                  icon: const Icon(Icons.photo_library_rounded, size: 18),
+                  label: Text(
+                    l.createPostGallery,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: isPublishing ? null : onCamera,
+                  icon: const Icon(Icons.photo_camera_rounded, size: 18),
+                  label: Text(
+                    l.createPostCamera,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _SelectedPhotoPreview extends StatelessWidget {
+  const _SelectedPhotoPreview({
+    super.key,
+    required this.imageBytes,
+    required this.fileName,
+    required this.enabled,
+    required this.onRemove,
+  });
+
+  final Uint8List imageBytes;
+  final String? fileName;
+  final bool enabled;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.memory(imageBytes, fit: BoxFit.cover),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.28),
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.42),
+                  ],
+                  stops: const [0, 0.52, 1],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton.filledTonal(
+                tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
+                onPressed: enabled ? onRemove : null,
+                icon: const Icon(Icons.close_rounded, size: 18),
+              ),
+            ),
+            if (fileName != null && fileName!.isNotEmpty)
+              Positioned(
+                left: 12,
+                right: 12,
+                bottom: 10,
+                child: Text(
+                  fileName!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onPrimary,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,3 +1,5 @@
+import asyncio
+import html
 from typing import List, Optional
 
 from fastapi import APIRouter
@@ -39,43 +41,87 @@ class DetectResponse(BaseModel):
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-async def _translate_via_google(text: str, source: str, target: str) -> Optional[str]:
+async def _translate_via_google(
+    client: httpx.AsyncClient,
+    text: str,
+    source: str,
+    target: str,
+) -> Optional[str]:
     """Google Cloud Translation API. Returns None when key absent or on failure."""
     key = settings.GOOGLE_TRANSLATOR_API_KEY
     if not key:
         return None
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            res = await client.post(
-                _GOOGLE_URL,
-                params={"key": key},
-                json={"q": text, "source": source, "target": target, "format": "text"},
-            )
+        payload = {"q": text, "target": target, "format": "text"}
+        if source != "auto":
+            payload["source"] = source
+        res = await client.post(
+            _GOOGLE_URL,
+            params={"key": key},
+            json=payload,
+        )
         if res.status_code != 200:
             return None
         data = res.json()
         translations = data.get("data", {}).get("translations", [])
         translated = translations[0].get("translatedText", "") if translations else ""
-        return translated or None
+        return html.unescape(translated) if translated else None
     except Exception:
         return None
 
 
-async def _translate_via_mymemory(text: str, source: str, target: str) -> str:
+async def _translate_batch_via_google(
+    client: httpx.AsyncClient,
+    texts: list[str],
+    source: str,
+    target: str,
+) -> Optional[list[str]]:
+    """Batch Google Cloud Translation API request. Returns None on failure."""
+    key = settings.GOOGLE_TRANSLATOR_API_KEY
+    if not key or not texts:
+        return None
+    try:
+        payload = {"q": texts, "target": target, "format": "text"}
+        if source != "auto":
+            payload["source"] = source
+        res = await client.post(
+            _GOOGLE_URL,
+            params={"key": key},
+            json=payload,
+        )
+        if res.status_code != 200:
+            return None
+        data = res.json()
+        translations = data.get("data", {}).get("translations", [])
+        if len(translations) != len(texts):
+            return None
+        return [
+            html.unescape(item.get("translatedText", "")) or original
+            for item, original in zip(translations, texts)
+        ]
+    except Exception:
+        return None
+
+
+async def _translate_via_mymemory(
+    client: httpx.AsyncClient,
+    text: str,
+    source: str,
+    target: str,
+) -> str:
     """MyMemory free API fallback. Returns original on failure."""
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            res = await client.get(
-                _MYMEMORY_URL,
-                params={"q": text, "langpair": f"{source}|{target}"},
-            )
+        res = await client.get(
+            _MYMEMORY_URL,
+            params={"q": text, "langpair": f"{source}|{target}"},
+        )
         if res.status_code != 200:
             return text
         data = res.json()
         translated = data.get("responseData", {}).get("translatedText", "")
         if not translated or translated.upper().startswith("MYMEMORY"):
             return text
-        return translated
+        return html.unescape(translated)
     except Exception:
         return text
 
@@ -88,7 +134,12 @@ async def _detect_lang(text: str) -> Optional[str]:
         return None
 
 
-async def _translate_one(text: str, source: str, target: str) -> str:
+async def _translate_one(
+    client: httpx.AsyncClient,
+    text: str,
+    source: str,
+    target: str,
+) -> str:
     if not text.strip() or source == target:
         return text
     effective_source = source
@@ -96,18 +147,56 @@ async def _translate_one(text: str, source: str, target: str) -> str:
         effective_source = (await _detect_lang(text)) or "ko"
     if effective_source == target:
         return text
-    result = await _translate_via_google(text, effective_source, target)
-    return result if result is not None else await _translate_via_mymemory(text, effective_source, target)
+    result = await _translate_via_google(client, text, effective_source, target)
+    return result if result is not None else await _translate_via_mymemory(
+        client,
+        text,
+        effective_source,
+        target,
+    )
+
+
+async def _translate_batch(
+    client: httpx.AsyncClient,
+    batch: list[TranslationItem],
+    source: str,
+    target: str,
+) -> list[str]:
+    texts = [item.text for item in batch]
+    if source == target:
+        return texts
+    translated = await _translate_batch_via_google(client, texts, source, target)
+    if translated is not None:
+        return translated
+    return await asyncio.gather(*[
+        _translate_one(
+            client,
+            item.text,
+            source,
+            target,
+        )
+        for item in batch
+    ])
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("", response_model=TranslationResponse)
 async def translate(request: TranslationRequest):
-    results = []
-    for item in request.items:
-        translated = await _translate_one(item.text, request.source_lang, request.target_lang)
-        results.append(TranslatedItem(id=item.id, translated=translated))
+    _BATCH = 8  # keep fallback providers responsive on large WebView pages
+    items = request.items[:200]  # hard cap
+    results: list[TranslatedItem] = []
+    async with httpx.AsyncClient(timeout=10) as client:
+        for i in range(0, len(items), _BATCH):
+            batch = items[i:i + _BATCH]
+            translations = await _translate_batch(
+                client,
+                batch,
+                request.source_lang,
+                request.target_lang,
+            )
+            for item, translated in zip(batch, translations):
+                results.append(TranslatedItem(id=item.id, translated=translated))
     return TranslationResponse(results=results)
 
 

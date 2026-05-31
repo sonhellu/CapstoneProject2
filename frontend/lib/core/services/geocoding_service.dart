@@ -34,7 +34,7 @@ class GeocodingService {
   /// Resolves lat/lng → [LocalizedAddress].
   ///
   /// Strategy:
-  /// 1. Naver (Korean address) → translate via Papago NMT to [targetLang].
+  /// 1. Naver (Korean address) → translate to [targetLang].
   /// 2. Naver fails → Nominatim with [targetLang] directly (no translation needed).
   /// 3. Both fail → empty address.
   Future<LocalizedAddress> getLocalizedAddress(

@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/locale/nationality_language.dart';
 import '../../core/theme/theme_controller.dart';
 import '../../core/theme/theme_ext.dart';
 import '../../core/widgets/language_picker_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/data/register_picklist_data.dart';
 import '../auth/providers/auth_provider.dart';
 import '../chat/repository/user_repository.dart';
 
@@ -78,31 +80,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
   // Controllers
   late final TextEditingController _nameCtrl;
-  late final TextEditingController _langCtrl;
-
-  static const _languages = [
-    'Vietnamese',
-    'English',
-    'Korean',
-    'Japanese',
-    'Chinese',
-    'Myanmar',
-    'Thai',
-    'French',
-    'Spanish',
-  ];
-
-  static const _nationalities = [
-    'Vietnamese',
-    'Korean',
-    'Japanese',
-    'Chinese',
-    'American',
-    'British',
-    'Myanmar',
-    'Thai',
-    'French',
-  ];
 
   static const _universities = [
     'Keimyung University',
@@ -140,12 +117,11 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
       nativeLanguage: 'Vietnamese',
       university: 'Keimyung University',
       major: '',
-      nationality: 'Vietnamese',
+      nationality: 'Viet Nam',
       email: firebaseUser?.email ?? '',
     );
     _editDraft = _profile.copyWith();
     _nameCtrl = TextEditingController(text: _profile.fullName);
-    _langCtrl = TextEditingController(text: _profile.nativeLanguage);
     _loadProfile();
   }
 
@@ -154,27 +130,29 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     if (uid == null) return;
     final data = await UserRepository.instance.getRawProfile(uid);
     if (!mounted || data == null) return;
+    final nationality = data['nationality'] as String? ?? _profile.nationality;
+    final nativeLanguage = nativeLanguageFromNationality(
+      nationality,
+      fallback: data['nativeLanguage'] as String? ?? _profile.nativeLanguage,
+    );
     setState(() {
       _profile = _ProfileData(
         fullName: data['displayName'] as String? ?? _profile.fullName,
         username: _profile.username,
-        nativeLanguage:
-            data['nativeLanguage'] as String? ?? _profile.nativeLanguage,
+        nativeLanguage: nativeLanguage,
         university: data['school'] as String? ?? _profile.university,
         major: data['major'] as String? ?? _profile.major,
-        nationality: data['nationality'] as String? ?? _profile.nationality,
+        nationality: nationality,
         email: data['email'] as String? ?? _profile.email,
       );
       _editDraft = _profile.copyWith();
       _nameCtrl.text = _profile.fullName;
-      _langCtrl.text = _profile.nativeLanguage;
     });
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _langCtrl.dispose();
     super.dispose();
   }
 
@@ -183,7 +161,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   void _enterEdit() {
     _editDraft = _profile.copyWith();
     _nameCtrl.text = _profile.fullName;
-    _langCtrl.text = _profile.nativeLanguage;
     setState(() => _isEditMode = true);
   }
 
@@ -244,11 +221,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     setState(() => _isSaving = true);
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final newName = _nameCtrl.text.trim();
+    final nativeLanguage = nativeLanguageFromNationality(
+      _editDraft.nationality,
+      fallback: _editDraft.nativeLanguage,
+    );
     if (uid != null) {
       await UserRepository.instance.updateProfile(
         uid: uid,
         displayName: newName.isNotEmpty ? newName : null,
-        nativeLanguage: _editDraft.nativeLanguage,
         school: _editDraft.university,
         nationality: _editDraft.nationality,
         major: _editDraft.major,
@@ -258,6 +238,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     setState(() {
       _profile = _editDraft.copyWith(
         fullName: newName.isNotEmpty ? newName : _editDraft.fullName,
+        nativeLanguage: nativeLanguage,
       );
       _isEditMode = false;
       _isSaving = false;
@@ -327,21 +308,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                         key: const ValueKey('edit'),
                         draft: _editDraft,
                         nameCtrl: _nameCtrl,
-                        langCtrl: _langCtrl,
-                        languages: _languages,
-                        nationalities: _nationalities,
+                        nationalities: kNationalityOptions,
                         universities: _universities,
                         majors: _majors,
                         isSaving: _isSaving,
-                        onPickLanguage: () => _pickFromSheet(
-                          title: l.profileNativeLang,
-                          options: _languages,
-                          current: _editDraft.nativeLanguage,
-                          onSelected: (v) => setState(() {
-                            _editDraft = _editDraft.copyWith(nativeLanguage: v);
-                            _langCtrl.text = v;
-                          }),
-                        ),
                         onPickUniversity: () => _pickFromSheet(
                           title: l.profileUniversity,
                           options: _universities,
@@ -360,10 +330,16 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                         ),
                         onPickNationality: () => _pickFromSheet(
                           title: l.profileNationality,
-                          options: _nationalities,
+                          options: kNationalityOptions,
                           current: _editDraft.nationality,
                           onSelected: (v) => setState(() {
-                            _editDraft = _editDraft.copyWith(nationality: v);
+                            _editDraft = _editDraft.copyWith(
+                              nationality: v,
+                              nativeLanguage: nativeLanguageFromNationality(
+                                v,
+                                fallback: _editDraft.nativeLanguage,
+                              ),
+                            );
                           }),
                         ),
                         onCancel: _cancelEdit,
@@ -572,13 +548,10 @@ class _EditForm extends StatelessWidget {
     super.key,
     required this.draft,
     required this.nameCtrl,
-    required this.langCtrl,
-    required this.languages,
     required this.nationalities,
     required this.universities,
     required this.majors,
     required this.isSaving,
-    required this.onPickLanguage,
     required this.onPickUniversity,
     required this.onPickMajor,
     required this.onPickNationality,
@@ -588,13 +561,10 @@ class _EditForm extends StatelessWidget {
 
   final _ProfileData draft;
   final TextEditingController nameCtrl;
-  final TextEditingController langCtrl;
-  final List<String> languages;
   final List<String> nationalities;
   final List<String> universities;
   final List<String> majors;
   final bool isSaving;
-  final VoidCallback onPickLanguage;
   final VoidCallback onPickUniversity;
   final VoidCallback onPickMajor;
   final VoidCallback onPickNationality;
@@ -621,7 +591,7 @@ class _EditForm extends StatelessWidget {
                 icon: Icons.language_outlined,
                 label: l.profileNativeLang,
                 value: draft.nativeLanguage,
-                onTap: onPickLanguage,
+                enabled: false,
               ),
               const SizedBox(height: 16),
               _TapField(
@@ -862,18 +832,20 @@ class _TapField extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
-    required this.onTap,
+    this.onTap,
+    this.enabled = true,
   });
 
   final IconData icon;
   final String label;
   final String value;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
@@ -883,7 +855,11 @@ class _TapField extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: context.primary),
+            Icon(
+              icon,
+              size: 20,
+              color: enabled ? context.primary : context.onSurfaceVar,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -909,7 +885,9 @@ class _TapField extends StatelessWidget {
               ),
             ),
             Icon(
-              Icons.keyboard_arrow_down_rounded,
+              enabled
+                  ? Icons.keyboard_arrow_down_rounded
+                  : Icons.lock_outline_rounded,
               color: context.onSurfaceVar,
               size: 20,
             ),

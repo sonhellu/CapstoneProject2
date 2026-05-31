@@ -8,3 +8,7 @@ backend/firebase-service-account.json
 backend/hicampus-firebase.json
 backend/*firebase*.json
 backend/.venv/
+
+# Python build/cache artifacts
+__pycache__/
+*.pyc

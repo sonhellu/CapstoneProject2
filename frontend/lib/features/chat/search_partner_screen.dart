@@ -19,6 +19,9 @@ const _langColors = <String, Color>{
   'Japanese': Color(0xFFE65100),
   'Chinese': Color(0xFFC62828),
   'Myanmar': Color(0xFF6A1B9A),
+  'Thai': Color(0xFFAD1457),
+  'French': Color(0xFF1565C0),
+  'Spanish': Color(0xFFEF6C00),
 };
 
 const _langBg = <String, Color>{
@@ -28,6 +31,9 @@ const _langBg = <String, Color>{
   'Japanese': Color(0xFFFFF3E0),
   'Chinese': Color(0xFFFFEBEE),
   'Myanmar': Color(0xFFF3E5F5),
+  'Thai': Color(0xFFFCE4EC),
+  'French': Color(0xFFE3F2FD),
+  'Spanish': Color(0xFFFFF3E0),
 };
 
 // ─────────────────────────── Screen ───────────────────────────
