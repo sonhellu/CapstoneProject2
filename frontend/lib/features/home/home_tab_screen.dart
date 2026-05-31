@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'widgets/visa_d_day_card.dart';
 import 'package:flutter/services.dart';
 
@@ -28,15 +27,34 @@ const double _kBannerRadius = 16.0;
 
 // ─────────────────────────── Banner Data ───────────────────────────
 class _BannerItem {
-  final String imageUrl;
+  final String imageAsset;
   final String caption;
   final String? websiteUrl;
-  const _BannerItem(this.imageUrl, this.caption, {this.websiteUrl});
+  const _BannerItem(this.imageAsset, this.caption, {this.websiteUrl});
 }
 
-String _universityImageUrl(String uniName) {
-  final slug = uniName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
-  return 'https://picsum.photos/seed/$slug/800/400';
+const Map<String, String> _universityImageAssets = {
+  'Seoul National University': 'assets/university/seoul.jpg',
+  'KAIST': 'assets/university/kaist.jpg',
+  'Yonsei University': 'assets/university/yonsei.jpg',
+  'Korea University': 'assets/university/korea.jpg',
+  'POSTECH': 'assets/university/postch.jpg',
+  'Sungkyunkwan University': 'assets/university/sungkyunkwan.jpg',
+  'Keimyung University': 'assets/university/keimyung.jpeg',
+  'Kyungpook National University': 'assets/university/kyungbook.jpg',
+  'Yeungnam University': 'assets/university/yeungnam.jpg',
+  'Daegu University': 'assets/university/daegu.jpg',
+};
+
+String _universityImageAsset(String uniName) {
+  return _universityImageAssets[uniName] ?? 'assets/university/kmu_banner.jpg';
+}
+
+University? _findUniversity(String schoolName) {
+  for (final uni in koreanUniversities) {
+    if (uni.name == schoolName) return uni;
+  }
+  return null;
 }
 
 // ─────────────────────────── Screen ───────────────────────────
@@ -93,10 +111,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     final auth = context.watch<AuthProvider>();
     final userName = auth.displayName ?? 'Student';
     final schoolName = auth.school ?? 'Keimyung University';
-    final uni = koreanUniversities.firstWhere(
-      (u) => u.name == schoolName,
-      orElse: () => koreanUniversities.first,
-    );
+    final uni = _findUniversity(schoolName);
     final postProvider = context.watch<PostProvider>();
     final posts = postProvider.posts;
     final internationalPosts = posts
@@ -126,7 +141,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
         controller: _scrollController,
         slivers: [
           SliverToBoxAdapter(child: _buildAppBar(schoolName)),
-          SliverToBoxAdapter(child: _buildBanner(userName, uni)),
+          SliverToBoxAdapter(child: _buildBanner(userName, schoolName, uni)),
           const SliverToBoxAdapter(child: SchedulePreviewWidget()),
           // ── International horizontal section ──
           const SliverToBoxAdapter(
@@ -227,11 +242,13 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   }
 
   // ─── Banner ───
-  Widget _buildBanner(String userName, University uni) {
+  Widget _buildBanner(String userName, String schoolName, University? uni) {
     final item = _BannerItem(
-      _universityImageUrl(uni.name),
-      uni.name,
-      websiteUrl: uni.websiteUrl ?? 'https://www.${uni.defaultDomain}',
+      _universityImageAsset(schoolName),
+      schoolName,
+      websiteUrl: uni == null
+          ? null
+          : (uni.websiteUrl ?? 'https://www.${uni.defaultDomain}'),
     );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -281,10 +298,10 @@ class _BannerCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CachedNetworkImage(
-              imageUrl: item.imageUrl,
+            Image.asset(
+              item.imageAsset,
               fit: BoxFit.cover,
-              errorWidget: (context, url, error) => Container(
+              errorBuilder: (context, error, stackTrace) => Container(
                 color: p.withValues(alpha: 0.15),
                 child: Icon(Icons.image_outlined, color: p, size: 48),
               ),

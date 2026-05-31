@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../core/errors/chat_accept_errors.dart';
 import '../../../core/errors/send_chat_request_result.dart';
+import '../../../core/locale/nationality_language.dart';
 import '../models/chat_models.dart';
 
 // ─────────────────────────── Internal exception ──────────────────────────────
@@ -237,8 +238,20 @@ class ChatService {
     required Gender gender,
     required String language,
   }) async {
-    final myUid = _myUid ?? '';
-    final snap = await _usersCol.get();
+    final myUid = _myUid;
+    if (myUid == null) return const [];
+
+    final results = await Future.wait([
+      _usersCol.doc(myUid).get(),
+      _usersCol.get(),
+    ]);
+    final mySnap = results[0] as DocumentSnapshot<Map<String, dynamic>>;
+    final snap = results[1] as QuerySnapshot<Map<String, dynamic>>;
+    final myProfile = mySnap.data();
+    final myNative = nativeLanguageFromProfile(myProfile);
+    final targetLanguage = language == 'Any'
+        ? learningLanguageFromProfile(myProfile, nativeLanguage: myNative)
+        : language;
     final seen = <String>{};
     return snap.docs
         .where((d) {
@@ -248,14 +261,16 @@ class ChatService {
           if (name == null || name.trim().isEmpty) return false;
           final initial = data['avatarInitial'] as String?;
           if (initial == null || initial == '?') return false;
-          final native = data['nativeLanguage'] as String?;
-          if (native == null || native.isEmpty) return false;
+          final native = nativeLanguageFromProfile(data, fallback: '');
+          if (native.isEmpty) return false;
           return seen.add(d.id);
         })
         .map((d) => _partnerFromMap(d.id, d.data()))
         .where((p) {
           final genderOk = gender == Gender.any || p.gender == gender;
-          final langOk = language == 'Any' || p.nativeLanguage == language;
+          final langOk =
+              p.nativeLanguage == targetLanguage &&
+              p.learningLanguage == myNative;
           return genderOk && langOk;
         })
         .toList();
@@ -346,8 +361,9 @@ class ChatService {
         'uid': myUid,
         'displayName': rawName,
         'avatarInitial': rawName[0].toUpperCase(),
+        'nationality': 'Viet Nam',
         'nativeLanguage': 'Vietnamese',
-        'learningLanguage': 'Korean',
+        'learningLanguage': defaultLearningLanguageForNative('Vietnamese'),
         'gender': 'other',
         'school': 'Keimyung University',
         'bio': "Hi, I'm using HiCampus!",
@@ -612,6 +628,12 @@ class ChatService {
   Map<String, dynamic> _userInfoPayload(String uid, Map<String, dynamic>? raw) {
     final m = Map<String, dynamic>.from(raw ?? {});
     m['uid'] = uid;
+    final native = nativeLanguageFromProfile(m);
+    m['nativeLanguage'] = native;
+    m['learningLanguage'] = learningLanguageFromProfile(
+      m,
+      nativeLanguage: native,
+    );
     return m;
   }
 
@@ -714,18 +736,21 @@ class ChatService {
     );
   }
 
-  PartnerModel _partnerFromMap(String uid, Map<String, dynamic> d) =>
-      PartnerModel(
-        id: uid,
-        name: d['displayName'] as String? ?? 'Unknown',
-        avatarInitial: d['avatarInitial'] as String? ?? '?',
-        nativeLanguage: d['nativeLanguage'] as String? ?? '',
-        learningLanguage: d['learningLanguage'] as String? ?? '',
-        school: d['school'] as String? ?? '',
-        bio: d['bio'] as String? ?? '',
-        gender: _parseGender(d['gender']),
-        isOnline: d['isOnline'] as bool? ?? false,
-      );
+  PartnerModel _partnerFromMap(String uid, Map<String, dynamic> d) {
+    final native = nativeLanguageFromProfile(d);
+    final learning = learningLanguageFromProfile(d, nativeLanguage: native);
+    return PartnerModel(
+      id: uid,
+      name: d['displayName'] as String? ?? 'Unknown',
+      avatarInitial: d['avatarInitial'] as String? ?? '?',
+      nativeLanguage: native,
+      learningLanguage: learning,
+      school: d['school'] as String? ?? '',
+      bio: d['bio'] as String? ?? '',
+      gender: _parseGender(d['gender']),
+      isOnline: d['isOnline'] as bool? ?? false,
+    );
+  }
 
   Gender _parseGender(dynamic g) => switch (g?.toString()) {
     'male' => Gender.male,

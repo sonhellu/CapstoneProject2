@@ -77,9 +77,9 @@ class _SearchableOptionSheetState extends State<_SearchableOptionSheet> {
             Text(
               widget.title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: context.onSurface,
-                  ),
+                fontWeight: FontWeight.w800,
+                color: context.onSurface,
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -115,8 +115,9 @@ class _SearchableOptionSheetState extends State<_SearchableOptionSheet> {
                             opt,
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight:
-                                  isSel ? FontWeight.w700 : FontWeight.w500,
+                              fontWeight: isSel
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
                               color: isSel ? p : context.onSurface,
                             ),
                           ),
@@ -142,17 +143,19 @@ class RegisterSearchableField extends StatelessWidget {
     required this.label,
     required this.value,
     required this.placeholder,
-    required this.onTap,
+    this.onTap,
     this.errorText,
     this.leadingIcon = Icons.arrow_drop_down_circle_outlined,
+    this.enabled = true,
   });
 
   final String label;
   final String? value;
   final String placeholder;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final String? errorText;
   final IconData leadingIcon;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -166,13 +169,13 @@ class RegisterSearchableField extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: context.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
+            color: context.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 8),
         GestureDetector(
-          onTap: onTap,
+          onTap: enabled ? onTap : null,
           child: Container(
             height: 54,
             decoration: BoxDecoration(
@@ -190,7 +193,7 @@ class RegisterSearchableField extends StatelessWidget {
                 Icon(
                   leadingIcon,
                   size: 20,
-                  color: p,
+                  color: enabled ? p : context.onSurfaceVar,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -206,8 +209,13 @@ class RegisterSearchableField extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Icon(Icons.expand_more_rounded,
-                    size: 20, color: context.onSurfaceVar),
+                Icon(
+                  enabled
+                      ? Icons.expand_more_rounded
+                      : Icons.lock_outline_rounded,
+                  size: 20,
+                  color: context.onSurfaceVar,
+                ),
               ],
             ),
           ),

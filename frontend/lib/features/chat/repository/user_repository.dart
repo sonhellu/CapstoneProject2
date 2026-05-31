@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../../core/locale/nationality_language.dart';
 import '../models/chat_models.dart';
 
 /// Manages the `users/{uid}` Firestore collection.
@@ -27,6 +28,17 @@ class UserRepository {
     final ref = _col.doc(uid);
     final snap = await ref.get();
     final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+    final existing = snap.data();
+    final resolvedNationality = (nationality != null && nationality.isNotEmpty)
+        ? nationality
+        : (existing?['nationality'] as String? ?? 'Unknown');
+    final resolvedNative = nativeLanguageFromNationality(
+      resolvedNationality,
+      fallback: (nativeLanguage != null && nativeLanguage.isNotEmpty)
+          ? nativeLanguage
+          : 'English',
+    );
+    final defaultLearning = defaultLearningLanguageForNative(resolvedNative);
 
     if (!snap.exists) {
       await ref.set({
@@ -34,13 +46,9 @@ class UserRepository {
         'displayName': displayName,
         'avatarInitial': initial,
         'email': email,
-        'nationality': (nationality != null && nationality.isNotEmpty)
-            ? nationality
-            : 'Unknown',
-        'nativeLanguage': (nativeLanguage != null && nativeLanguage.isNotEmpty)
-            ? nativeLanguage
-            : 'Vietnamese',
-        'learningLanguage': 'Korean',
+        'nationality': resolvedNationality,
+        'nativeLanguage': resolvedNative,
+        'learningLanguage': defaultLearning,
         'gender': 'other',
         'school': 'Keimyung University',
         'bio': 'Hi, I\'m using HiCampus!',
@@ -49,11 +57,25 @@ class UserRepository {
         'lastSeen': FieldValue.serverTimestamp(),
       });
     } else {
-      // Update only online status; leave other profile fields untouched
-      await ref.update({
+      final currentNative = existing?['nativeLanguage'] as String?;
+      final currentLearning = existing?['learningLanguage'] as String?;
+      final updates = <String, dynamic>{
         'isOnline': true,
         'lastSeen': FieldValue.serverTimestamp(),
-      });
+      };
+      if (nationality != null && nationality.isNotEmpty) {
+        updates['nationality'] = resolvedNationality;
+      }
+      if (currentNative != resolvedNative) {
+        updates['nativeLanguage'] = resolvedNative;
+      }
+      if (currentLearning == null ||
+          currentLearning.trim().isEmpty ||
+          currentLearning == currentNative ||
+          currentLearning == resolvedNative) {
+        updates['learningLanguage'] = defaultLearning;
+      }
+      await ref.update(updates);
     }
   }
 
@@ -72,11 +94,24 @@ class UserRepository {
     final data = <String, dynamic>{};
     if (displayName != null) {
       data['displayName'] = displayName;
-      data['avatarInitial'] =
-          displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+      data['avatarInitial'] = displayName.isNotEmpty
+          ? displayName[0].toUpperCase()
+          : '?';
     }
-    if (nativeLanguage != null) data['nativeLanguage'] = nativeLanguage;
-    if (learningLanguage != null) data['learningLanguage'] = learningLanguage;
+    final derivedNative = nationality == null
+        ? nativeLanguage
+        : nativeLanguageFromNationality(
+            nationality,
+            fallback: nativeLanguage ?? 'English',
+          );
+    if (derivedNative != null) data['nativeLanguage'] = derivedNative;
+    if (learningLanguage != null) {
+      data['learningLanguage'] = learningLanguage;
+    } else if (nationality != null && derivedNative != null) {
+      data['learningLanguage'] = defaultLearningLanguageForNative(
+        derivedNative,
+      );
+    }
     if (gender != null) data['gender'] = gender;
     if (school != null) data['school'] = school;
     if (nationality != null) data['nationality'] = nationality;
@@ -123,7 +158,14 @@ class UserRepository {
     required String learningLanguage,
     required String myUid,
   }) async {
-    final snap = await _col.get();
+    final results = await Future.wait([_col.doc(myUid).get(), _col.get()]);
+    final mySnap = results[0] as DocumentSnapshot<Map<String, dynamic>>;
+    final snap = results[1] as QuerySnapshot<Map<String, dynamic>>;
+    final myProfile = mySnap.data();
+    final myNative = nativeLanguageFromProfile(myProfile);
+    final targetLanguage = learningLanguage == 'Any'
+        ? learningLanguageFromProfile(myProfile, nativeLanguage: myNative)
+        : learningLanguage;
     final seen = <String>{};
     return snap.docs
         .where((d) {
@@ -139,7 +181,8 @@ class UserRepository {
         .where((p) {
           final genderOk = gender == Gender.any || p.gender == gender;
           final langOk =
-              learningLanguage == 'Any' || p.nativeLanguage == learningLanguage;
+              p.nativeLanguage == targetLanguage &&
+              p.learningLanguage == myNative;
           return genderOk && langOk;
         })
         .toList();
@@ -149,12 +192,14 @@ class UserRepository {
 
   PartnerModel _fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final d = doc.data()!;
+    final native = nativeLanguageFromProfile(d);
+    final learning = learningLanguageFromProfile(d, nativeLanguage: native);
     return PartnerModel(
       id: doc.id,
       name: d['displayName'] as String? ?? 'Unknown',
       avatarInitial: d['avatarInitial'] as String? ?? '?',
-      nativeLanguage: d['nativeLanguage'] as String? ?? 'Korean',
-      learningLanguage: d['learningLanguage'] as String? ?? 'Vietnamese',
+      nativeLanguage: native,
+      learningLanguage: learning,
       school: d['school'] as String? ?? '',
       bio: d['bio'] as String? ?? '',
       gender: _parseGender(d['gender']),
@@ -163,8 +208,8 @@ class UserRepository {
   }
 
   Gender _parseGender(dynamic g) => switch (g?.toString()) {
-        'male' => Gender.male,
-        'female' => Gender.female,
-        _ => Gender.any,
-      };
+    'male' => Gender.male,
+    'female' => Gender.female,
+    _ => Gender.any,
+  };
 }

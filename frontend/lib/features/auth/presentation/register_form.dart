@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/feedback/app_snackbar.dart';
+import '../../../core/locale/nationality_language.dart';
 import '../../../core/theme/theme_ext.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/register_picklist_data.dart';
@@ -40,7 +41,6 @@ class RegisterForm extends HookWidget {
     final selectedUniversity = useState<University?>(null);
     final selectedDomain = useState<String?>(null);
     final selectedNationality = useState<String?>(null);
-    final selectedNativeLanguage = useState<String?>(null);
     final showProfileFieldErrors = useState(false);
 
     // When university changes, reset domain to default
@@ -56,15 +56,13 @@ class RegisterForm extends HookWidget {
       return domain.isEmpty ? id : combineEmail(id, domain);
     }
 
+    String derivedNativeLanguage() =>
+        nativeLanguageFromNationality(selectedNationality.value, fallback: '');
+
     Future<void> submit() async {
       if (!(formKey.currentState?.validate() ?? false)) return;
       final nat = selectedNationality.value?.trim();
-      final lang = selectedNativeLanguage.value?.trim();
       if (nat == null || nat.isEmpty) {
-        showProfileFieldErrors.value = true;
-        return;
-      }
-      if (lang == null || lang.isEmpty) {
         showProfileFieldErrors.value = true;
         return;
       }
@@ -76,12 +74,11 @@ class RegisterForm extends HookWidget {
       loading.value = true;
       try {
         await context.read<AuthProvider>().registerWithEmail(
-              name: name.text.trim(),
-              email: fullEmail(),
-              password: password.text,
-              nationality: nat,
-              nativeLanguage: lang,
-            );
+          name: name.text.trim(),
+          email: fullEmail(),
+          password: password.text,
+          nationality: nat,
+        );
         if (context.mounted) {
           _snack(context, l.authSuccessRegister, success: true);
         }
@@ -89,9 +86,9 @@ class RegisterForm extends HookWidget {
         if (!context.mounted) return;
         final msg = switch (e.code) {
           'email-already-in-use' => l.authErrEmailInUse,
-          'invalid-email'        => l.authErrInvalidEmail,
-          'weak-password'        => l.authErrWeakPassword,
-          _                      => l.authErrDefault(e.message ?? e.code),
+          'invalid-email' => l.authErrInvalidEmail,
+          'weak-password' => l.authErrWeakPassword,
+          _ => l.authErrDefault(e.message ?? e.code),
         };
         _snack(context, msg);
       } finally {
@@ -123,7 +120,8 @@ class RegisterForm extends HookWidget {
             value: selectedNationality.value,
             placeholder: l.authRegisterSelectPlaceholder,
             leadingIcon: Icons.flag_outlined,
-            errorText: showProfileFieldErrors.value &&
+            errorText:
+                showProfileFieldErrors.value &&
                     (selectedNationality.value == null ||
                         selectedNationality.value!.trim().isEmpty)
                 ? l.authValidationNationalityEmpty
@@ -147,27 +145,10 @@ class RegisterForm extends HookWidget {
           RegisterSearchableField(
             key: const Key('register_native_language'),
             label: l.profileNativeLang,
-            value: selectedNativeLanguage.value,
+            value: derivedNativeLanguage(),
             placeholder: l.authRegisterSelectPlaceholder,
             leadingIcon: Icons.translate_rounded,
-            errorText: showProfileFieldErrors.value &&
-                    (selectedNativeLanguage.value == null ||
-                        selectedNativeLanguage.value!.trim().isEmpty)
-                ? l.authValidationNativeLanguageEmpty
-                : null,
-            onTap: () async {
-              final r = await showSearchableOptionSheet(
-                context,
-                title: l.profileNativeLang,
-                searchHint: l.authRegisterSearchHint,
-                options: kNativeLanguageOptions,
-                selected: selectedNativeLanguage.value,
-              );
-              if (r != null) {
-                selectedNativeLanguage.value = r;
-                showProfileFieldErrors.value = false;
-              }
-            },
+            enabled: false,
           ),
           const SizedBox(height: 16),
 
@@ -215,7 +196,8 @@ class RegisterForm extends HookWidget {
             showObscureToggle: true,
             onToggleObscure: () => obscureConfirm.value = !obscureConfirm.value,
             textInputAction: TextInputAction.done,
-            validator: (v) => AuthValidators.confirmPassword(v, password.text, l),
+            validator: (v) =>
+                AuthValidators.confirmPassword(v, password.text, l),
             onSubmitted: (_) => submit(),
           ),
           const SizedBox(height: 24),
@@ -274,9 +256,9 @@ class _EmailComposer extends StatelessWidget {
         Text(
           'University Email',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: context.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
+            color: context.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 8),
 
@@ -321,18 +303,14 @@ class _EmailComposer extends StatelessWidget {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AuthRadii.sm),
-                    borderSide: BorderSide(
-                      color: p,
-                      width: 1.5,
-                    ),
+                    borderSide: BorderSide(color: p, width: 1.5),
                   ),
                   errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AuthRadii.sm),
                     borderSide: BorderSide(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .error
-                          .withValues(alpha: 0.8),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.error.withValues(alpha: 0.8),
                     ),
                   ),
                   focusedErrorBorder: OutlineInputBorder(
@@ -383,8 +361,10 @@ class _EmailComposer extends StatelessWidget {
                   child: Row(
                     children: [
                       if (selectedUniversity != null) ...[
-                        Text(selectedUniversity!.logo,
-                            style: const TextStyle(fontSize: 16)),
+                        Text(
+                          selectedUniversity!.logo,
+                          style: const TextStyle(fontSize: 16),
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
@@ -403,13 +383,17 @@ class _EmailComposer extends StatelessWidget {
                             'Select university',
                             style: TextStyle(
                               fontSize: 13,
-                              color:
-                                  context.onSurfaceVar.withValues(alpha: 0.7),
+                              color: context.onSurfaceVar.withValues(
+                                alpha: 0.7,
+                              ),
                             ),
                           ),
                         ),
-                      Icon(Icons.expand_more_rounded,
-                          size: 18, color: context.onSurfaceVar),
+                      Icon(
+                        Icons.expand_more_rounded,
+                        size: 18,
+                        color: context.onSurfaceVar,
+                      ),
                     ],
                   ),
                 ),
@@ -432,7 +416,8 @@ class _EmailComposer extends StatelessWidget {
           ),
 
         // Part 3 — Sub-domain chips (shown when university has multiple domains)
-        if (selectedUniversity != null && selectedUniversity!.hasMultipleDomains)
+        if (selectedUniversity != null &&
+            selectedUniversity!.hasMultipleDomains)
           _DomainChips(
             university: selectedUniversity!,
             selectedDomain: selectedDomain ?? selectedUniversity!.defaultDomain,
@@ -479,9 +464,7 @@ class _DomainChips extends StatelessWidget {
             backgroundColor: p.withValues(alpha: 0.06),
             selectedColor: p,
             checkmarkColor: onP,
-            side: BorderSide(
-              color: p.withValues(alpha: 0.4),
-            ),
+            side: BorderSide(color: p.withValues(alpha: 0.4)),
             padding: const EdgeInsets.symmetric(horizontal: 4),
           );
         }).toList(),
@@ -529,9 +512,9 @@ class _UniversityPickerSheetState extends State<_UniversityPickerSheet> {
             Text(
               'Select University',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: context.onSurface,
-                  ),
+                fontWeight: FontWeight.w800,
+                color: context.onSurface,
+              ),
             ),
             const SizedBox(height: 12),
 
@@ -540,10 +523,8 @@ class _UniversityPickerSheetState extends State<_UniversityPickerSheet> {
               autofocus: true,
               decoration: InputDecoration(
                 hintText: 'Search university or domain…',
-                prefixIcon:
-                    const Icon(Icons.search_rounded, size: 20),
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 10),
+                prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -574,10 +555,7 @@ class _UniversityPickerSheetState extends State<_UniversityPickerSheet> {
                     ),
                     subtitle: Text(
                       uni.domains.map((d) => '@$d').join('  ·  '),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.primary,
-                      ),
+                      style: TextStyle(fontSize: 11, color: context.primary),
                     ),
                     dense: true,
                     onTap: () => Navigator.pop(context, uni),

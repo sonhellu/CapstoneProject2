@@ -30,6 +30,11 @@ migrate_working_dir/
 # API Keys — never commit real keys
 lib/core/config/api_keys.dart
 
+# Android release signing — keep local only
+android/key.properties
+android/*.jks
+android/*.keystore
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id

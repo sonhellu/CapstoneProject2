@@ -27,6 +27,9 @@ class WebViewTranslationScreen extends StatefulWidget {
 
 class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
   InAppWebViewController? _webCtrl;
+  bool _googleTranslating = false;
+  bool _googleActive = false;
+  bool _googleFailed = false;
   bool _translating = false;
   bool _hasShownTranslationError = false;
   bool _showTranslationPanel = false;
@@ -43,6 +46,15 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
 
   static const _translationChunkSize = 12;
   static const _translationTimeout = Duration(seconds: 35);
+  static const _googleTranslateElementTimeoutAttempts = 40;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_shouldTranslateWeb(_webTargetLang)) {
+      unawaited(_clearPersistedGoogleTranslateState(evaluateInPage: false));
+    }
+  }
 
   // ── Debug: snapshot of page state. Korean range uses Unicode escape (가)
   // so the JS string is pure ASCII — no encoding issues on WKWebView.
@@ -91,6 +103,75 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
     })();
   ''';
 
+  static const _removeGoogleTranslateElementJs = '''
+    (function() {
+      try {
+        function hiCampusGoogleTranslateDomains() {
+          var host = location.hostname || '';
+          var domains = [''];
+          if (host) {
+            domains.push(host);
+            var parts = host.split('.');
+            for (var i = 1; i < parts.length - 1; i++) {
+              domains.push('.' + parts.slice(i).join('.'));
+            }
+          }
+          return domains;
+        }
+        function clearHiCampusGoogleTranslateCookie() {
+          var domains = hiCampusGoogleTranslateDomains();
+          for (var i = 0; i < domains.length; i++) {
+            var domain = domains[i] ? ';domain=' + domains[i] : '';
+            document.cookie =
+              'googtrans=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;max-age=0;SameSite=Lax' +
+              domain;
+          }
+        }
+        clearHiCampusGoogleTranslateCookie();
+        var bar = document.getElementById('__hi_gt_injected');
+        if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
+        var style = document.getElementById('__hi_gt_hide_style');
+        if (style && style.parentNode) style.parentNode.removeChild(style);
+        var script = document.getElementById('__hi_gt_script');
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+        var banners = document.querySelectorAll(
+          'iframe.goog-te-banner-frame,.goog-te-banner-frame,body > .skiptranslate'
+        );
+        for (var i = 0; i < banners.length; i++) {
+          if (banners[i].parentNode) banners[i].parentNode.removeChild(banners[i]);
+        }
+        if (document.body && window.__hiGtOriginalPaddingTop !== undefined) {
+          document.body.style.paddingTop = window.__hiGtOriginalPaddingTop || '';
+        }
+        if (document.body && window.__hiGtOriginalTop !== undefined) {
+          document.body.style.top = window.__hiGtOriginalTop || '';
+        }
+      } catch (_) {}
+    })();
+  ''';
+
+  static const _clearGoogleTranslateCookieJs = '''
+    (function() {
+      try {
+        var host = location.hostname || '';
+        var domains = [''];
+        if (host) {
+          domains.push(host);
+          var parts = host.split('.');
+          for (var i = 1; i < parts.length - 1; i++) {
+            domains.push('.' + parts.slice(i).join('.'));
+          }
+        }
+        for (var j = 0; j < domains.length; j++) {
+          var domain = domains[j] ? ';domain=' + domains[j] : '';
+          document.cookie =
+            'googtrans=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;max-age=0;SameSite=Lax' +
+            domain;
+        }
+      } catch (_) {}
+    })();
+  ''';
+
   // ── TreeWalker extraction ─────────────────────────────────────────────────
   // Phase 1: walk + collect (no DOM mutation).
   // Phase 2: wrap collected nodes in <hi-tr>.
@@ -130,6 +211,9 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
                 var p = node.parentNode;
                 if (!p) return NodeFilter.FILTER_REJECT;
                 if (p.tagName && SKIP[p.tagName]) return NodeFilter.FILTER_REJECT;
+                if (p.closest && p.closest('#__hi_gt_injected,.skiptranslate')) {
+                  return NodeFilter.FILTER_REJECT;
+                }
                 return (node.nodeValue || '').trim().length >= 2
                   ? NodeFilter.FILTER_ACCEPT
                   : NodeFilter.FILTER_SKIP;
@@ -212,8 +296,16 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
 
   // ── Poll until body has Korean text, then translate ──────────────────────
   // Checks every 800 ms, up to 12 attempts (~9.6 s).
-  // Runs a second pass 3 s later to catch lazy-loaded content.
+  // Google Translate Element is the primary path; HiCampus DOM translation is
+  // kept as the explicit fallback when Google fails.
   Future<void> _waitForKoreanTextThenTranslate() async {
+    final targetLang = _webTargetLang;
+    if (!_shouldTranslateWeb(targetLang)) {
+      debugPrint('[HiTr] skip auto translation for target=$targetLang');
+      await _clearPersistedGoogleTranslateState();
+      return;
+    }
+
     const maxAttempts = 12;
     const interval = Duration(milliseconds: 800);
 
@@ -227,10 +319,7 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
 
       if (result == 'yes') {
         await _debugPageState();
-        await _runTranslation();
-        // Second pass for lazy-loaded content
-        await Future.delayed(const Duration(seconds: 3));
-        if (mounted) await _runTranslation();
+        await _runGoogleTranslate();
         return;
       }
     }
@@ -238,23 +327,313 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
     // Gave up waiting — log state anyway for debugging
     debugPrint('[HiTr] polling timed out (${maxAttempts * 800} ms)');
     await _debugPageState();
+    await _runGoogleTranslate();
+  }
+
+  Future<void> _runGoogleTranslate() async {
+    if (_googleTranslating ||
+        _googleActive ||
+        _translating ||
+        _webCtrl == null) {
+      return;
+    }
+
+    final targetLang = _webTargetLang;
+    debugPrint(
+      '[HiTr] runGoogleTranslate target=$targetLang raw=${widget.targetLangCode} device=${WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag()}',
+    );
+    if (!_shouldTranslateWeb(targetLang)) {
+      debugPrint('[HiTr] Google skip for target=$targetLang');
+      return;
+    }
+
+    setState(() {
+      _googleTranslating = true;
+      _googleFailed = false;
+      _showTranslationPanel = false;
+      _translationHadError = false;
+    });
+
+    try {
+      await _prepareGoogleTranslateCookie(targetLang);
+      if (!mounted || _webCtrl == null) return;
+      await _webCtrl!.evaluateJavascript(
+        source: _googleTranslateElementJs(targetLang),
+      );
+    } catch (e) {
+      debugPrint('[HiTr] Google Translate Element inject error: $e');
+      _handleGoogleTranslateFailed();
+    }
+  }
+
+  Future<void> _prepareGoogleTranslateCookie(String targetLang) async {
+    final cookieValue = '/auto/$targetLang';
+    try {
+      await CookieManager.instance().setCookie(
+        url: WebUri(widget.url),
+        name: 'googtrans',
+        value: cookieValue,
+        path: '/',
+        isSecure: widget.url.startsWith('https://'),
+      );
+    } catch (e) {
+      debugPrint('[HiTr] set googtrans cookie skipped: $e');
+    }
+
+    final ctrl = _webCtrl;
+    if (ctrl == null) return;
+    try {
+      await ctrl.evaluateJavascript(
+        source: _setGoogleTranslateCookieJs(targetLang),
+      );
+    } catch (e) {
+      debugPrint('[HiTr] set page googtrans cookie skipped: $e');
+    }
+  }
+
+  Future<void> _clearPersistedGoogleTranslateState({
+    bool evaluateInPage = true,
+  }) async {
+    try {
+      final cookieManager = CookieManager.instance();
+      await cookieManager.deleteCookie(
+        url: WebUri(widget.url),
+        name: 'googtrans',
+      );
+      await cookieManager.deleteCookie(
+        url: WebUri('https://translate.google.com'),
+        name: 'googtrans',
+      );
+    } catch (e) {
+      debugPrint('[HiTr] clear googtrans cookie skipped: $e');
+    }
+
+    final ctrl = _webCtrl;
+    if (!evaluateInPage || ctrl == null) return;
+    try {
+      await ctrl.evaluateJavascript(source: _clearGoogleTranslateCookieJs);
+    } catch (e) {
+      debugPrint('[HiTr] clear page googtrans cookie skipped: $e');
+    }
+  }
+
+  String _setGoogleTranslateCookieJs(String targetLang) {
+    final cookieValue = jsonEncode('/auto/$targetLang');
+    return '''
+      (function() {
+        try {
+          var value = $cookieValue;
+          var expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+          var host = location.hostname || '';
+          var domains = [''];
+          if (host) {
+            domains.push(host);
+            var parts = host.split('.');
+            for (var i = 1; i < parts.length - 1; i++) {
+              domains.push('.' + parts.slice(i).join('.'));
+            }
+          }
+          for (var j = 0; j < domains.length; j++) {
+            var domain = domains[j] ? ';domain=' + domains[j] : '';
+            document.cookie =
+              'googtrans=' + value + ';path=/;expires=' + expires + ';SameSite=Lax' +
+              domain;
+          }
+        } catch (_) {}
+      })();
+    ''';
+  }
+
+  String _googleTranslateElementJs(String targetLang) {
+    final target = jsonEncode(targetLang);
+    const includedLanguages = 'ko,en,vi,ja,zh-CN,my';
+    return '''
+      (function() {
+        try {
+          var targetLang = $target;
+          var attempts = 0;
+          var maxAttempts = $_googleTranslateElementTimeoutAttempts;
+          var scriptId = '__hi_gt_script';
+
+          function hiCampusGoogleTranslateDomains() {
+            var host = location.hostname || '';
+            var domains = [''];
+            if (host) {
+              domains.push(host);
+              var parts = host.split('.');
+              for (var i = 1; i < parts.length - 1; i++) {
+                domains.push('.' + parts.slice(i).join('.'));
+              }
+            }
+            return domains;
+          }
+
+          function setHiCampusGoogleTranslateCookie(lang) {
+            var domains = hiCampusGoogleTranslateDomains();
+            var value = '/auto/' + lang;
+            var expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+            for (var i = 0; i < domains.length; i++) {
+              var domain = domains[i] ? ';domain=' + domains[i] : '';
+              document.cookie =
+                'googtrans=' + value + ';path=/;expires=' + expires + ';SameSite=Lax' +
+                domain;
+            }
+          }
+
+          function callFlutter(name) {
+            try {
+              window.flutter_inappwebview.callHandler(name);
+            } catch (_) {}
+          }
+
+          function selectTargetLanguage() {
+            var sel = document.querySelector('.goog-te-combo');
+            if (!sel) return false;
+            sel.value = targetLang;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+            sel.dispatchEvent(new Event('input', { bubbles: true }));
+            return true;
+          }
+
+          function widgetReady() {
+            var el = document.getElementById('__hi_gt_injected');
+            if (!el) return false;
+            var text = (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim();
+            return text.length > 0 || !!el.querySelector('select,iframe');
+          }
+
+          var pageLang = (document.documentElement.lang ||
+            (document.querySelector('meta[http-equiv="content-language"]') || {}).content ||
+            'ko').split('-')[0].toLowerCase();
+          if (!['ko','en','vi','ja','zh','my'].includes(pageLang)) pageLang = 'ko';
+          setHiCampusGoogleTranslateCookie(targetLang);
+
+          var hideStyle = document.getElementById('__hi_gt_hide_style');
+          if (!hideStyle) {
+            hideStyle = document.createElement('style');
+            hideStyle.id = '__hi_gt_hide_style';
+            document.documentElement.appendChild(hideStyle);
+          }
+          hideStyle.textContent = [
+            '#__hi_gt_injected{position:absolute!important;left:-10000px!important;top:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;}',
+            'iframe.goog-te-banner-frame,.goog-te-banner-frame,body > .skiptranslate{display:none!important;}',
+            'body{top:0!important;}'
+          ].join('\\n');
+
+          var bar = document.getElementById('__hi_gt_injected');
+          if (!bar) {
+            bar = document.createElement('div');
+            bar.id = '__hi_gt_injected';
+            bar.style.cssText = [
+              'position:absolute',
+              'top:-10000px',
+              'left:-10000px',
+              'width:1px',
+              'height:1px',
+              'overflow:hidden',
+              'opacity:0',
+              'pointer-events:none'
+            ].join(';');
+            document.body.appendChild(bar);
+          }
+          if (window.__hiGtOriginalPaddingTop === undefined) {
+            window.__hiGtOriginalPaddingTop = document.body.style.paddingTop || '';
+          }
+          if (window.__hiGtOriginalTop === undefined) {
+            window.__hiGtOriginalTop = document.body.style.top || '';
+          }
+          document.body.style.paddingTop = window.__hiGtOriginalPaddingTop || '';
+          document.body.style.top = '0px';
+
+          window.googleTranslateElementInit = function() {
+            new google.translate.TranslateElement({
+              pageLanguage: pageLang,
+              includedLanguages: '$includedLanguages',
+              autoDisplay: true,
+              layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, '__hi_gt_injected');
+          };
+
+          if (window.google && window.google.translate && window.google.translate.TranslateElement) {
+            window.googleTranslateElementInit();
+          } else {
+            var oldScript = document.getElementById(scriptId);
+            if (oldScript && oldScript.parentNode) {
+              oldScript.parentNode.removeChild(oldScript);
+            }
+            var script = document.createElement('script');
+            script.id = scriptId;
+            script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+            script.onerror = function() {
+              callFlutter('onHiCampusGoogleTranslateFailed');
+            };
+            document.body.appendChild(script);
+          }
+
+          var poll = setInterval(function() {
+            if (selectTargetLanguage()) {
+              clearInterval(poll);
+              callFlutter('onHiCampusGoogleTranslateSuccess');
+            } else if (attempts > 12 && widgetReady()) {
+              clearInterval(poll);
+              callFlutter('onHiCampusGoogleTranslateSuccess');
+            } else if (++attempts > maxAttempts) {
+              clearInterval(poll);
+              callFlutter('onHiCampusGoogleTranslateFailed');
+            }
+          }, 300);
+        } catch (e) {
+          try {
+            window.flutter_inappwebview.callHandler('onHiCampusGoogleTranslateFailed', String(e));
+          } catch (_) {}
+        }
+      })();
+    ''';
+  }
+
+  void _handleGoogleTranslateSuccess() {
+    if (!mounted) return;
+    debugPrint('[HiTr] Google Translate Element success');
+    setState(() {
+      _googleTranslating = false;
+      _googleActive = true;
+      _googleFailed = false;
+    });
+  }
+
+  void _handleGoogleTranslateFailed() {
+    if (!mounted) return;
+    if (_googleActive) {
+      debugPrint('[HiTr] Google Translate Element late failure ignored');
+      return;
+    }
+    debugPrint('[HiTr] Google Translate Element failed');
+    setState(() {
+      _googleTranslating = false;
+      _googleActive = false;
+      _googleFailed = true;
+      _showTranslationPanel = false;
+    });
   }
 
   // ── Extract → filter → translate → inject ───────────────────────────────
   Future<void> _runTranslation({bool showWhenEmpty = true}) async {
     if (_translating || _webCtrl == null) return;
-    final targetLang = LangCode.normalize(widget.targetLangCode);
+    final targetLang = _webTargetLang;
     debugPrint(
-      '[HiTr] runTranslation target=$targetLang raw=${widget.targetLangCode}',
+      '[HiTr] runTranslation target=$targetLang raw=${widget.targetLangCode} device=${WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag()}',
     );
-    if (!LangCode.isSupported(targetLang)) {
-      debugPrint('[HiTr] skip: unsupported target language $targetLang');
+    if (!_shouldTranslateWeb(targetLang)) {
+      debugPrint('[HiTr] HiCampus skip for target=$targetLang');
       return;
     }
 
     final runId = ++_translationRunId;
     _hidePanelTimer?.cancel();
     setState(() {
+      _googleTranslating = false;
+      _googleActive = false;
+      _googleFailed = false;
       _translating = true;
       _showTranslationPanel = showWhenEmpty;
       _translationHadError = false;
@@ -264,6 +643,15 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
     });
 
     try {
+      try {
+        await _webCtrl!.evaluateJavascript(
+          source: _removeGoogleTranslateElementJs,
+        );
+      } catch (e) {
+        debugPrint('[HiTr] Google Translate cleanup skipped: $e');
+      }
+      if (!_isActiveRun(runId)) return;
+
       // 1. Extract text nodes
       final raw = await _webCtrl!.evaluateJavascript(source: _extractJs);
       if (!_isActiveRun(runId)) return;
@@ -460,6 +848,11 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
     return int.tryParse(value?.toString() ?? '') ?? -1;
   }
 
+  String get _webTargetLang => LangCode.normalize(widget.targetLangCode);
+
+  bool _shouldTranslateWeb(String targetLang) =>
+      targetLang != LangCode.ko && LangCode.isSupported(targetLang);
+
   bool _isActiveRun(int runId) =>
       mounted && runId == _translationRunId && _webCtrl != null;
 
@@ -491,7 +884,14 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
   }
 
   void _scheduleLazyTranslation() {
-    if (_translating || _webCtrl == null) return;
+    if (!_shouldTranslateWeb(_webTargetLang)) return;
+    if (_googleActive ||
+        _googleTranslating ||
+        _googleFailed ||
+        _translating ||
+        _webCtrl == null) {
+      return;
+    }
     _lazyTranslationTimer?.cancel();
     _lazyTranslationTimer = Timer(const Duration(milliseconds: 900), () {
       if (mounted && !_translating) _runLazyTranslationIfNeeded();
@@ -513,6 +913,10 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
     if (!mounted) return;
     setState(() {
       _translating = false;
+      _googleTranslating = false;
+      _googleActive = false;
+      _googleFailed = false;
+      _progress = 0;
       _hasShownTranslationError = false;
       _showTranslationPanel = false;
       _translationHadError = false;
@@ -563,6 +967,7 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final canTranslateWeb = _shouldTranslateWeb(_webTargetLang);
 
     return Scaffold(
       appBar: AppBar(
@@ -574,24 +979,31 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
-          if (_translating)
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
+          if (canTranslateWeb) ...[
+            if (_translating || _googleTranslating)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 ),
+              )
+            else
+              IconButton(
+                icon: const Icon(Icons.translate_rounded),
+                tooltip: 'Google Translate',
+                onPressed: () => _runGoogleTranslate(),
               ),
-            )
-          else
             IconButton(
-              icon: const Icon(Icons.translate_rounded),
-              tooltip: '번역',
+              icon: const Icon(Icons.auto_fix_high_rounded),
+              tooltip: 'HiCampus',
               onPressed: () => _runTranslation(),
             ),
+          ],
         ],
       ),
       body: Stack(
@@ -604,8 +1016,31 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
                   'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 '
                   '(KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36',
             ),
-            onWebViewCreated: (ctrl) => _webCtrl = ctrl,
-            onLoadStart: (_, _) => _resetTranslationStateForNewPage(),
+            onWebViewCreated: (ctrl) {
+              _webCtrl = ctrl;
+              ctrl.addJavaScriptHandler(
+                handlerName: 'onHiCampusGoogleTranslateSuccess',
+                callback: (_) {
+                  _handleGoogleTranslateSuccess();
+                  return null;
+                },
+              );
+              ctrl.addJavaScriptHandler(
+                handlerName: 'onHiCampusGoogleTranslateFailed',
+                callback: (_) {
+                  _handleGoogleTranslateFailed();
+                  return null;
+                },
+              );
+            },
+            onLoadStart: (_, _) {
+              _resetTranslationStateForNewPage();
+              if (!_shouldTranslateWeb(_webTargetLang)) {
+                unawaited(
+                  _clearPersistedGoogleTranslateState(evaluateInPage: false),
+                );
+              }
+            },
             onProgressChanged: (_, progress) =>
                 setState(() => _progress = progress / 100),
             onConsoleMessage: (_, msg) =>
@@ -616,6 +1051,8 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
             },
             onScrollChanged: (_, _, _) => _scheduleLazyTranslation(),
           ),
+          if (_progress < 1)
+            Positioned.fill(child: _WebPageLoadingOverlay(progress: _progress)),
           if (_progress < 1)
             Positioned(
               top: 0,
@@ -644,7 +1081,185 @@ class _WebViewTranslationScreenState extends State<WebViewTranslationScreen> {
                 ),
               ),
             ),
+          if (!_showTranslationPanel && (_googleTranslating || _googleFailed))
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 12,
+              child: SafeArea(
+                child: _GoogleTranslationStatusPill(
+                  translating: _googleTranslating,
+                  failed: _googleFailed,
+                  onRetryGoogle: _runGoogleTranslate,
+                  onFallback: () => _runTranslation(),
+                ),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _WebPageLoadingOverlay extends StatelessWidget {
+  const _WebPageLoadingOverlay({required this.progress});
+
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final value = progress > 0 && progress < 1 ? progress : null;
+    final percent = (progress * 100).clamp(0, 99).round();
+
+    return DecoratedBox(
+      decoration: BoxDecoration(color: cs.surface.withValues(alpha: 0.92)),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 44,
+              height: 44,
+              child: CircularProgressIndicator(
+                value: value,
+                strokeWidth: 3,
+                color: cs.primary,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              _webLoadingMessage(context),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$percent%',
+              style: GoogleFonts.notoSansKr(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _webLoadingMessage(BuildContext context) {
+    return switch (Localizations.localeOf(context).languageCode) {
+      'ko' => '웹 페이지 불러오는 중…',
+      'en' => 'Loading webpage…',
+      'ja' => 'Webページを読み込み中…',
+      'zh' => '正在加载网页…',
+      'my' => 'ဝဘ်စာမျက်နှာ ဖွင့်နေသည်…',
+      _ => 'Đang tải trang web…',
+    };
+  }
+}
+
+class _GoogleTranslationStatusPill extends StatelessWidget {
+  const _GoogleTranslationStatusPill({
+    required this.translating,
+    required this.failed,
+    required this.onRetryGoogle,
+    required this.onFallback,
+  });
+
+  final bool translating;
+  final bool failed;
+  final VoidCallback onRetryGoogle;
+  final VoidCallback onFallback;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+
+    final title = failed
+        ? l.uniWebTranslateUnavailableTitle
+        : l.postTranslating;
+
+    return Material(
+      color: cs.surface,
+      elevation: 6,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: cs.outlineVariant),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  failed
+                      ? Icons.error_outline_rounded
+                      : Icons.translate_rounded,
+                  color: failed ? cs.error : cs.primary,
+                  size: 19,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ),
+                if (failed)
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    tooltip: l.alertTryAgain,
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    onPressed: onRetryGoogle,
+                  )
+                else
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (failed)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onFallback,
+                  icon: const Icon(Icons.auto_fix_high_rounded, size: 16),
+                  label: const Text('HiCampus'),
+                ),
+              )
+            else
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  minHeight: 3,
+                  color: cs.primary,
+                  backgroundColor: cs.surfaceContainerHighest,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
